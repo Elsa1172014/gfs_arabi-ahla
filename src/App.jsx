@@ -4373,8 +4373,12 @@ function buildReport(student, courses, progress, attempts) {
     const passed = at.find((a) => a.passed);
     const started = p.done.length > 0;
     const skillMap = skillMastery(at);
-    return { title: c.title, assigned, started, completed: !!passed, pct: p.done.length / c.stages.length * 100,
-      bestScore: at.length ? Math.max(...at.map((a) => a.pct)) : null, attempts: at.length,
+    const latest = [...at].sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0))[0] || null;
+    const latestPassed = [...at].filter((a) => a.passed).sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0))[0] || null;
+    return { id: c.id, title: c.title, teacher: c.teacher || "", assigned, started, completed: !!passed, pct: c.stages?.length ? p.done.length / c.stages.length * 100 : 0,
+      bestScore: at.length ? Math.max(...at.map((a) => a.pct)) : null, attempts: at.length, lastAt: latest?.at || null,
+      history: [...at].sort((a, b) => new Date(a.at || 0) - new Date(b.at || 0)).map((a) => ({ at: a.at, pct: a.pct, passed: !!a.passed })),
+      certificateToken: latestPassed?.token || null, certificateSerial: latestPassed?.serial || null,
       weak: skillMap.filter(([, r]) => r < .6).map(([k]) => k),
       strong: skillMap.filter(([, r]) => r >= .8).map(([k]) => k) };
   }).filter((r) => r.assigned);
@@ -6065,33 +6069,138 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
 }
 
 /* ==================== بوابة ولي الأمر ==================== */
-function ParentPortal({ report, onBack }) {
+function ParentPortal({ report, onBack, orgEmail = "" }) {
   if (!report) return null;
-  const { student, rows } = report;
+  const { student, rows = [] } = report;
+  const [tab, setTab] = useState("overview");
+  const [contactSubject, setContactSubject] = useState("متابعة تقدم ابني");
+  const [contactMessage, setContactMessage] = useState("");
+  const [supportType, setSupportType] = useState("ضعف أكاديمي");
+  const [supportNote, setSupportNote] = useState("");
+  const [sending, setSending] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const allHistory = rows.flatMap((r) => (r.history || []).map((h) => ({ ...h, title: r.title })))
+    .filter((x) => x.at).sort((a, b) => new Date(a.at) - new Date(b.at));
+  const scored = rows.filter((r) => r.bestScore != null);
+  const avg = scored.length ? Math.round(scored.reduce((sum, r) => sum + r.bestScore, 0) / scored.length) : null;
+  const completed = rows.filter((r) => r.completed).length;
+  const started = rows.filter((r) => r.started).length;
+  const certificates = rows.filter((r) => r.certificateToken).length;
+  const completionPct = rows.length ? Math.round(completed / rows.length * 100) : 0;
+  const latestActivity = [...allHistory].sort((a, b) => new Date(b.at) - new Date(a.at));
+  const allStrong = rows.flatMap((r) => r.strong || []);
+  const allWeak = rows.flatMap((r) => r.weak || []);
+  const rankSkills = (arr) => Object.entries(arr.reduce((m, x) => { m[x] = (m[x] || 0) + 1; return m; }, {}))
+    .sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, count]) => ({ name, count }));
+  const strongSkills = rankSkills(allStrong), weakSkills = rankSkills(allWeak);
+  const status = avg == null ? { label: "بانتظار بيانات", color: T.inkSoft, bg: T.paper } : avg >= 80 ? { label: "مستقر ومتقدم", color: T.green, bg: T.greenSoft } : avg >= 60 ? { label: "يحتاج متابعة", color: T.gold, bg: T.goldSoft } : { label: "يحتاج تدخل", color: T.brick, bg: T.brickSoft };
+  const trendPoints = allHistory.slice(-8).map((h) => ({ v: h.pct, label: new Date(h.at).toLocaleDateString("ar-AE", { day: "numeric", month: "numeric" }) }));
+  const teacherEmail = normEmail(student.teacherEmail || "");
+
+  const sendContact = async (kind) => {
+    const note = kind === "support" ? supportNote.trim() : contactMessage.trim();
+    if (!note) return setMsg("اكتب الرسالة أولًا.");
+    const recipients = [teacherEmail, normEmail(orgEmail)].filter(Boolean);
+    if (!recipients.length) return setMsg("لا يوجد بريد للمعلم أو رئيس القسم مسجل حاليًا.");
+    setSending(true); setMsg("");
+    const subject = kind === "support" ? `طلب دعم للطالب ${student.name} — ${supportType}` : `${contactSubject} — ${student.name}`;
+    const body = `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9"><p>السلام عليكم،</p><p>رسالة من ولي أمر الطالب <strong>${student.name}</strong> (الصف ${student.grade} — ${student.block}).</p>${kind === "support" ? `<p><strong>نوع طلب الدعم:</strong> ${supportType}</p>` : ""}<p>${note.replace(/\n/g, "<br>")}</p><p style="font-size:12px;color:#667085">أُرسلت هذه الرسالة من بوابة متابعة ولي الأمر في منصة بالعربي أحلى.</p></div>`;
+    try {
+      await notifyEmail(recipients, subject, body);
+      const entry = { at: new Date().toISOString(), actor: `ولي أمر — ${student.name}`, action: kind === "support" ? "طلب دعم" : "تواصل مع المعلم", detail: `${supportType}${kind === "support" ? " — " : ""}${note}` };
+      await putRecord(REC.audit, `${entry.at}-${uid()}`, entry);
+      setMsg(kind === "support" ? "✅ تم إرسال طلب الدعم للمعلم ورئيس القسم." : "✅ تم إرسال رسالتك للمعلم.");
+      if (kind === "support") setSupportNote(""); else setContactMessage("");
+    } catch (e) { setMsg("تعذّر الإرسال الآن. حاول مرة أخرى لاحقًا."); }
+    setSending(false);
+  };
+
+  const tabs = [["overview", "🏠 نظرة عامة"], ["courses", "📚 الكورسات"], ["skills", "🎯 نقاط القوة والدعم"], ["activity", "🕘 آخر النشاط"], ["contact", "✉️ التواصل والدعم"]];
+
   return (
     <div className="gfs"><style>{CSS}</style>
-      <div className="topbar" style={{ padding: "20px 0" }}><div className="wrap topbar-inner brand-row">
-        <div className="logo-chip"><img src={LOGO_URL} alt="GEMS Founders School" /></div>
-        <div><h2 className="brand-title" style={{ color: "#fff", fontSize: 19 }}>تقرير تقدّم الطالب</h2><div className="brand-tagline">بالعربي أحلى — قسم اللغة العربية</div></div>
-      </div></div>
-      <div className="wrap" style={{ paddingTop: 22, paddingBottom: 60 }}>
-        <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-          <h3>{student.name}</h3><div style={{ fontSize: 13, color: T.inkSoft }}>الصف {student.grade} — {student.block}</div>
+      <section className="adm-hero">
+        <img src={LOGO_URL} alt="" aria-hidden="true" className="adm-lion" />
+        <div className="adm-hero-row">
+          <div className="adm-brand">
+            <div className="logo-chip lg"><img src={LOGO_URL} alt="GEMS Founders School" /></div>
+            <div><div className="adm-hero-title">بوابة متابعة تقدم الطالب</div><div className="adm-hero-sub">بالعربي أحلى — قسم اللغة العربية | متابعة واضحة، تواصل مباشر، ودعم مبكر</div></div>
+          </div>
+          <div className="adm-actor"><div className="adm-avatar">👨‍👩‍👧</div><div><strong>ولي الأمر</strong><div className="adm-hero-sub">متابعة {student.name}</div></div></div>
         </div>
-        <div className="card" style={{ padding: 20 }}>
-          <table className="tbl"><thead><tr><th>الكورس</th><th>الحالة</th><th>الإنجاز</th><th>أفضل نتيجة</th><th>المحاولات</th><th>نقاط القوة</th><th>تحتاج دعمًا</th></tr></thead>
-            <tbody>{rows.map((r) => (<tr key={r.title}><td style={{ fontWeight: 600 }}>{r.title}</td>
-              <td>{r.completed ? <Chip tone="g">مكتمل</Chip> : r.started ? <Chip tone="a">قيد التعلّم</Chip> : <Chip>لم يبدأ</Chip>}</td>
-              <td>{Math.round(r.pct)}%</td><td className="mono">{r.bestScore === null ? "—" : r.bestScore + "%"}</td><td>{r.attempts}</td>
-              <td style={{ fontSize: 12, color: T.green }}>{r.strong.join("، ") || "—"}</td>
-              <td style={{ fontSize: 12, color: T.brick }}>{r.weak.join("، ") || "لا يوجد"}</td></tr>))}</tbody></table>
+        <nav className="adm-mainnav noprint" style={{ marginTop: 16 }}>
+          {tabs.map(([k, l]) => <button key={k} className={`adm-mainbtn ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{l}</button>)}
+          <button className="adm-mainbtn" onClick={onBack}>↩ عودة</button>
+        </nav>
+      </section>
+
+      <main className="adm-content" style={{ maxWidth: 1500, margin: "0 auto" }}>
+        <div className="card" style={{ padding: 18, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <div><h2 style={{ fontSize: 24 }}>{student.name}</h2><div style={{ color: T.inkSoft, fontSize: 13 }}>الصف {student.grade} — البلوك {student.block} {student.stream ? `— المسار ${student.stream}` : ""}</div></div>
+          <span className="chip" style={{ background: status.bg, color: status.color, padding: "7px 14px", fontSize: 12 }}>{status.label}</span>
         </div>
-        <button className="btn btn-q noprint" style={{ marginTop: 16 }} onClick={onBack}>عودة</button>
-      </div>
+
+        {tab === "overview" && <>
+          <div className="adm-kpis">
+            <div className="adm-kpi"><div className="adm-kpi-label">متوسط الأداء</div><div className="adm-kpi-value" style={{ color: status.color }}>{avg == null ? "—" : `${avg}%`}</div><div className="adm-kpi-foot">من أفضل نتائج الكورسات</div></div>
+            <div className="adm-kpi"><div className="adm-kpi-label">إكمال الكورسات</div><div className="adm-kpi-value">{completionPct}%</div><div className="adm-kpi-foot">{completed} من {rows.length} كورسات</div></div>
+            <div className="adm-kpi"><div className="adm-kpi-label">بدأ التعلم</div><div className="adm-kpi-value">{started}</div><div className="adm-kpi-foot">من {rows.length} كورسات مسندة</div></div>
+            <div className="adm-kpi"><div className="adm-kpi-label">الشهادات</div><div className="adm-kpi-value">{certificates}</div><div className="adm-kpi-foot">شهادات إتمام متاحة</div></div>
+          </div>
+          <div className="adm-grid3">
+            <section className="adm-panel">
+              <h3>مستوى التقدم الحالي</h3>
+              <div className="adm-donut" style={{ background: `conic-gradient(${T.green} 0 ${completionPct}%, ${T.gold} ${completionPct}% ${Math.min(100, completionPct + Math.max(0, started - completed) / Math.max(1, rows.length) * 100)}%, ${T.brick} 0)` }}>
+                <div className="adm-donut-center"><div style={{ fontSize: 28 }}>{completionPct}%</div><div className="adm-muted">إكمال</div></div>
+              </div>
+              <div className="adm-legend"><div className="adm-legend-row"><span><i className="adm-dot" style={{ background: T.green }} />مكتمل</span><strong>{completed}</strong></div><div className="adm-legend-row"><span><i className="adm-dot" style={{ background: T.gold }} />قيد التعلم</span><strong>{Math.max(0, started-completed)}</strong></div><div className="adm-legend-row"><span><i className="adm-dot" style={{ background: T.brick }} />لم يبدأ</span><strong>{Math.max(0, rows.length-started)}</strong></div></div>
+            </section>
+            <section className="adm-panel"><h3>اتجاه الأداء</h3><TrendChart points={trendPoints} height={170} tone={status.color} /><div className="adm-muted">يعتمد على آخر محاولات الطالب الفعلية.</div></section>
+            <section className="adm-panel adm-ai"><h3>✨ توصية المتابعة</h3><ul>
+              {avg == null && <li>لم تتوافر نتائج كافية بعد. شجّع الطالب على بدء الكورس المسند.</li>}
+              {avg != null && avg >= 80 && <li>الأداء جيد. استمروا في المتابعة والمحافظة على انتظام التدريب.</li>}
+              {avg != null && avg >= 60 && avg < 80 && <li>الأداء مقبول ويحتاج متابعة مركزة في المهارات الظاهرة ضمن «تحتاج دعمًا».</li>}
+              {avg != null && avg < 60 && <li>يوصى بطلب دعم من المعلم ووضع متابعة قصيرة للمهارات الأضعف.</li>}
+              {weakSkills[0] && <li>أولوية التدريب الحالية: <strong>{weakSkills[0].name}</strong>.</li>}
+              {rows.some((r) => !r.started) && <li>يوجد كورس مسند لم يبدأه الطالب بعد.</li>}
+            </ul><button className="btn" style={{ width: "100%", background: "#fff", color: "#102d68" }} onClick={() => setTab("contact")}>اطلب دعمًا لابني</button></section>
+          </div>
+        </>}
+
+        {tab === "courses" && <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))" }}>
+          {rows.length === 0 ? <div className="card" style={{ padding: 22 }}>لا توجد كورسات مسندة للطالب حاليًا.</div> : rows.map((r) => <article className="card" key={r.id || r.title} style={{ padding: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "start" }}><h3>{r.title}</h3>{r.completed ? <Chip tone="g">مكتمل</Chip> : r.started ? <Chip tone="a">قيد التعلم</Chip> : <Chip>لم يبدأ</Chip>}</div>
+            <div style={{ height: 9, background: T.ruleSoft, borderRadius: 999, overflow: "hidden", margin: "16px 0 6px" }}><div style={{ width: `${Math.max(0, Math.min(100, r.pct))}%`, height: "100%", background: r.completed ? T.green : r.started ? T.gold : T.rule }} /></div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: T.inkSoft }}><span>الإنجاز {Math.round(r.pct)}%</span><span>أفضل نتيجة {r.bestScore == null ? "—" : `${r.bestScore}%`}</span></div>
+            <div style={{ marginTop: 10, fontSize: 12, color: T.inkSoft }}>المحاولات: {r.attempts}{r.lastAt ? ` — آخر نشاط ${dateAr(r.lastAt)}` : ""}</div>
+            {r.certificateToken && <a className="btn btn-p" style={{ display: "inline-block", marginTop: 12, textDecoration: "none" }} href={`/api/send-email?certificate=${encodeURIComponent(r.certificateToken)}`} target="_blank" rel="noreferrer">🏆 فتح الشهادة</a>}
+          </article>)}
+        </div>}
+
+        {tab === "skills" && <div className="adm-grid3">
+          <section className="adm-panel"><h3>💪 نقاط القوة</h3>{strongSkills.length ? strongSkills.map((x) => <div key={x.name} style={{ padding: "9px 0", borderBottom: `1px solid ${T.ruleSoft}`, display: "flex", justifyContent: "space-between" }}><span>{x.name}</span><Chip tone="g">قوة</Chip></div>) : <p className="adm-muted">ستظهر نقاط القوة بعد وجود محاولات كافية.</p>}</section>
+          <section className="adm-panel"><h3>🎯 تحتاج دعمًا</h3>{weakSkills.length ? weakSkills.map((x) => <div key={x.name} style={{ padding: "9px 0", borderBottom: `1px solid ${T.ruleSoft}`, display: "flex", justifyContent: "space-between" }}><span>{x.name}</span><span className="chip" style={{ background: T.brickSoft, color: T.brick }}>متابعة</span></div>) : <p className="adm-muted">لا توجد مهارات ضعيفة متكررة في البيانات الحالية.</p>}</section>
+          <section className="adm-panel"><h3>كيف يمكنني مساعدته في المنزل؟</h3><p style={{ fontSize: 13, color: T.inkSoft }}>ركزوا على مهارة واحدة في كل مرة، واطلبوا من الطالب شرح القاعدة بصوته ثم تطبيقها على مثال جديد. تجنبوا إعادة الاختبار نفسه؛ الهدف هو فهم المهارة.</p>{weakSkills[0] && <div className="viz-callout" style={{ marginTop: 10 }}>ابدؤوا هذا الأسبوع بمهارة: <strong>{weakSkills[0].name}</strong></div>}</section>
+        </div>}
+
+        {tab === "activity" && <section className="adm-panel"><h3>آخر ما حدث</h3>{latestActivity.length === 0 ? <p className="adm-muted">لا يوجد نشاط بعد.</p> : latestActivity.slice(0, 12).map((a, i) => <div key={`${a.at}-${i}`} style={{ display: "grid", gridTemplateColumns: "110px 1fr auto", gap: 12, alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${T.ruleSoft}` }}><span className="adm-muted">{dateAr(a.at)}</span><span>أجرى محاولة في <strong>{a.title}</strong></span><span className="chip" style={{ background: a.passed ? T.greenSoft : a.pct >= 60 ? T.goldSoft : T.brickSoft, color: a.passed ? T.green : a.pct >= 60 ? T.gold : T.brick }}>{a.pct}%</span></div>)}</section>}
+
+        {tab === "contact" && <div className="adm-grid3">
+          <section className="adm-panel" style={{ gridColumn: "span 2" }}><h3>✉️ تواصل مع المعلم</h3><label className="lbl">الموضوع</label><select className="inp" value={contactSubject} onChange={(e) => setContactSubject(e.target.value)}><option>متابعة تقدم ابني</option><option>استفسار عن كورس</option><option>استفسار عن نتيجة</option><option>طلب موعد للتواصل</option></select><label className="lbl" style={{ marginTop: 10 }}>رسالتك</label><textarea className="tarea" rows={5} value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} placeholder="اكتب رسالتك للمعلم..."/><button className="btn btn-p" disabled={sending} style={{ marginTop: 10 }} onClick={() => sendContact("contact")}>{sending ? "جارٍ الإرسال…" : "إرسال إلى المعلم"}</button></section>
+          <section className="adm-panel"><h3>🆘 اطلب دعمًا لابني</h3><label className="lbl">نوع الدعم</label><select className="inp" value={supportType} onChange={(e) => setSupportType(e.target.value)}><option>ضعف أكاديمي</option><option>صعوبة في كورس</option><option>لم يفهم المهارة</option><option>تكرار المحاولات دون تحسن</option><option>أحتاج التواصل مع المعلم</option></select><label className="lbl" style={{ marginTop: 10 }}>تفاصيل مختصرة</label><textarea className="tarea" rows={4} value={supportNote} onChange={(e) => setSupportNote(e.target.value)} placeholder="صف ما يحتاجه الطالب..."/><button className="btn btn-d" disabled={sending} style={{ marginTop: 10 }} onClick={() => sendContact("support")}>إرسال طلب الدعم</button></section>
+          {msg && <div className="card" aria-live="polite" style={{ gridColumn: "1/-1", padding: 14, background: msg.startsWith("✅") ? T.greenSoft : T.goldSoft, color: msg.startsWith("✅") ? T.green : T.ink }}>{msg}</div>}
+        </div>}
+      </main>
+
+      <footer className="adm-footer">
+        <div style={{ position: "relative", zIndex: 1, fontSize: 11 }}>تقرير ديناميكي — آخر فتح: {new Date().toLocaleString("ar-AE")}</div>
+        <div className="adm-footer-main"><div className="adm-footer-tag">نزدهر • ننجح • ننمو</div><div style={{ opacity: .72 }}>GEMS Founders School Dubai — Inspiring Minds, Empowering Futures</div></div>
+        <div style={{ position: "relative", zIndex: 1, fontSize: 11 }}>بوابة ولي الأمر — قسم اللغة العربية</div>
+      </footer>
     </div>
   );
 }
-
 /* ============================ التطبيق ============================ */
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -6352,7 +6461,7 @@ export default function App() {
 
   if (!ready) return <div className="gfs"><style>{CSS}</style><div className="wrap" style={{ padding: 60, color: T.inkSoft }}>جارٍ فتح المنصة…</div></div>;
 
-  if (parentReport) return <ParentPortal report={parentReport} onBack={() => { setParentReport(null); }} />;
+  if (parentReport) return <ParentPortal report={parentReport} orgEmail={orgEmail} onBack={() => { setParentReport(null); }} />;
 
   if (!user) return <Login
     teachers={teachers}
