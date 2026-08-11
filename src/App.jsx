@@ -2562,6 +2562,7 @@ async function deleteRecord(prefix, id) { try { await window.storage.delete(pref
 const uid = () => Math.random().toString(36).slice(2, 10);
 const shuffle = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 const pKey = (s, c) => `${s}|${c}`;
+const normEmail = (s) => String(s || "").trim().toLowerCase();
 const dateAr = (i) => { try { return new Date(i).toLocaleDateString("ar-AE", { year: "numeric", month: "long", day: "numeric" }); } catch { return ""; } };
 const norm = (s) => (s || "").replace(/[\u064B-\u0652\u0640]/g, "").replace(/[«»؟.،]/g, "").replace(/\s+/g, "").trim();
 
@@ -2622,7 +2623,7 @@ async function downloadXLSX(filename, aoa) {
   const XLSX = await loadXLSX();
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws["!cols"] = [{ wch: 26 }, { wch: 16 }, { wch: 8 }, { wch: 12 }, { wch: 10 }];
+  ws["!cols"] = [{ wch: 26 }, { wch: 16 }, { wch: 8 }, { wch: 12 }, { wch: 10 }, { wch: 30 }, { wch: 30 }, { wch: 32 }];
   XLSX.utils.book_append_sheet(wb, ws, "قائمة الطلاب");
   const buf = XLSX.write(wb, { bookType: "xlsx", type: "array" });
   const blob = new Blob([buf], { type: "application/octet-stream" });
@@ -2931,7 +2932,7 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
   const [role, setRole] = useState(null); // s | p | t | a
   const [step, setStep] = useState(1); // خطوة معالج الطالب
   const [f, setF] = useState({ name: "", sid: "", grade: 7, block: "A", stream: "A", email: "" });
-  const [code, setCode] = useState(""); const [tname, setTname] = useState(""); const [ptok, setPtok] = useState(""); const [err, setErr] = useState("");
+  const [code, setCode] = useState(""); const [tname, setTname] = useState(""); const [temail, setTemail] = useState(""); const [ptok, setPtok] = useState(""); const [err, setErr] = useState("");
   const [showCode, setShowCode] = useState(false);
   const [rememberT, setRememberT] = useState(true); const [rememberA, setRememberA] = useState(true);
   const [teacherMem, setTeacherMem] = useState(null); const [adminMem, setAdminMem] = useState(null);
@@ -2945,12 +2946,12 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
     try { const r = await window.storage.get("gfs:mem:admin", false); if (r && r.value) setAdminMem(JSON.parse(r.value)); } catch { }
   })(); }, []);
   useEffect(() => {
-    if (role === "t" && teacherMem) { setTname(teacherMem.name || ""); setCode(teacherMem.code || ""); }
+    if (role === "t" && teacherMem) { setTname(teacherMem.name || ""); setTemail(teacherMem.email || ""); setCode(teacherMem.code || ""); }
     if (role === "a" && adminMem) { setCode(adminMem.code || ""); }
   }, [role, teacherMem, adminMem]);
   const forget = async (which) => {
     try { await window.storage.delete(`gfs:mem:${which}`, false); } catch { }
-    if (which === "teacher") { setTeacherMem(null); setTname(""); setCode(""); }
+    if (which === "teacher") { setTeacherMem(null); setTname(""); setTemail(""); setCode(""); }
     else { setAdminMem(null); setCode(""); }
   };
 
@@ -2967,7 +2968,8 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
     const normalize = (n) => n.trim().replace(/\s+/g, " ").toLowerCase();
     if (normalize(existing.name) !== normalize(f.name)) return setErr("الاسم المُدخَل لا يطابق الاسم المسجَّل لهذا الرقم التعريفي. تحقّق من كتابة اسمك كما هو مسجَّل بالضبط.");
     setErr(""); setWelcomeName(existing.name);
-    setTimeout(() => onStudent({ ...f, name: existing.name, role: "student", key }), 900);
+    setTimeout(() => onStudent({ ...f, name: existing.name, role: "student", key,
+      email: existing.email || f.email || "", parentEmail: existing.parentEmail || "", teacherEmail: existing.teacherEmail || "" }), 900);
   };
 
   const ripple = (e) => {
@@ -3129,7 +3131,7 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
                     }}>التالي ←</button>
                   </>}
                   {step === 2 && <>
-                    <div><label className="lbl" htmlFor="em">بريدك الإلكتروني (اختياري — لإرسال شهاداتك)</label><input id="em" className="inp" type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="name@school.ae" /></div>
+                    <div><label className="lbl" htmlFor="em">بريدك الإلكتروني (اختياري — يُستخدم فقط إذا لم يكن مسجّلًا في ملف الطلاب)</label><input id="em" className="inp" type="email" value={f.email} onChange={(e) => setF({ ...f, email: e.target.value })} placeholder="name@school.ae" /></div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                       <div><label className="lbl" htmlFor="gr">الصف</label><select id="gr" className="inp" value={f.grade} onChange={(e) => setF({ ...f, grade: +e.target.value })}>{Array.from({ length: 13 }, (_, i) => i + 1).map((g) => <option key={g} value={g}>{g}</option>)}</select></div>
                       <div><label className="lbl" htmlFor="bl">البلوك</label><select id="bl" className="inp" value={f.block} onChange={(e) => setF({ ...f, block: e.target.value })}>{DEFAULT_BLOCKS.map((b) => <option key={b}>{b}</option>)}</select></div>
@@ -3146,6 +3148,7 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
 
               {role === "t" && <div className="grid">
                 <div><label className="lbl" htmlFor="tn">اسمك</label><input id="tn" className="inp" value={tname} onChange={(e) => setTname(e.target.value)} placeholder="أ. سالم المعلم" /></div>
+                <div><label className="lbl" htmlFor="te">بريدك الإلكتروني المدرسي</label><input id="te" className="inp mono" type="email" value={temail} onChange={(e) => setTemail(e.target.value)} placeholder="name@school.ae" /></div>
                 <div><label className="lbl" htmlFor="cd">رمز دخول المعلم</label>
                   <div style={{ display: "flex", gap: 6 }}>
                     <input id="cd" className="inp mono" style={{ flex: 1 }} type={showCode ? "text" : "password"} value={code} onChange={(e) => setCode(e.target.value)} placeholder="—" />
@@ -3158,11 +3161,13 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
                 {err && <div style={{ color: T.brick }}>{err}</div>}
                 <button className="btn btn-p lh-ripple-btn" onClick={async (e) => {
                   if (code !== codes.teacher) return setErr("الرمز غير صحيح. راجع رئيس القسم للحصول عليه.");
+                  const email = normEmail(temail);
+                  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr("أدخل بريدك الإلكتروني المدرسي بصورة صحيحة.");
                   ripple(e);
                   const name = tname.trim() || "معلم اللغة العربية";
-                  if (rememberT) { try { await window.storage.set("gfs:mem:teacher", JSON.stringify({ name, code }), false); } catch { } }
+                  if (rememberT) { try { await window.storage.set("gfs:mem:teacher", JSON.stringify({ name, email, code }), false); } catch { } }
                   else { try { await window.storage.delete("gfs:mem:teacher", false); } catch { } }
-                  onTeacher(name);
+                  onTeacher(name, email);
                 }}>ادخل إلى لوحة المعلم</button>
               </div>}
 
@@ -4125,7 +4130,7 @@ function SendReportModal({ student, courses, progress, attempts, onSend, onClose
 }
 
 /* ==================== لوحة المعلم الكاملة ==================== */
-function TeacherHome({ teacherName, courses, attempts, progress, students, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
+function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
   const [tab, setTab] = useState("d");
   const [aiProvider, setAiProvider] = useState("claude");
   const [aiBusy, setAiBusy] = useState(null);
@@ -4134,17 +4139,21 @@ function TeacherHome({ teacherName, courses, attempts, progress, students, onNew
   const fileRef = useRef(null);
   const [importMsg, setImportMsg] = useState("");
   const [addOpen, setAddOpen] = useState(false);
-  const [addForm, setAddForm] = useState({ name: "", sid: "", grade: 7, block: "A", stream: "A" });
+  const [addForm, setAddForm] = useState({ name: "", sid: "", grade: 7, block: "A", stream: "A", teacherEmail: normEmail(teacherEmail), email: "", parentEmail: "" });
   const [addErr, setAddErr] = useState("");
   const [editKey, setEditKey] = useState(null);
   const [editForm, setEditForm] = useState(null);
   const mine = courses.filter((c) => c.teacher === teacherName);
   const mineIds = new Set(mine.map((c) => c.id));
-  // كل ما يظهر هنا مقيَّد بكورسات هذا المعلم فقط — لا يرى بيانات طالب
-  // لم يُسنَد إليه أيّ كورس من كورساته، ولا نتائج معلم آخر. استثناء: طلاب
-  // مستورَدون ببيانات ناقصة (لم يُحدَّد صفهم/بلوكهم بعد) يظهرون للجميع
-  // مؤقتًا حتى يُكمِل أي معلم بياناتهم — وإلا لن يراهم أحد إطلاقًا.
-  const students2 = students.filter((s) => s.needsReview || mine.some((c) => assignedTo(c, s)));
+  // الطالب يُربط بمعلمه أولًا عبر بريد المعلم المحفوظ في ملف الطلاب.
+  // للبيانات القديمة التي لا تحتوي teacherEmail نحافظ على السلوك السابق
+  // (الإسناد بحسب كورسات المعلم) حتى لا تختفي سجلات قائمة قبل هذا التحديث.
+  const teacherEmailNorm = normEmail(teacherEmail);
+  const students2 = students.filter((s) => {
+    const linkedByEmail = teacherEmailNorm && normEmail(s.teacherEmail) === teacherEmailNorm;
+    const legacyWithoutTeacherEmail = !normEmail(s.teacherEmail) && (s.needsReview || mine.some((c) => assignedTo(c, s)));
+    return linkedByEmail || legacyWithoutTeacherEmail;
+  });
   const attempts2 = attempts.filter((a) => mineIds.has(a.course));
   const rows = students2.map((s) => {
     const m2 = mine.filter((c) => assignedTo(c, s));
@@ -4281,13 +4290,15 @@ function TeacherHome({ teacherName, courses, attempts, progress, students, onNew
               <div><label className="lbl">الصف</label><select className="inp" value={addForm.grade} onChange={(e) => setAddForm({ ...addForm, grade: +e.target.value })}>{Array.from({ length: 13 }, (_, i) => i + 1).map((g) => <option key={g} value={g}>{g}</option>)}</select></div>
               <div><label className="lbl">البلوك</label><select className="inp" value={addForm.block} onChange={(e) => setAddForm({ ...addForm, block: e.target.value })}>{DEFAULT_BLOCKS.map((b) => <option key={b}>{b}</option>)}</select></div>
               <div><label className="lbl">المسار</label><select className="inp" value={addForm.stream} onChange={(e) => setAddForm({ ...addForm, stream: e.target.value })}><option value="A">عربي أ</option><option value="B">عربي ب</option></select></div>
-              <div style={{ gridColumn: "1/-1" }}><label className="lbl">بريد ولي الأمر (اختياري)</label><input className="inp" type="email" value={addForm.parentEmail || ""} onChange={(e) => setAddForm({ ...addForm, parentEmail: e.target.value })} placeholder="parent@example.com" /></div>
+              <div><label className="lbl">بريد المعلم</label><input className="inp mono" type="email" value={addForm.teacherEmail || ""} onChange={(e) => setAddForm({ ...addForm, teacherEmail: e.target.value })} placeholder="teacher@school.ae" /></div>
+              <div><label className="lbl">بريد الطالب</label><input className="inp mono" type="email" value={addForm.email || ""} onChange={(e) => setAddForm({ ...addForm, email: e.target.value })} placeholder="student@example.com" /></div>
+              <div><label className="lbl">بريد ولي الأمر</label><input className="inp mono" type="email" value={addForm.parentEmail || ""} onChange={(e) => setAddForm({ ...addForm, parentEmail: e.target.value })} placeholder="parent@example.com" /></div>
             </div>
             {addErr && <div style={{ color: T.brick, marginTop: 8, fontSize: 13 }}>{addErr}</div>}
             <button className="btn btn-p" style={{ marginTop: 10 }} onClick={() => {
               const r = onAddStudent(addForm);
               if (!r.ok) return setAddErr(r.msg);
-              setAddForm({ name: "", sid: "", grade: addForm.grade, block: addForm.block, stream: addForm.stream, parentEmail: "" }); setAddErr("");
+              setAddForm({ name: "", sid: "", grade: addForm.grade, block: addForm.block, stream: addForm.stream, teacherEmail: normEmail(teacherEmail), email: "", parentEmail: "" }); setAddErr("");
             }}>حفظ الطالب</button>
           </div>
         )}
@@ -4301,7 +4312,7 @@ function TeacherHome({ teacherName, courses, attempts, progress, students, onNew
               <td>{r.stuck ? <Chip tone="r">تدخّل</Chip> : r.passed ? <Chip tone="g">متقدم</Chip> : r.started ? <Chip tone="a">قيد التعلّم</Chip> : <Chip>لم يبدأ</Chip>}</td>
               <td><button className="btn btn-q" onClick={() => { setExpandStudent(expandStudent === r.key ? null : r.key); setReportOpen(null); }}>{expandStudent === r.key ? "إخفاء" : "تفاصيل"}</button></td>
               <td><button className="btn btn-q" onClick={() => { setEditKey(editKey === r.key ? null : r.key);
-                setEditForm({ name: r.name, sid: r.schoolId || (r.key.split("-")[2] && /^\d{6}$/.test(r.key.split("-")[2]) ? r.key.split("-")[2] : ""), grade: r.grade || 7, block: r.block === "؟" ? "A" : r.block, stream: r.stream, parentEmail: r.parentEmail || "" }); }}>
+                setEditForm({ name: r.name, sid: r.schoolId || (r.key.split("-")[2] && /^\d{6}$/.test(r.key.split("-")[2]) ? r.key.split("-")[2] : ""), grade: r.grade || 7, block: r.block === "؟" ? "A" : r.block, stream: r.stream, teacherEmail: r.teacherEmail || normEmail(teacherEmail), email: r.email || "", parentEmail: r.parentEmail || "" }); }}>
                 {editKey === r.key ? "إلغاء" : "تعديل"}</button></td>
               <td><button className="btn btn-q" style={{ color: T.brick }} onClick={() => { if (window.confirm(`حذف ${r.name} من القائمة؟ نتائجه السابقة تبقى في السجل لكنه لن يستطيع الدخول بهذه البيانات بعد الآن.`)) onRemoveStudent(r.key); }}>حذف</button></td>
             </tr>
@@ -4312,6 +4323,9 @@ function TeacherHome({ teacherName, courses, attempts, progress, students, onNew
                 <div><label className="lbl">الصف</label><select className="inp" value={editForm.grade} onChange={(e) => setEditForm({ ...editForm, grade: +e.target.value })}>{Array.from({ length: 13 }, (_, i) => i + 1).map((g) => <option key={g} value={g}>{g}</option>)}</select></div>
                 <div><label className="lbl">البلوك</label><select className="inp" value={editForm.block} onChange={(e) => setEditForm({ ...editForm, block: e.target.value })}>{DEFAULT_BLOCKS.map((b) => <option key={b}>{b}</option>)}</select></div>
                 <div><label className="lbl">المسار</label><select className="inp" value={editForm.stream} onChange={(e) => setEditForm({ ...editForm, stream: e.target.value })}><option value="A">عربي أ</option><option value="B">عربي ب</option></select></div>
+                <div><label className="lbl">بريد المعلم</label><input className="inp mono" type="email" value={editForm.teacherEmail || ""} onChange={(e) => setEditForm({ ...editForm, teacherEmail: e.target.value })} /></div>
+                <div><label className="lbl">بريد الطالب</label><input className="inp mono" type="email" value={editForm.email || ""} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} /></div>
+                <div><label className="lbl">بريد ولي الأمر</label><input className="inp mono" type="email" value={editForm.parentEmail || ""} onChange={(e) => setEditForm({ ...editForm, parentEmail: e.target.value })} /></div>
                 <div style={{ gridColumn: "1/-1" }}>
                   <button className="btn btn-p" onClick={() => { onEditStudent(r.key, editForm); setEditKey(null); }}>حفظ التعديلات</button>
                 </div>
@@ -5252,8 +5266,8 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
         </div>
         <div className="card" style={{ padding: 20 }}>
           <h3 style={{ marginBottom: 10 }}>استيراد قائمة طلاب</h3>
-          <p style={{ fontSize: 12, color: T.inkSoft }}>الصق بيانات CSV بالأعمدة: name,school_id,grade,block,stream — سطر لكل طالب.</p>
-          <textarea className="tarea" rows={5} value={csvText} onChange={(e) => setCsvText(e.target.value)} placeholder="سالم أحمد الكعبي,123456,7,Block A,A" />
+          <p style={{ fontSize: 12, color: T.inkSoft }}>الصق بيانات CSV بالأعمدة: name,school_id,grade,block,stream,teacher_email,student_email,parent_email — سطر لكل طالب.</p>
+          <textarea className="tarea" rows={5} value={csvText} onChange={(e) => setCsvText(e.target.value)} placeholder="سالم أحمد الكعبي,123456,7,A,A,teacher@school.ae,student@school.ae,parent@example.com" />
           <button className="btn btn-o" style={{ marginTop: 8 }} onClick={() => onImportStudents(csvText)}>استيراد</button>
         </div>
         </Locked>
@@ -5464,14 +5478,23 @@ export default function App() {
     setProgress((prev) => ({ ...prev, [k]: next })); putRecord(REC.progress, k, { __key: k, __val: next });
     log(actorName, "إعادة فتح محاولة", `${studentKey} — ${courseId}`);
   };
-  const ensureTeacher = (name) => { if (!teachers.some((t) => t.name === name)) { const v = [...teachers, { name, active: true }]; setTeachers(v); writeKey(K.teachers, v); } };
+  const ensureTeacher = (name, email = "") => {
+    const normalizedEmail = normEmail(email);
+    const existing = teachers.find((t) => t.name === name);
+    if (!existing) {
+      const v = [...teachers, { name, email: normalizedEmail, active: true }]; setTeachers(v); writeKey(K.teachers, v);
+    } else if (normalizedEmail && normEmail(existing.email) !== normalizedEmail) {
+      const v = teachers.map((t) => t.name === name ? { ...t, email: normalizedEmail } : t); setTeachers(v); writeKey(K.teachers, v);
+    }
+  };
   // رمزا الدخول يُغيّرهما رئيس القسم فقط، من داخل وحدة الإدارة — هذا هو
   // الضابط الفعلي لمن يستطيع دخول لوحتي المعلم والإدارة، لا رقمًا ثابتًا في الكود.
   const updateCodes = (next, actor) => { setCodes(next); writeKey(K.codes, next); log(actor, "تغيير رموز الدخول", "تم تحديث رمز المعلم و/أو رمز الإدارة"); };
   const updateOrgEmail = (email, actor) => { setOrgEmail(email); writeKey(K.orgEmail, email); log(actor, "تحديث بريد رئيس القسم", email || "(أُزيل)"); };
   const setTeacherEmail = (name, email, actor) => {
-    const v = teachers.map((t) => t.name === name ? { ...t, email } : t);
-    setTeachers(v); writeKey(K.teachers, v); log(actor, "تسجيل بريد معلم", `${name} — ${email}`);
+    const normalized = normEmail(email);
+    const v = teachers.map((t) => t.name === name ? { ...t, email: normalized } : t);
+    setTeachers(v); writeKey(K.teachers, v); log(actor, "تسجيل بريد معلم", `${name} — ${normalized}`);
   };
 
   // كل انتقال بين الشاشات يمرّ عبر nav فيُحفظ مكان الوصول السابق تلقائيًا،
@@ -5540,9 +5563,12 @@ export default function App() {
   if (!user) return <Login
     onStudent={(u) => { setUser(u); setHist([]); setView({ n: "home" });
       const existing = students.find((s) => s.key === u.key);
-      if (!existing) { const rec = { key: u.key, name: u.name, grade: u.grade, block: u.block, stream: u.stream, email: u.email || "" }; setStudents((prev) => [...prev, rec]); putRecord(REC.student, rec.key, rec); }
-      else if (u.email && u.email !== existing.email) { const rec = { ...existing, email: u.email }; setStudents((prev) => prev.map((s) => s.key === u.key ? rec : s)); putRecord(REC.student, rec.key, rec); } }}
-    onTeacher={(name) => { ensureTeacher(name); setUser({ role: "teacher", name }); setHist([]); setView({ n: "home" }); }}
+      if (!existing) { const rec = { key: u.key, name: u.name, grade: u.grade, block: u.block, stream: u.stream, teacherEmail: normEmail(u.teacherEmail), email: normEmail(u.email), parentEmail: normEmail(u.parentEmail) }; setStudents((prev) => [...prev, rec]); putRecord(REC.student, rec.key, rec); }
+      else {
+        const rec = { ...existing, teacherEmail: normEmail(existing.teacherEmail || u.teacherEmail), email: normEmail(existing.email || u.email), parentEmail: normEmail(existing.parentEmail || u.parentEmail) };
+        if (JSON.stringify(rec) !== JSON.stringify(existing)) { setStudents((prev) => prev.map((s) => s.key === u.key ? rec : s)); putRecord(REC.student, rec.key, rec); }
+      } }}
+    onTeacher={(name, email) => { ensureTeacher(name, email); setUser({ role: "teacher", name, email: normEmail(email) }); setHist([]); setView({ n: "home" }); }}
     onAdmin={() => { setUser({ role: "admin", name: "رئيس القسم" }); setHist([]); setView({ n: "home" }); }}
     onParent={(tok, setErr) => {
       const rec = parentTokens[tok];
@@ -5562,9 +5588,10 @@ export default function App() {
       const passedCourses = new Set(at.filter((a) => a.passed).map((a) => a.course)).size;
       const avg = at.length ? Math.round(at.reduce((x, a) => x + a.pct, 0) / at.length) : "";
       return { name: s.name, school_id_full: s.schoolId || "", school_key: s.key, grade: s.grade, block: s.block, stream: s.stream,
+        teacher_email: s.teacherEmail || "", student_email: s.email || "", parent_email: s.parentEmail || "",
         assigned: courses.filter((c) => assignedTo(c, s)).length, attempts: at.length, passed_courses: passedCourses, average_pct: avg };
     });
-    downloadText("gfs_students_results.csv", toCSV(rows, ["name", "school_id_full", "school_key", "grade", "block", "stream", "assigned", "attempts", "passed_courses", "average_pct"]));
+    downloadText("gfs_students_results.csv", toCSV(rows, ["name", "school_id_full", "school_key", "grade", "block", "stream", "teacher_email", "student_email", "parent_email", "assigned", "attempts", "passed_courses", "average_pct"]));
     log(user.name, "تصدير بيانات الطلاب", `${rows.length} سجلًا`);
   };
   const exportAuditCSV = () => {
@@ -5576,7 +5603,9 @@ export default function App() {
   const HEADER_MAP = {
     name: ["name", "الاسم", "الاسم الثلاثي", "اسم الطالب"], school_id: ["school_id", "id", "الرقم", "الرقم التعريفي", "الرقم المدرسي", "الرقم الوطني"],
     grade: ["grade", "year", "الصف", "المستوى"], block: ["block", "البلوك", "الشعبة"], stream: ["stream", "المسار"],
-    parentEmail: ["parent_email", "email", "البريد الإلكتروني", "بريد ولي الأمر"],
+    teacherEmail: ["teacher_email", "teacher email", "بريد المعلم", "ايميل المعلم", "إيميل المعلم"],
+    email: ["student_email", "student email", "بريد الطالب", "ايميل الطالب", "إيميل الطالب"],
+    parentEmail: ["parent_email", "parent email", "بريد ولي الأمر", "بريد ولي الامر", "ايميل ولي الأمر", "إيميل ولي الأمر"],
   };
   const norm = (s) => String(s || "").replace(/[（(].*?[)）]/g, "").trim().toLowerCase();
   function countHeaderMatches(row) {
@@ -5594,7 +5623,7 @@ export default function App() {
   const isHeaderRow = (arr) => countHeaderMatches(arr) >= 2;
   // يبني خريطة أعمدة {name:0, school_id:1, ...} من صف العناوين الفعلي —
   // بصرف النظر عن ترتيبها في الملف. إن لم يوجد صف عناوين معروف، يعود
-  // للترتيب الافتراضي (اسم، رقم، صف، بلوك، مسار، بريد) كخطة بديلة.
+  // للترتيب الافتراضي (اسم، رقم، صف، بلوك، مسار، بريد المعلم، بريد الطالب، بريد ولي الأمر) كخطة بديلة.
   function mapColumns(headerRow) {
     const idx = {};
     (headerRow || []).forEach((cell, i) => {
@@ -5605,7 +5634,7 @@ export default function App() {
       });
     });
     if (Object.keys(idx).length >= 2) return idx;
-    return { name: 0, school_id: 1, grade: 2, block: 3, stream: 4, parentEmail: 5 };
+    return { name: 0, school_id: 1, grade: 2, block: 3, stream: 4, teacherEmail: 5, email: 6, parentEmail: 7 };
   }
   // يبحث عن صف العناوين الحقيقي ضمن أول 5 صفوف — بعض الملفات تضع صفًّا
   // عنوانًا كبيرًا (مثل «قائمة طلاب الصف الثاني عشر») فوق صف الأعمدة
@@ -5641,18 +5670,20 @@ export default function App() {
       const g = parseGrade(get("grade", 2));
       const block = get("block", 3) || "؟";
       const streamRaw = get("stream", 4);
-      const parentEmailRaw = get("parentEmail", 5);
+      const teacherEmailRaw = normEmail(get("teacherEmail", 5));
+      const studentEmailRaw = normEmail(get("email", 6));
+      const parentEmailRaw = normEmail(get("parentEmail", 7));
       // نقبل الرقم التعريفي كاملًا مهما كان طوله (لا قيد 4-8 أرقام) —
       // ونحتفظ به كاملًا في السجل، لكن مفتاح الطالب (وتطابق دخوله لاحقًا)
       // يبقى دومًا آخر 6 أرقام منه، تمامًا كما يكتبها الطالب بنفسه عند الدخول.
       // نقبل الطالب حتى لو كانت بياناته ناقصة — بدل رفضه بالكامل — ونمنحه
       // معرّفًا مؤقتًا فريدًا فقط إن لم يوجد أي رقم على الإطلاق؛ يُعلَّم
       // السجل «يحتاج مراجعة» ليكمله المعلم لاحقًا من شاشة «طلابي».
-      const needsReview = !sidDigits || !g || block === "؟";
+      const needsReview = !sidDigits || !g || block === "؟" || !teacherEmailRaw || !studentEmailRaw || !parentEmailRaw;
       const sid = sidDigits ? sidDigits.slice(-6) : `TMP${(Date.now() + placeholderSeq++).toString().slice(-6)}`;
       const key = `${g || 0}-${block}-${sid}`;
       if (existingKeys.has(key)) return dups.push(key);
-      added.push({ key, name, grade: g, block, stream: streamRaw.toUpperCase() === "B" ? "B" : "A", parentEmail: parentEmailRaw, schoolId: sidDigits, needsReview });
+      added.push({ key, name, grade: g, block, stream: streamRaw.toUpperCase() === "B" ? "B" : "A", teacherEmail: teacherEmailRaw, email: studentEmailRaw, parentEmail: parentEmailRaw, schoolId: sidDigits, needsReview });
       existingKeys.add(key);
     });
     if (added.length) {
@@ -5710,8 +5741,12 @@ export default function App() {
     const sid = sidDigits ? sidDigits.slice(-6) : (existing.key.split("-")[2] || "");
     const newKey = `${g}-${block}-${sid}`;
     const needsReview = !/^\d{6}$/.test(sid) || !g || !block || block === "؟";
+    const teacherEmail = fields.teacherEmail !== undefined ? normEmail(fields.teacherEmail) : normEmail(existing.teacherEmail);
+    const studentEmail = fields.email !== undefined ? normEmail(fields.email) : normEmail(existing.email);
+    const parentEmail = fields.parentEmail !== undefined ? normEmail(fields.parentEmail) : normEmail(existing.parentEmail);
+    const needsReview2 = needsReview || !teacherEmail || !studentEmail || !parentEmail;
     const rec = { key: newKey, name: (fields.name || existing.name).trim(), grade: g, block, stream: fields.stream || existing.stream,
-      parentEmail: fields.parentEmail !== undefined ? fields.parentEmail : existing.parentEmail, schoolId: sidDigits, needsReview };
+      teacherEmail, email: studentEmail, parentEmail, schoolId: sidDigits, needsReview: needsReview2 };
     setStudents((prev) => prev.map((s) => s.key === oldKey ? rec : s));
     putRecord(REC.student, newKey, rec);
     if (newKey !== oldKey) deleteRecord(REC.student, oldKey);
@@ -5722,9 +5757,9 @@ export default function App() {
   // teacher types matches the importer with zero guesswork.
   const downloadStudentTemplate = () => {
     downloadXLSX("قائمة_الطلاب_نموذج.xlsx", [
-      ["الاسم الثلاثي", "الرقم التعريفي", "الصف", "البلوك", "المسار", "بريد ولي الأمر (اختياري)"],
-      ["سالم أحمد الكعبي", "123456", "7", "A", "A", "parent1@example.com"],
-      ["ليان محمد النعيمي", "654321", "7", "B", "A", ""],
+      ["الاسم الثلاثي", "الرقم التعريفي", "الصف", "البلوك", "المسار", "بريد المعلم", "بريد الطالب", "بريد ولي الأمر"],
+      ["سالم أحمد الكعبي", "123456", "7", "A", "A", "teacher1@gemsedu.com", "student1@example.com", "parent1@example.com"],
+      ["ليان محمد النعيمي", "654321", "7", "B", "A", "teacher1@gemsedu.com", "student2@example.com", "parent2@example.com"],
     ]);
   };
 
@@ -5733,7 +5768,9 @@ export default function App() {
     if (!data.name.trim() || !sidDigits || !g || !data.block) return { ok: false, msg: "تحقّق من الاسم والرقم (أرقام فقط) والصف والبلوك." };
     const key = `${g}-${data.block}-${sidDigits.slice(-6)}`;
     if (students.some((s) => s.key === key)) return { ok: false, msg: "طالب بهذه البيانات مسجَّل أصلًا." };
-    const rec = { key, name: data.name.trim(), grade: g, block: data.block, stream: data.stream === "B" ? "B" : "A", parentEmail: (data.parentEmail || "").trim(), schoolId: sidDigits };
+    const teacherEmail = normEmail(data.teacherEmail); const studentEmail = normEmail(data.email); const parentEmail = normEmail(data.parentEmail);
+    if (!teacherEmail || !studentEmail || !parentEmail) return { ok: false, msg: "أدخل بريد المعلم وبريد الطالب وبريد ولي الأمر لإكمال الربط وإرسال الشهادات." };
+    const rec = { key, name: data.name.trim(), grade: g, block: data.block, stream: data.stream === "B" ? "B" : "A", teacherEmail, email: studentEmail, parentEmail, schoolId: sidDigits, needsReview: false };
     setStudents((prev) => [...prev, rec]); putRecord(REC.student, rec.key, rec);
     log(actor, "إضافة طالب يدويًا", `${data.name.trim()} — ${key}`);
     return { ok: true };
@@ -5804,7 +5841,7 @@ export default function App() {
                 <div style={{ fontWeight: 600 }}>{i + 1}. {b.q} <Chip>{QTYPE[b.t]}</Chip></div><div style={{ color: T.green }}>الصواب: {correctText(b)}</div><div style={{ color: T.inkSoft }}>{b.e}</div></div>))}
             </div>
           </div>
-        ) : <TeacherHome teacherName={user.name} courses={courses} attempts={attempts} progress={progress} students={students}
+        ) : <TeacherHome teacherName={user.name} teacherEmail={user.email} courses={courses} attempts={attempts} progress={progress} students={students}
               onNew={() => nav({ n: "gen" })} onManual={() => nav({ n: "manual" })} onPaste={() => nav({ n: "paste" })}
               onView={(id) => nav({ n: "course", id })} onEdit={(id) => nav({ n: "manual", id, edit: true })}
               onPublish={(id) => { patchCourse(id, { status: "published" }); log(user.name, "نشر كورس", id); }}
