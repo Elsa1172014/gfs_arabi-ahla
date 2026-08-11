@@ -1,6 +1,5 @@
 // وسيط آمن بين الواجهة و Google Gemini API.
 // المفتاح يبقى على الخادم فقط داخل Vercel باسم GEMINI_API_KEY.
-// يعيد دائمًا { text } عند النجاح، و { error, details } عند الفشل لتسهيل التشخيص.
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -36,7 +35,6 @@ export default async function handler(req, res) {
 
     const parts = [];
 
-    // إضافة الصورة إن وُجدت
     if (imageBase64) {
       parts.push({
         inline_data: {
@@ -46,7 +44,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // إضافة النص
     parts.push({
       text: String(prompt),
     });
@@ -93,7 +90,6 @@ export default async function handler(req, res) {
       };
     }
 
-    // إذا أعاد Google خطأ
     if (!response.ok) {
       const googleError =
         data?.error?.message ||
@@ -121,7 +117,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // استخراج النص من Gemini
     const text =
       (
         data?.candidates?.[0]?.content?.parts || []
@@ -130,7 +125,6 @@ export default async function handler(req, res) {
         .join("")
         .trim();
 
-    // إذا نجح الطلب لكن لم يرجع نصًا
     if (!text) {
       console.error(
         "Gemini returned no text:",
@@ -151,7 +145,6 @@ export default async function handler(req, res) {
       });
     }
 
-    // نجاح
     return res.status(200).json({
       text,
     });
