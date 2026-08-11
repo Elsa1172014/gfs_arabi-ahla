@@ -4339,6 +4339,241 @@ function SendReportModal({ student, courses, progress, attempts, onSend, onClose
   );
 }
 
+/* ==================== لوحة المعلم التحليلية التفاعلية ==================== */
+function TeacherDashboard({ students, courses, attempts, progress, onNavigate }) {
+  const [grade, setGrade] = useState("ALL");
+  const [block, setBlock] = useState("ALL");
+  const [courseId, setCourseId] = useState("ALL");
+  const [days, setDays] = useState(30);
+  const [masteryFocus, setMasteryFocus] = useState(null);
+
+  const grades = Array.from(new Set([
+    ...students.map((s) => String(s.grade || "")).filter(Boolean),
+    ...courses.map((c) => String(c.grade || "")).filter(Boolean),
+  ])).sort((a, b) => Number(a) - Number(b));
+  const blocks = Array.from(new Set(students.map((s) => String(s.block || "")).filter(Boolean))).sort();
+
+  const scopedStudents = students.filter((s) => {
+    if (grade !== "ALL" && String(s.grade) !== grade) return false;
+    if (block !== "ALL" && String(s.block) !== block) return false;
+    if (courseId !== "ALL") {
+      const c = courses.find((x) => x.id === courseId);
+      if (!c || !assignedTo(c, s)) return false;
+    }
+    return true;
+  });
+  const studentKeys = new Set(scopedStudents.map((s) => s.key));
+  const scopedCourses = courses.filter((c) => {
+    if (courseId !== "ALL" && c.id !== courseId) return false;
+    if (grade !== "ALL" && String(c.grade) !== grade) return false;
+    return true;
+  });
+  const courseIds = new Set(scopedCourses.map((c) => c.id));
+  const cutoff = new Date(Date.now() - days * 86400000);
+  const scopedAttempts = attempts.filter((a) => studentKeys.has(a.student) && courseIds.has(a.course));
+  const periodAttempts = scopedAttempts.filter((a) => !a.at || new Date(a.at) >= cutoff);
+
+  const studentRows = scopedStudents.map((s) => {
+    const assignedCourses = scopedCourses.filter((c) => c.status === "published" && assignedTo(c, s));
+    const assignedIds = new Set(assignedCourses.map((c) => c.id));
+    const allAt = scopedAttempts.filter((a) => a.student === s.key && assignedIds.has(a.course));
+    const recentAt = periodAttempts.filter((a) => a.student === s.key && assignedIds.has(a.course));
+    const started = assignedCourses.some((c) => {
+      const p = progress[pKey(s.key, c.id)] || { done: [] };
+      return (p.done || []).length > 0 || allAt.some((a) => a.course === c.id);
+    });
+    const completed = assignedCourses.some((c) => allAt.some((a) => a.course === c.id && a.passed));
+    const avg = recentAt.length ? Math.round(recentAt.reduce((sum, a) => sum + Number(a.pct || 0), 0) / recentAt.length)
+      : allAt.length ? Math.round(allAt.reduce((sum, a) => sum + Number(a.pct || 0), 0) / allAt.length) : null;
+    const exhausted = assignedCourses.some((c) => {
+      const p = progress[pKey(s.key, c.id)] || { cycle: 1 };
+      const cycle = p.cycle || 1;
+      const tries = allAt.filter((a) => a.course === c.id && a.cycle === cycle).length;
+      return tries >= (c.tries || phaseFor(c.grade).tries) && !allAt.some((a) => a.course === c.id && a.passed);
+    });
+    const detail = recentAt.flatMap((a) => a.detail || []);
+    const sm = {};
+    detail.forEach((d) => {
+      const key = d.sn || "غير مصنّف";
+      sm[key] = sm[key] || { c: 0, t: 0 };
+      sm[key].t += 1;
+      if (d.ok) sm[key].c += 1;
+    });
+    const weak = Object.entries(sm).map(([k, v]) => ({ k, pct: Math.round(v.c / v.t * 100) })).sort((a, b) => a.pct - b.pct)[0];
+    const intervention = exhausted || (avg !== null && avg < 60);
+    return { ...s, assignedCount: assignedCourses.length, attemptsCount: recentAt.length, started, completed, avg, exhausted, intervention, weak: weak?.k || "—" };
+  });
+
+  const activeRows = studentRows.filter((r) => r.started);
+  const completedRows = studentRows.filter((r) => r.completed);
+  const interventionRows = studentRows.filter((r) => r.intervention).sort((a, b) => (a.avg ?? 999) - (b.avg ?? 999));
+  const avgMastery = periodAttempts.length ? Math.round(periodAttempts.reduce((sum, a) => sum + Number(a.pct || 0), 0) / periodAttempts.length) : null;
+
+  const masteryGroups = [
+    { key: "mastered", label: "متقن", count: studentRows.filter((r) => r.avg !== null && r.avg >= 80).length, color: T.green },
+    { key: "learning", label: "قيد التعلم", count: studentRows.filter((r) => r.avg !== null && r.avg >= 60 && r.avg < 80).length, color: T.gold },
+    { key: "intervention", label: "يحتاج تدخّلًا", count: studentRows.filter((r) => r.avg !== null && r.avg < 60).length, color: T.brick },
+    { key: "notStarted", label: "لم يبدأ", count: studentRows.filter((r) => !r.started).length, color: "#AAB8B6" },
+  ];
+  const masteryTotal = masteryGroups.reduce((s, x) => s + x.count, 0) || 1;
+  let angle = 0;
+  const donutStops = masteryGroups.map((g) => {
+    const start = angle;
+    angle += (g.count / masteryTotal) * 360;
+    return `${g.color} ${start}deg ${angle}deg`;
+  }).join(",");
+
+  const skillMap = {};
+  periodAttempts.forEach((a) => (a.detail || []).forEach((d) => {
+    const key = d.sn || "غير مصنّف";
+    skillMap[key] = skillMap[key] || { c: 0, t: 0 };
+    skillMap[key].t += 1;
+    if (d.ok) skillMap[key].c += 1;
+  }));
+  const skillGaps = Object.entries(skillMap)
+    .map(([k, v]) => ({ k, pct: Math.round(v.c / v.t * 100), n: v.t }))
+    .sort((a, b) => a.pct - b.pct);
+
+  const coursePerformance = scopedCourses.map((c) => {
+    const ca = periodAttempts.filter((a) => a.course === c.id);
+    const assigned = scopedStudents.filter((s) => assignedTo(c, s));
+    const avg = ca.length ? Math.round(ca.reduce((sum, a) => sum + Number(a.pct || 0), 0) / ca.length) : null;
+    const passedKeys = new Set(ca.filter((a) => a.passed).map((a) => a.student));
+    const completion = assigned.length ? Math.round(passedKeys.size / assigned.length * 100) : 0;
+    return { id: c.id, title: c.title, avg, completion, attempts: ca.length, assigned: assigned.length };
+  }).filter((x) => x.assigned > 0 || x.attempts > 0).sort((a, b) => (b.avg ?? -1) - (a.avg ?? -1));
+
+  const daySeries = [];
+  const seriesDays = Math.min(days, 30);
+  for (let i = seriesDays - 1; i >= 0; i--) {
+    const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - i);
+    const next = new Date(d); next.setDate(next.getDate() + 1);
+    const da = periodAttempts.filter((a) => { const x = new Date(a.at); return x >= d && x < next; });
+    const avg = da.length ? Math.round(da.reduce((s, a) => s + Number(a.pct || 0), 0) / da.length) : null;
+    const pass = da.length ? Math.round(da.filter((a) => a.passed).length / da.length * 100) : null;
+    const active = scopedStudents.length ? Math.round(new Set(da.map((a) => a.student)).size / scopedStudents.length * 100) : null;
+    daySeries.push({ d, avg, pass, active });
+  }
+  const chartW = 680, chartH = 220, padX = 34, padY = 24;
+  const xFor = (i) => padX + (daySeries.length <= 1 ? 0 : i * (chartW - padX * 2) / (daySeries.length - 1));
+  const yFor = (v) => chartH - padY - (Math.max(0, Math.min(100, v)) / 100) * (chartH - padY * 2);
+  const pathFor = (field) => {
+    const pts = daySeries.map((p, i) => p[field] === null ? null : [xFor(i), yFor(p[field])]);
+    let path = "", started = false;
+    pts.forEach((p) => {
+      if (!p) { started = false; return; }
+      path += `${started ? " L" : "M"}${p[0].toFixed(1)},${p[1].toFixed(1)}`;
+      started = true;
+    });
+    return path;
+  };
+  const hasTrend = periodAttempts.some((a) => a.at);
+
+  const recent = periodAttempts.slice().sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 7);
+  const focusGroup = masteryFocus ? masteryGroups.find((g) => g.key === masteryFocus) : null;
+  const focusStudents = !focusGroup ? [] : studentRows.filter((r) => {
+    if (masteryFocus === "mastered") return r.avg !== null && r.avg >= 80;
+    if (masteryFocus === "learning") return r.avg !== null && r.avg >= 60 && r.avg < 80;
+    if (masteryFocus === "intervention") return r.avg !== null && r.avg < 60;
+    return !r.started;
+  });
+
+  const kpi = (label, value, icon, note, tone, onClick) => (
+    <button type="button" onClick={onClick} className="card" style={{ padding: 18, textAlign: "right", cursor: onClick ? "pointer" : "default", background: "#fff", borderColor: tone ? `${tone}55` : T.rule, minHeight: 128, fontFamily: "inherit" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: tone || T.inkSoft }}>{label}</span>
+        <span style={{ width: 38, height: 38, borderRadius: 12, display: "grid", placeItems: "center", background: tone ? `${tone}16` : T.greenSoft, fontSize: 20 }}>{icon}</span>
+      </div>
+      <div style={{ fontSize: 31, lineHeight: 1.2, fontWeight: 800, marginTop: 8, color: T.ink }}>{value}</div>
+      <div style={{ fontSize: 11, color: T.inkSoft, marginTop: 5 }}>{note}</div>
+    </button>
+  );
+
+  return <>
+    <div className="card" style={{ padding: 14, marginBottom: 16, background: "#fff" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10 }}>
+        <div><label className="lbl">الصف</label><select className="inp" value={grade} onChange={(e) => { setGrade(e.target.value); setCourseId("ALL"); }}><option value="ALL">كل الصفوف</option>{grades.map((g) => <option key={g} value={g}>الصف {g}</option>)}</select></div>
+        <div><label className="lbl">البلوك</label><select className="inp" value={block} onChange={(e) => setBlock(e.target.value)}><option value="ALL">كل البلوكات</option>{blocks.map((b) => <option key={b} value={b}>{b}</option>)}</select></div>
+        <div><label className="lbl">الكورس</label><select className="inp" value={courseId} onChange={(e) => setCourseId(e.target.value)}><option value="ALL">كل الكورسات</option>{courses.filter((c) => grade === "ALL" || String(c.grade) === grade).map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}</select></div>
+        <div><label className="lbl">الفترة التحليلية</label><select className="inp" value={days} onChange={(e) => setDays(Number(e.target.value))}><option value={7}>آخر 7 أيام</option><option value={30}>آخر 30 يومًا</option><option value={90}>آخر 90 يومًا</option></select></div>
+      </div>
+    </div>
+
+    <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(175px,1fr))", marginBottom: 16 }}>
+      {kpi("طلابي", studentRows.length, "🎓", "وفق الفلاتر الحالية", T.gold, () => onNavigate("s"))}
+      {kpi("بدأوا التعلّم", activeRows.length, "▶", studentRows.length ? `${Math.round(activeRows.length / studentRows.length * 100)}% من الطلاب` : "لا توجد بيانات", T.green, () => onNavigate("s"))}
+      {kpi("أكملوا كورسًا", completedRows.length, "✓", studentRows.length ? `${Math.round(completedRows.length / studentRows.length * 100)}% من الطلاب` : "لا توجد بيانات", T.navy, () => onNavigate("res"))}
+      {kpi("يحتاجون تدخّلًا", interventionRows.length, "⚠", interventionRows.length ? "أداء أقل من 60% أو محاولات مستنفدة" : "لا توجد حالات عاجلة", T.brick, () => onNavigate("s"))}
+      {kpi("متوسط الإتقان", avgMastery === null ? "—" : `${avgMastery}%`, "◎", periodAttempts.length ? `${periodAttempts.length} محاولة في الفترة` : "يظهر بعد أول اختبار", T.green, () => onNavigate("res"))}
+    </div>
+
+    <div className="grid" style={{ gridTemplateColumns: "minmax(280px,.9fr) minmax(420px,1.7fr) minmax(280px,.9fr)", marginBottom: 16 }}>
+      <div className="card" style={{ padding: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}><h3>خريطة الضعف المهاري</h3><span style={{ fontSize: 11, color: T.inkSoft }}>من الإجابات الفعلية</span></div>
+        {skillGaps.length === 0 ? <div style={{ color: T.inkSoft, padding: "34px 0", textAlign: "center" }}>ستظهر بعد أول اختبار ضمن الفترة المحددة.</div> : skillGaps.slice(0, 6).map((g) => <div key={g.k} style={{ marginBottom: 13 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, fontSize: 12 }}><span>{g.k}</span><span className="mono" style={{ color: g.pct < 60 ? T.brick : g.pct < 75 ? T.gold : T.green }}>{g.pct}%</span></div>
+          <div className="inkbar" title={`${g.n} إجابة`}><i style={{ width: `${g.pct}%`, background: g.pct < 60 ? T.brick : g.pct < 75 ? T.gold : T.green }} /></div>
+        </div>)}
+        {skillGaps.length > 6 && <button className="btn btn-q" onClick={() => onNavigate("res")}>عرض التحليل الكامل ←</button>}
+      </div>
+
+      <div className="card" style={{ padding: 18, minWidth: 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}><div><h3>نبض التعلّم</h3><div style={{ fontSize: 11, color: T.inkSoft }}>النشاط والنتائج والنجاح عبر الزمن</div></div>
+          <div style={{ display: "flex", gap: 12, fontSize: 11, flexWrap: "wrap" }}><span style={{ color: T.green }}>● متوسط النتائج</span><span style={{ color: T.navy }}>● نسبة النجاح</span><span style={{ color: T.gold }}>● الطلاب النشطون</span></div></div>
+        {!hasTrend ? <div style={{ height: 220, display: "grid", placeItems: "center", color: T.inkSoft }}>لا توجد محاولات مؤرخة في الفترة المحددة.</div> : <div style={{ overflowX: "auto", marginTop: 8 }}>
+          <svg viewBox={`0 0 ${chartW} ${chartH}`} style={{ width: "100%", minWidth: 520, height: 240 }} role="img" aria-label="رسم نبض التعلم">
+            {[0,25,50,75,100].map((v) => <g key={v}><line x1={padX} x2={chartW-padX} y1={yFor(v)} y2={yFor(v)} stroke={T.ruleSoft} strokeWidth="1"/><text x="4" y={yFor(v)+4} fontSize="9" fill={T.inkSoft}>{v}%</text></g>)}
+            <path d={pathFor("avg")} fill="none" stroke={T.green} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={pathFor("pass")} fill="none" stroke={T.navy} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d={pathFor("active")} fill="none" stroke={T.gold} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            {daySeries.map((p,i) => p.avg === null ? null : <circle key={i} cx={xFor(i)} cy={yFor(p.avg)} r="3" fill={T.green}><title>{p.d.toLocaleDateString("ar-AE")} — متوسط {p.avg}%</title></circle>)}
+            {daySeries.filter((_,i) => i === 0 || i === daySeries.length-1 || i % Math.max(1,Math.floor(daySeries.length/4)) === 0).map((p) => { const i = daySeries.indexOf(p); return <text key={i} x={xFor(i)} y={chartH-3} textAnchor="middle" fontSize="9" fill={T.inkSoft}>{p.d.toLocaleDateString("ar-AE",{day:"numeric",month:"short"})}</text>; })}
+          </svg>
+        </div>}
+      </div>
+
+      <div className="card" style={{ padding: 18 }}>
+        <h3>توزيع مستوى الإتقان</h3>
+        <div style={{ display: "grid", placeItems: "center", padding: "16px 0 12px" }}>
+          <div style={{ width: 154, height: 154, borderRadius: "50%", background: masteryTotal > 0 ? `conic-gradient(${donutStops})` : T.ruleSoft, display: "grid", placeItems: "center", boxShadow: `inset 0 0 0 1px ${T.ruleSoft}` }}>
+            <div style={{ width: 92, height: 92, borderRadius: "50%", background: "#fff", display: "grid", placeItems: "center", textAlign: "center", lineHeight: 1.25 }}><div><strong style={{ fontSize: 25 }}>{studentRows.length}</strong><div style={{ fontSize: 11, color: T.inkSoft }}>طالب</div></div></div>
+          </div>
+        </div>
+        <div style={{ display: "grid", gap: 7 }}>{masteryGroups.map((g) => <button key={g.key} className="btn btn-q" onClick={() => setMasteryFocus(masteryFocus === g.key ? null : g.key)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: masteryFocus === g.key ? `${g.color}12` : "transparent", padding: "5px 7px" }}><span><i style={{ display: "inline-block", width: 9, height: 9, borderRadius: 3, background: g.color, marginLeft: 7 }}/>{g.label}</span><strong>{g.count}</strong></button>)}</div>
+        {focusGroup && <div style={{ marginTop: 10, borderTop: `1px solid ${T.ruleSoft}`, paddingTop: 9, fontSize: 11 }}><strong>{focusGroup.label}:</strong> {focusStudents.slice(0,5).map((s) => s.name).join("، ") || "لا أحد"}{focusStudents.length > 5 ? ` +${focusStudents.length-5}` : ""}</div>}
+      </div>
+    </div>
+
+    <div className="grid" style={{ gridTemplateColumns: "minmax(300px,.85fr) minmax(440px,1.35fr) minmax(300px,.85fr)", marginBottom: 16 }}>
+      <div className="card" style={{ padding: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><h3>آخر نشاط للطلاب</h3><button className="btn btn-q" onClick={() => onNavigate("res")}>كل النشاط</button></div>
+        {recent.length === 0 ? <p style={{ color: T.inkSoft }}>لا نشاط في الفترة المحددة.</p> : recent.map((a) => { const s = students.find((x) => x.key === a.student); const c = courses.find((x) => x.id === a.course); return <div key={a.id} style={{ padding: "9px 0", borderBottom: `1px solid ${T.ruleSoft}`, display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}><div><strong style={{ fontSize: 12 }}>{s?.name || a.student}</strong><div style={{ fontSize: 11, color: T.inkSoft }}>{c?.title || a.course} — {a.passed ? "اجتاز الاختبار" : "أنهى محاولة"}</div></div><div style={{ textAlign: "left" }}><span className="mono" style={{ color: a.passed ? T.green : T.brick }}>{a.pct}%</span><div style={{ fontSize: 9, color: T.inkSoft }}>{a.at ? dateAr(a.at) : ""}</div></div></div>; })}
+      </div>
+
+      <div className="card" style={{ padding: 18, overflowX: "auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><div><h3>طلاب يحتاجون تدخّلًا</h3><div style={{ fontSize: 11, color: T.inkSoft }}>يُرتّب تلقائيًا من الأكثر احتياجًا</div></div><button className="btn btn-o" onClick={() => onNavigate("s")}>عرض الطلاب</button></div>
+        {interventionRows.length === 0 ? <div style={{ padding: "30px 0", textAlign: "center", color: T.green }}>لا توجد حالات تدخل وفق البيانات الحالية ✓</div> : <table className="tbl" style={{ marginTop: 10 }}><thead><tr><th>الطالب</th><th>المتوسط</th><th>المحاولات</th><th>أضعف مهارة</th><th>الحالة</th></tr></thead><tbody>{interventionRows.slice(0,6).map((r) => <tr key={r.key}><td><strong>{r.name}</strong><div style={{ fontSize: 10, color: T.inkSoft }}>صف {r.grade} · {r.block}</div></td><td className="mono" style={{ color: (r.avg ?? 0) < 60 ? T.brick : T.gold }}>{r.avg === null ? "—" : `${r.avg}%`}</td><td>{r.attemptsCount}</td><td>{r.weak}</td><td><Chip tone="r">{r.exhausted ? "محاولات مستنفدة" : "أداء منخفض"}</Chip></td></tr>)}</tbody></table>}
+      </div>
+
+      <div className="card" style={{ padding: 18 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}><h3>الأداء حسب الكورس</h3><button className="btn btn-q" onClick={() => onNavigate("c")}>كل الكورسات</button></div>
+        {coursePerformance.length === 0 ? <p style={{ color: T.inkSoft }}>لا توجد بيانات أداء للكورسات المحددة.</p> : coursePerformance.slice(0,6).map((c) => <div key={c.id} style={{ marginTop: 12 }}><div style={{ display: "flex", justifyContent: "space-between", gap: 8, fontSize: 11 }}><span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.title}</span><span className="mono">{c.avg === null ? "—" : `${c.avg}%`}</span></div><Bar pct={c.avg || 0} tone={c.avg === null ? T.rule : c.avg < 60 ? T.brick : c.avg < 75 ? T.gold : T.green}/><div style={{ fontSize: 9, color: T.inkSoft, marginTop: 2 }}>إكمال {c.completion}% · {c.attempts} محاولة</div></div>)}
+      </div>
+    </div>
+
+    <div className="card" style={{ padding: 18, background: `linear-gradient(110deg,${T.greenSoft},#fff 55%,${T.goldSoft})`, borderColor: `${T.green}44` }}>
+      <div style={{ display: "flex", gap: 16, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ flex: "1 1 480px" }}><h3>🤖 مساعد المعلم الذكي</h3><div style={{ fontSize: 13, marginTop: 5 }}>
+          {interventionRows.length > 0 && skillGaps.length > 0 ? <>تُظهر بياناتك أن <strong>{interventionRows.length}</strong> طالبًا يحتاجون تدخلًا، وأضعف مهارة مشتركة هي <strong>«{skillGaps[0].k}»</strong> بنسبة إتقان <strong>{skillGaps[0].pct}%</strong>.</> :
+            skillGaps.length > 0 ? <>أضعف مهارة حاليًا هي <strong>«{skillGaps[0].k}»</strong> بنسبة <strong>{skillGaps[0].pct}%</strong>. لا توجد حالات تدخل عاجلة وفق الفلاتر الحالية.</> : <>أحتاج إلى نتائج اختبارات فعلية حتى أقدّم توصية مبنية على البيانات.</>}
+        </div><div style={{ fontSize: 10, color: T.inkSoft, marginTop: 4 }}>هذا الملخص مشتق مباشرة من النتائج المعروضة؛ التحليل التوليدي المتقدم متاح في تبويب المساعد الذكي.</div></div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}><button className="btn btn-o" onClick={() => onNavigate("res")}>عرض التحليل التفصيلي</button><button className="btn btn-p" onClick={() => onNavigate("ai")}>فتح المساعد الذكي</button></div>
+      </div>
+    </div>
+  </>;
+}
+
+
 /* ==================== لوحة المعلم الكاملة ==================== */
 function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
   const [tab, setTab] = useState("d");
@@ -4394,74 +4629,7 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
           <button key={k} className="tabbtn" onClick={() => setTab(k)} style={{ background: tab === k ? T.ink : T.paper, color: tab === k ? "#fff" : T.inkSoft }}>{l}</button>))}
       </div>
 
-      {tab === "d" && (<>
-        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", marginBottom: 22 }}>
-          <Stat label="طلابك" value={students2.length} /><Stat label="لم يبدأوا" value={notStarted.length} tone={notStarted.length ? T.gold : T.ink} />
-          <Stat label="يحتاجون تدخّلًا" value={stuckList.length} tone={stuckList.length ? T.brick : T.ink} />
-          <Stat label="المحاولات" value={attempts2.length} /><Stat label="كورساتك المنشورة" value={mine.filter((c) => c.status === "published").length} />
-        </div>
-        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))" }}>
-          <div className="card" style={{ padding: 20 }}><h3 style={{ marginBottom: 10 }}>يحتاجون تدخّلًا</h3>
-            {stuckList.length === 0 ? <p style={{ color: T.inkSoft, margin: 0 }}>لا أحد استنفد محاولاته.</p> : stuckList.map((r) => (
-              <div key={r.key} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${T.ruleSoft}` }}>
-                <span>{r.name}</span><Chip tone="r">الصف {r.grade} — {r.block}</Chip></div>))}</div>
-          <div className="card" style={{ padding: 20 }}><h3 style={{ marginBottom: 10 }}>لم يدخلوا</h3>
-            {notStarted.length === 0 ? <p style={{ color: T.inkSoft, margin: 0 }}>جميع الطلاب بدأوا.</p> : notStarted.map((r) => (
-              <div key={r.key} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${T.ruleSoft}` }}>
-                <span>{r.name}</span><Chip tone="a">{r.assigned} كورس</Chip></div>))}</div>
-        </div>
-        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", marginTop: 16 }}>
-          <div className="card" style={{ padding: 20 }}><h3>خريطة الضعف المهاري</h3>
-            {gaps.length === 0 ? <p style={{ color: T.inkSoft }}>تظهر بعد أول اختبار.</p> : gaps.slice(0, 8).map((g) => (
-              <div key={g.k} style={{ marginBottom: 12 }}><div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}><span>{g.k}</span>
-                <span className="mono" style={{ color: g.pct < 60 ? T.brick : g.pct < 75 ? T.gold : T.green }}>{g.pct}%</span></div>
-                <Bar pct={g.pct} tone={g.pct < 60 ? T.brick : g.pct < 75 ? T.gold : T.green} /></div>))}</div>
-          <div className="card" style={{ padding: 20 }}><h3>الأداء حسب نوع السؤال</h3>
-            {Object.keys(tm).length === 0 ? <p style={{ color: T.inkSoft }}>تظهر بعد أول اختبار.</p> : Object.entries(tm).map(([k, v]) => {
-              const pct = Math.round(v.c / v.t * 100);
-              return (<div key={k} style={{ marginBottom: 12 }}><div style={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}><span>{QTYPE[k]}</span><span className="mono">{pct}%</span></div>
-                <Bar pct={pct} tone={pct < 60 ? T.brick : pct < 75 ? T.gold : T.green} /></div>); })}</div>
-        </div>
-
-        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))", marginTop: 16 }}>
-          <div className="card" style={{ padding: 20 }}>
-            <h3 style={{ marginBottom: 10 }}>آخر نشاط للطلاب</h3>
-            {attempts2.length === 0 ? <p style={{ color: T.inkSoft, margin: 0 }}>لا نشاط بعد.</p> :
-              attempts2.slice().sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 6).map((a) => {
-                const s = students.find((x) => x.key === a.student); const c = mine.find((x) => x.id === a.course);
-                return <div key={a.id} style={{ fontSize: 13, padding: "6px 0", borderBottom: `1px solid ${T.ruleSoft}`, display: "flex", justifyContent: "space-between" }}>
-                  <span>{s?.name || a.student} — {c?.title || a.course}</span><span style={{ color: T.inkSoft }}>{dateAr(a.at)}</span></div>;
-              })}
-          </div>
-          <div className="card" style={{ padding: 20 }}>
-            <h3 style={{ marginBottom: 10 }}>آخر الاختبارات المنجزة</h3>
-            {attempts2.length === 0 ? <p style={{ color: T.inkSoft, margin: 0 }}>لا اختبارات بعد.</p> :
-              attempts2.slice().sort((a, b) => new Date(b.at) - new Date(a.at)).slice(0, 6).map((a) => {
-                const c = mine.find((x) => x.id === a.course);
-                return <div key={a.id} style={{ fontSize: 13, padding: "6px 0", borderBottom: `1px solid ${T.ruleSoft}`, display: "flex", justifyContent: "space-between" }}>
-                  <span>{c?.title || a.course}</span><span className="mono" style={{ color: a.passed ? T.green : T.brick }}>{a.pct}%</span></div>;
-              })}
-          </div>
-          <div className="card" style={{ padding: 20 }}>
-            <h3 style={{ marginBottom: 10 }}>آخر الكورسات المضافة</h3>
-            {mine.length === 0 ? <p style={{ color: T.inkSoft, margin: 0 }}>لا كورسات بعد.</p> :
-              mine.slice().reverse().slice(0, 6).map((c) => (
-                <div key={c.id} style={{ fontSize: 13, padding: "6px 0", borderBottom: `1px solid ${T.ruleSoft}`, display: "flex", justifyContent: "space-between" }}>
-                  <span>{c.title}</span><span style={{ color: T.inkSoft }}>{c.status === "published" ? "منشور" : "مسودة"}</span></div>
-              ))}
-          </div>
-          <div className="card" style={{ padding: 20, background: T.greenSoft }}>
-            <h3 style={{ marginBottom: 10 }}>🤖 تنبيهات الذكاء الاصطناعي</h3>
-            <ul style={{ margin: 0, paddingInlineStart: 18, fontSize: 13, lineHeight: 1.9 }}>
-              {stuckList.length > 0 && <li>{stuckList.length} طالبًا يحتاجون تدخّلًا عاجلًا — راجع تبويب "طلابي".</li>}
-              {gaps.length > 0 && gaps[0].pct < 60 && <li>مهارة «{gaps[0].k}» الأضعف حاليًّا ({gaps[0].pct}%) — فكّر في درس علاجي.</li>}
-              {notStarted.length > 0 && <li>{notStarted.length} طالبًا لم يبدؤوا كورسًا مُسنَدًا لهم.</li>}
-              {stuckList.length === 0 && notStarted.length === 0 && <li>لا تنبيهات عاجلة حاليًّا 🎉</li>}
-            </ul>
-            <p style={{ fontSize: 11, color: T.inkSoft, marginTop: 8 }}>هذه ملاحظات مبنية على أرقامك الفعلية مباشرة — لتحليل أعمق وتوليد محتوى، افتح تبويب "المساعد الذكي".</p>
-          </div>
-        </div>
-      </>)}
+      {tab === "d" && <TeacherDashboard students={students2} courses={mine} attempts={attempts2} progress={progress} onNavigate={setTab} />}
 
       {tab === "s" && (<div className="card" style={{ padding: 20, overflowX: "auto" }}>
         <h3 style={{ marginBottom: 12 }}>تحليل الطلاب وتقارير أولياء الأمور</h3>
