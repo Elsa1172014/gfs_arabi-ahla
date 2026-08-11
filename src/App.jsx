@@ -2558,6 +2558,7 @@ async function listRecords(prefix) {
   } catch { return []; }
 }
 async function putRecord(prefix, id, obj) { try { await window.storage.set(prefix + safeId(id), JSON.stringify(obj), true); return true; } catch { return false; } }
+async function readRecord(prefix, id) { try { const r = await window.storage.get(prefix + safeId(id), true); return r && r.value ? JSON.parse(r.value) : null; } catch { return null; } }
 async function deleteRecord(prefix, id) { try { await window.storage.delete(prefix + safeId(id), true); return true; } catch { return false; } }
 const uid = () => Math.random().toString(36).slice(2, 10);
 const shuffle = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
@@ -3522,20 +3523,6 @@ function Result({ attempt, course, onBack, onCert, onRetry, canRetry }) {
   );
 }
 function Certificate({ attempt, course, user, onBack }) {
-  const [email, setEmail] = useState(user.email || "");
-  const [sent, setSent] = useState(false);
-  const sendMail = () => {
-    if (!email.trim()) return;
-    const subject = `شهادة إتقان — ${course.title}`;
-    const body = [
-      `تهانينا ${user.name}،`, "",
-      `أتقنت مهارة «${course.title}» بدرجة ${attempt.pct}% بتاريخ ${dateAr(attempt.at)}.`,
-      `رقم الشهادة: ${attempt.serial}`, `رمز التحقق: ${attempt.token}`, "",
-      "لعرض شهادتك الكاملة أو طباعتها، عُد إلى منصة GFS بالعربي أحلى وافتح صفحة هذا الكورس.",
-    ].join("\n");
-    window.location.href = `mailto:${encodeURIComponent(email.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSent(true);
-  };
   return (
     <div className="wrap" style={{ paddingBottom: 60, maxWidth: 720 }}>
       <div className="card" style={{ padding: 40, textAlign: "center", border: `2px solid ${T.gold}`, background: "#FFFDF8" }}>
@@ -3551,14 +3538,9 @@ function Certificate({ attempt, course, user, onBack }) {
         <div style={{ borderTop: `1px solid ${T.rule}`, paddingTop: 16, fontSize: 12, color: T.inkSoft }}>
           <div>رقم الشهادة <span className="mono">{attempt.serial}</span></div><div>رمز التحقق <span className="mono">{attempt.token}</span></div></div>
       </div>
-      <div className="card noprint" style={{ padding: 16, marginTop: 16, background: T.paper }}>
-        <h4 style={{ marginBottom: 8 }}>أرسل الشهادة إلى بريدك</h4>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <input className="inp" type="email" style={{ flex: 1, minWidth: 200 }} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="بريدك الإلكتروني" />
-          <button className="btn btn-o" onClick={sendMail}>افتح بريدي وأرسل</button>
-        </div>
-        {sent && <div style={{ color: T.green, fontSize: 13, marginTop: 8 }}>فُتح تطبيق بريدك برسالة جاهزة — اضغط "إرسال" هناك لإكمال العملية.</div>}
-        <p style={{ fontSize: 12, color: T.inkSoft, marginTop: 8, marginBottom: 0 }}>هذا يفتح تطبيق البريد لديك برسالة معبَّأة مسبقًا؛ لا يوجد إرسال آلي من خادم خارجي في هذا الإصدار.</p>
+      <div className="card noprint" style={{ padding: 16, marginTop: 16, background: T.greenSoft, borderColor: T.green }}>
+        <h4 style={{ marginBottom: 6 }}>✅ تم إصدار الشهادة</h4>
+        <p style={{ fontSize: 13, color: T.inkSoft, margin: 0 }}>ترسل المنصة الشهادة تلقائيًا إلى بريد الطالب وبريد ولي الأمر المسجلين فور اجتياز الكورس، دون تدخل من المعلم.</p>
       </div>
       <div className="noprint" style={{ display: "flex", gap: 8, marginTop: 16 }}>
         <button className="btn btn-g" onClick={() => window.print()}>اطبع أو احفظ PDF</button><button className="btn btn-q" onClick={onBack}>عودة</button></div>
@@ -4302,8 +4284,17 @@ function skillMastery(at) {
 }
 function SendReportModal({ student, courses, progress, attempts, onSend, onClose }) {
   const rows = buildReport(student, courses, progress, attempts);
-  const [phone, setPhone] = useState(""); const [email, setEmail] = useState(""); const [consent, setConsent] = useState(false);
+  const [email, setEmail] = useState(student.parentEmail || "");
   const [done, setDone] = useState(null);
+  const [err, setErr] = useState("");
+  const send = () => {
+    const to = normEmail(email);
+    if (!to) return setErr("بريد ولي الأمر غير مسجل. أضفه أولًا إلى بيانات الطالب.");
+    setErr("");
+    const token = "PR-" + uid().toUpperCase();
+    onSend(token, { email: to, rows });
+    setDone(token);
+  };
   return (
     <div className="card" style={{ padding: 20, marginTop: 10, background: T.paper }}>
       <h4>تقرير {student.name}</h4>
@@ -4312,28 +4303,16 @@ function SendReportModal({ student, courses, progress, attempts, onSend, onClose
           <td className="mono">{r.bestScore === null ? "—" : r.bestScore + "%"}</td><td>{r.attempts}</td>
           <td style={{ fontSize: 12, color: T.green }}>{r.strong.join("، ") || "—"}</td>
           <td style={{ fontSize: 12, color: T.brick }}>{r.weak.join("، ") || "لا يوجد"}</td></tr>))}</tbody></table>
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", marginTop: 14 }}>
-        <div><label className="lbl">بريد ولي الأمر المسجَّل رسميًا</label><input className="inp" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="parent@example.com" /></div>
-        <div><label className="lbl">هاتف ولي الأمر المسجَّل (لإرسال يدوي لاحقًا)</label><input className="inp" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+9715XXXXXXXX" /></div>
+      <div style={{ marginTop: 14 }}>
+        <label className="lbl">بريد ولي الأمر</label>
+        <input className="inp" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="parent@example.com" />
       </div>
-      <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, fontSize: 13 }}>
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        أؤكد أن هذا هو رقم/بريد ولي الأمر المسجَّل والمصرَّح به في نظام المدرسة.</label>
-      <div className="card" style={{ padding: 10, background: T.goldSoft, borderColor: T.gold, marginTop: 10, fontSize: 12 }}>
-        الإرسال الفعلي عبر SMS أو WhatsApp Business API يتطلب اعتمادًا مؤسسيًا خارج هذا التطبيق. هذا الزر ينشئ رابط تقرير آمنًا ويسجّل طلب الإرسال؛ أرسِله يدويًا حتى اعتماد القناة الرسمية.
-      </div>
-      {!done ? (
-        <button className="btn btn-p" style={{ marginTop: 12 }} disabled={!consent || (!email && !phone)}
-          onClick={() => { const token = "PR-" + uid().toUpperCase(); onSend(token, { email, phone, rows }); setDone(token); }}>
-          أنشئ رابط التقرير الآمن
-        </button>
-      ) : (
-        <div className="card" style={{ padding: 14, marginTop: 12, background: T.greenSoft, borderColor: T.green }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>رمز التقرير جاهز:</div>
-          <div className="mono" style={{ fontSize: 15 }}>{done}</div>
-          <button className="btn btn-o" style={{ marginTop: 8 }} onClick={() => navigator.clipboard && navigator.clipboard.writeText(done)}>نسخ الرمز</button>
-        </div>
-      )}
+      {!done ? <button className="btn btn-p" style={{ marginTop: 12 }} onClick={send}>أرسل رابط التقرير إلى ولي الأمر</button>
+        : <div className="card" style={{ padding: 14, marginTop: 12, background: T.greenSoft, borderColor: T.green }}>
+            <div style={{ fontWeight: 700 }}>✅ تم إنشاء رابط التقرير وإرساله إلى بريد ولي الأمر.</div>
+            <div className="mono" style={{ fontSize: 12, marginTop: 5 }}>{done}</div>
+          </div>}
+      {err && <div style={{ color: T.brick, marginTop: 8, fontSize: 13 }}>{err}</div>}
       <button className="btn btn-q" style={{ marginTop: 10 }} onClick={onClose}>إغلاق</button>
     </div>
   );
@@ -5806,6 +5785,23 @@ export default function App() {
     setReady(true);
   })(); }, []);
 
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("parent");
+    if (!token || !students.length) return;
+    (async () => {
+      const normalized = token.trim().toUpperCase();
+      let rec = parentTokens[normalized];
+      if (!rec) {
+        const stored = await readRecord(REC.parentTok, normalized);
+        rec = stored && (stored.__val || stored);
+      }
+      if (!rec) return;
+      const student = students.find((s) => s.key === rec.studentKey);
+      if (!student) return;
+      setParentReport({ student, rows: buildReport(student, courses, progress, attempts) });
+    })();
+  }, [students, courses, attempts, progress, parentTokens]);
+
   // كل دالة هنا تكتب سجلّها الخاص فقط، لا نسخة كاملة من المجموعة — فمعلمان
   // ينشران كورسين مختلفين في اللحظة نفسها لا يمحو أحدهما عمل الآخر.
   const patchCourse = (id, patch) => {
@@ -5913,22 +5909,39 @@ export default function App() {
     if (a.passed) {
       const teacherEmail = (teachers.find((t) => t.name === c.teacher) || {}).email;
       const studentRec = students.find((s) => s.key === user.key) || {};
+
+      const reportToken = "PR-" + uid().toUpperCase();
+      const reportRows = buildReport(studentRec.key ? studentRec : user, courses, progress, [...attempts, a]);
+      const reportRec = { studentKey: user.key, rows: reportRows, at: new Date().toISOString() };
+      setParentTokens((prev) => ({ ...prev, [reportToken]: reportRec }));
+      putRecord(REC.parentTok, reportToken, { __key: reportToken, __val: reportRec });
+      const reportUrl = `${window.location.origin}/?parent=${encodeURIComponent(reportToken)}`;
+
       notifyEmail([orgEmail, teacherEmail],
         `إتمام كورس: ${user.name} — ${c.title}`,
         `<p>أنهى الطالب <strong>${user.name}</strong> (الصف ${user.grade} — ${user.block}) كورس <strong>${c.title}</strong> بنجاح.</p><p>الدرجة: ${a.pct}% — المحاولة ${a.no} من الدورة ${a.cycle}.</p>`);
-      const parentTo = studentRec.parentEmail || user.parentEmail;
+
+      const parentTo = normEmail(studentRec.parentEmail || user.parentEmail);
       if (parentTo) {
         notifyEmail(parentTo, `شهادة إتقان — ${c.title}`,
-          `<p>تهانينا،</p><p>أتقن ابنكم/ابنتكم <strong>${user.name}</strong> مهارة «${c.title}» بدرجة ${a.pct}% بتاريخ ${dateAr(a.at)}.</p>
-           <p>رقم الشهادة: ${a.serial} — رمز التحقق: ${a.token}</p>
-           <p>لعرض الشهادة كاملة أو طباعتها، تواصلوا مع المعلم أو راجعوا المنصة.</p>`);
+          `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
+             <p>عزيزي ولي الأمر،</p>
+             <p>يسعدنا أن نهنئكم بأن ابنكم/ابنتكم <strong>${user.name}</strong> قد اجتاز كورس <strong>«${c.title}»</strong> بنجاح، وحصل على درجة <strong>${a.pct}%</strong> بتاريخ ${dateAr(a.at)}.</p>
+             <p>رقم الشهادة: <strong>${a.serial}</strong> — رمز التحقق: <strong>${a.token}</strong></p>
+             <p><a href="${reportUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">📊 متابعة تقدم الطالب</a></p>
+             <p style="font-size:12px;color:#667085">ستجدون أيضًا زر فتح شهادة الإتمام في هذه الرسالة.</p>
+           </div>`);
       }
-      const studentTo = studentRec.email || user.email;
+
+      const studentTo = normEmail(studentRec.email || user.email);
       if (studentTo) {
         notifyEmail(studentTo, `تهانينا — أتممت «${c.title}» بنجاح`,
-          `<p>مرحبًا ${user.name}،</p><p>أتممت مهارة «${c.title}» بدرجة ${a.pct}% بتاريخ ${dateAr(a.at)}. تهانينا على إنجازك!</p>
-           <p>رقم الشهادة: ${a.serial} — رمز التحقق: ${a.token}</p>
-           <p>افتح المنصة الآن لعرض شهادتك كاملة أو طباعتها.</p>`);
+          `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
+             <p>مرحبًا <strong>${user.name}</strong>،</p>
+             <p>تهانينا! أتممت كورس <strong>«${c.title}»</strong> بنجاح وحصلت على درجة <strong>${a.pct}%</strong> بتاريخ ${dateAr(a.at)}.</p>
+             <p>رقم الشهادة: <strong>${a.serial}</strong> — رمز التحقق: <strong>${a.token}</strong></p>
+             <p>ستجد زر <strong>🏆 فتح شهادة الإتمام</strong> في هذه الرسالة لعرض الشهادة مباشرة وطباعتها أو حفظها PDF.</p>
+           </div>`);
       }
     }
     setExam(null); nav({ n: "result", id: a.id });
@@ -5948,12 +5961,17 @@ export default function App() {
       } }}
     onTeacher={(name, email) => { ensureTeacher(name, email); setUser({ role: "teacher", name, email: normEmail(email) }); setHist([]); setView({ n: "home" }); }}
     onAdmin={() => { setUser({ role: "admin", name: "رئيس القسم" }); setHist([]); setView({ n: "home" }); }}
-    onParent={(tok, setErr) => {
-      const rec = parentTokens[tok];
+    onParent={async (tok, setErr) => {
+      const normalized = String(tok || "").trim().toUpperCase();
+      let rec = parentTokens[normalized];
+      if (!rec) {
+        const stored = await readRecord(REC.parentTok, normalized);
+        rec = stored && (stored.__val || stored);
+      }
       if (!rec) return setErr("رمز غير صحيح أو منتهي.");
       const student = students.find((s) => s.key === rec.studentKey);
       if (!student) return setErr("تعذّر العثور على بيانات الطالب.");
-      setParentReport({ student, rows: rec.rows });
+      setParentReport({ student, rows: buildReport(student, courses, progress, attempts) });
     }} codes={codes} students={students} courses={courses} attempts={attempts} />;
 
   const course = view.id && courses.find((c) => c.id === view.id);
@@ -6235,7 +6253,17 @@ export default function App() {
                 const rec = { studentKey: student.key, rows, at: new Date().toISOString() };
                 setParentTokens((prev) => ({ ...prev, [token]: rec }));
                 putRecord(REC.parentTok, token, { __key: token, __val: rec });
-                log(user.name, "إنشاء رابط تقرير لولي أمر", `${student.name} — ${token}`);
+                const reportUrl = `${window.location.origin}/?parent=${encodeURIComponent(token)}`;
+                if (payload.email) {
+                  notifyEmail(payload.email, `متابعة تقدم ${student.name} — بالعربي أحلى`,
+                    `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
+                       <p>عزيزي ولي الأمر،</p>
+                       <p>يمكنكم متابعة أحدث تقدم للطالب <strong>${student.name}</strong> من خلال الرابط الآمن التالي:</p>
+                       <p><a href="${reportUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">📊 فتح تقرير التقدم</a></p>
+                       <p style="font-size:12px;color:#667085">رمز التقرير: ${token}</p>
+                     </div>`);
+                }
+                log(user.name, "إرسال تقرير لولي أمر", `${student.name} — ${token}`);
               }}
               onExport={exportStudentsCSV} onImportFile={importStudentsFile}
               onTemplate={downloadStudentTemplate}
