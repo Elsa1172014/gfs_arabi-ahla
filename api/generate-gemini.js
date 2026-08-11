@@ -51,7 +51,7 @@ export default async function handler(req, res) {
     const model = "gemini-2.5-flash";
 
     const endpoint =
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+      `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`;
 
     const response = await fetch(endpoint, {
       method: "POST",
