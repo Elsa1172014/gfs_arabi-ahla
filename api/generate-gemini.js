@@ -48,7 +48,7 @@ export default async function handler(req, res) {
       text: String(prompt),
     });
 
-    const model = "gemini-2.5-flash";
+    const model = "gemini-3.5-flash";
 
     const endpoint =
       `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent`;
