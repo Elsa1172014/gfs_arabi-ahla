@@ -210,6 +210,22 @@ const CSS = `
 @media(max-width:1200px){.adm-kpis{grid-template-columns:repeat(3,1fr)}.adm-grid3,.adm-grid4{grid-template-columns:1fr 1fr}}
 @media(max-width:760px){.adm-hero{padding:14px}.adm-content{padding:14px}.adm-kpis,.adm-grid3,.adm-grid4{grid-template-columns:1fr}
 .adm-mainnav{border-radius:12px}.adm-subnav{padding:8px 14px}.adm-donut{width:155px;height:155px}}
+
+/* ===== النشرة الأسبوعية — GEMS ===== */
+.nl-shell{border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 18px 50px -28px rgba(15,32,80,.38);border:1px solid ${T.rule}}
+.nl-head{position:relative;overflow:hidden;background:linear-gradient(110deg,#8E2333 0%,#642849 30%,#2A2D68 62%,#12329B 100%);color:#fff;padding:28px 30px;text-align:center}
+.nl-watermark{position:absolute;width:360px;max-width:50vw;opacity:.40;left:5%;top:-105px;filter:grayscale(1) brightness(2.4);mix-blend-mode:soft-light;pointer-events:none}
+.nl-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px}
+.nl-weekcard{position:relative;overflow:hidden;border-radius:22px;color:#fff;padding:22px;min-height:330px;box-shadow:0 14px 30px -22px rgba(5,20,60,.55)}
+.nl-weekcard.red{background:linear-gradient(145deg,#8D2132,#A82A42 58%,#6C2033)}
+.nl-weekcard.blue{background:linear-gradient(145deg,#12329B,#164CC5 58%,#10265F)}
+.nl-weekcard .nl-watermark{width:300px;left:auto;right:-45px;top:10px;opacity:.40}
+.nl-lesson{position:relative;z-index:2;background:rgba(255,255,255,.94);color:#13233f;border-radius:14px;padding:13px 15px;margin-top:12px}
+.nl-objectives{margin:7px 0 0;padding-right:18px;font-size:13px}
+.nl-timeline{display:flex;gap:8px;align-items:center;overflow-x:auto;padding:14px 20px 22px}
+.nl-timebtn{border:1px solid ${T.rule};background:#fff;border-radius:999px;padding:8px 13px;white-space:nowrap;cursor:pointer;font-family:inherit;color:${T.inkSoft}}
+.nl-timebtn.on{background:${T.navy};color:#fff;border-color:${T.navy}}
+@media(max-width:800px){.nl-grid{grid-template-columns:1fr}.nl-head{padding:22px 16px}.nl-weekcard{min-height:0}}
 `;
 
 // شعار GEMS Founders School — مضمَّن مباشرة (بلا رابط خارجي قد ينكسر)، بخلفية شفافة
@@ -2620,7 +2636,7 @@ const writeKey = async (k, v) => { try { await window.storage.set(k, JSON.string
 // له مفتاحه الخاص، فكتابة عنصر واحد لا تُعيد كتابة البقية ولا تصطدم بكتابة
 // متزامنة من متصفّح آخر يعمل على عنصر مختلف — وهو ما يمنع فقدان بيانات
 // المشاركين الآخرين عند الاستخدام الجماعي المتزامن للمنصة.
-const REC = { student: "gfs:rec:student:", attempt: "gfs:rec:attempt:", progress: "gfs:rec:progress:", course: "gfs:rec:course:", audit: "gfs:rec:audit:", parentTok: "gfs:rec:ptok:", intervention: "gfs:rec:intervention:" };
+const REC = { student: "gfs:rec:student:", attempt: "gfs:rec:attempt:", progress: "gfs:rec:progress:", course: "gfs:rec:course:", audit: "gfs:rec:audit:", parentTok: "gfs:rec:ptok:", intervention: "gfs:rec:intervention:", newsletter: "gfs:rec:newsletter:" };
 const safeId = (s) => String(s).replace(/[\s\/\\'"]+/g, "_");
 async function listRecords(prefix) {
   try {
@@ -2710,6 +2726,43 @@ function notifyEmail(to, subject, html) {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ to: recipients, subject, html }),
   }).catch(() => { });
+}
+
+async function sendEmailTracked(to, subject, html) {
+  const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
+  if (!recipients.length) return { ok: false, status: 0 };
+  try {
+    const r = await fetch("/api/send-email", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ to: recipients, subject, html }),
+    });
+    return { ok: r.ok, status: r.status };
+  } catch { return { ok: false, status: 0 }; }
+}
+async function runEmailTasks(tasks, chunkSize = 8) {
+  const results = [];
+  for (let i = 0; i < tasks.length; i += chunkSize) {
+    const chunk = tasks.slice(i, i + chunkSize);
+    const r = await Promise.all(chunk.map((fn) => fn()));
+    results.push(...r);
+  }
+  return results;
+}
+function nlEsc(v="") { return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]); }
+function newsletterEmailHtml(rec, studentName, parentCopy=false) {
+  const lessonHtml = (arr, color) => (arr||[]).map((l)=>`<div style="background:#fff;border-radius:12px;padding:12px;margin:10px 0;color:#17233d"><strong>${nlEsc(l.title||"الدرس")}</strong><ul style="margin:8px 0 0;padding-right:20px">${(l.objectives||[]).map(o=>`<li>${nlEsc(o)}</li>`).join("")}</ul></div>`).join("");
+  return `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;background:#f4f6fb;padding:20px;line-height:1.8">
+    <div style="max-width:820px;margin:auto;background:#fff;border-radius:18px;overflow:hidden">
+      <div style="background:linear-gradient(110deg,#8d2132,#22255f,#12329b);color:#fff;padding:22px;text-align:center"><h2 style="margin:0">النشرة الأسبوعية — اللغة العربية</h2><div>الأسبوع ${nlEsc(rec.weekStart||"")} — ${nlEsc(rec.weekEnd||"")}</div></div>
+      <div style="padding:18px"><p>${parentCopy?"عزيزي ولي الأمر":"مرحبًا"} ${nlEsc(studentName||"")},</p><p>${parentCopy?"إليكم ملخص ما تعلمه الطالب وما سيتعلمه خلال الأسبوع القادم.":"هذه نشرتك الأسبوعية في اللغة العربية."}</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="background:linear-gradient(145deg,#8d2132,#b22c45);color:#fff;border-radius:16px;padding:16px"><h3>✅ ماذا تعلمنا هذا الأسبوع؟</h3>${lessonHtml(rec.currentLessons,'#8d2132')}</div>
+          <div style="background:linear-gradient(145deg,#12329b,#174cc8);color:#fff;border-radius:16px;padding:16px"><h3>🚀 ماذا سنتعلم الأسبوع القادم؟</h3>${lessonHtml(rec.nextLessons,'#12329b')}</div>
+        </div>
+        <p style="margin-top:18px;text-align:center"><a href="${typeof window!=="undefined"?window.location.origin:""}" style="display:inline-block;background:#12329b;color:#fff;text-decoration:none;padding:11px 18px;border-radius:10px;font-weight:700">فتح منصة بالعربي أحلى</a></p>
+        <p style="font-size:12px;color:#667085;text-align:center">نُشرت بواسطة ${nlEsc(rec.teacherName||"معلم اللغة العربية")} — ${rec.publishedAt?new Date(rec.publishedAt).toLocaleString("ar-AE"):""}</p>
+      </div>
+    </div></div>`;
 }
 function toCSV(rows, headers) {
   const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -3338,9 +3391,54 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
 }
 
 /* ============================ الطالب ============================ */
-function StudentHome({ user, courses, progress, attempts, onOpen }) {
+
+function NewsletterViewer({ newsletter, archive = [], onSelect }) {
+  if (!newsletter) return <div className="card" style={{padding:24,textAlign:"center",color:T.inkSoft}}>لم تُنشر نشرة أسبوعية لهذا الصف بعد.</div>;
+  const renderLessons = (lessons) => (lessons||[]).map((l,i)=><div className="nl-lesson" key={`${l.title}-${i}`}><div style={{fontWeight:800,fontSize:17}}>{l.title || `الدرس ${i+1}`}</div><ul className="nl-objectives">{(l.objectives||[]).map((o,j)=><li key={j}>{o}</li>)}</ul></div>);
+  return <div className="nl-shell">
+    <div className="nl-head"><img src={LOGO_URL} className="nl-watermark" alt="" aria-hidden="true"/><div style={{position:"relative",zIndex:2}}><div style={{fontSize:30,fontWeight:800}}>النشرة الأسبوعية</div><div style={{opacity:.86}}>اللغة العربية · الصف {newsletter.grade} · {(newsletter.blocks||[]).join("، ")}</div><div style={{marginTop:6,fontSize:13}}>الأسبوع من {newsletter.weekStart} إلى {newsletter.weekEnd}</div></div></div>
+    <div className="nl-grid">
+      <section className="nl-weekcard red"><img src={LOGO_URL} className="nl-watermark" alt="" aria-hidden="true"/><div style={{position:"relative",zIndex:2}}><h2 style={{color:"#fff"}}>✅ ماذا تعلمنا هذا الأسبوع؟</h2><div style={{fontSize:12,opacity:.86}}>أهداف التعلم التي حققناها</div>{renderLessons(newsletter.currentLessons)}</div></section>
+      <section className="nl-weekcard blue"><img src={LOGO_URL} className="nl-watermark" alt="" aria-hidden="true"/><div style={{position:"relative",zIndex:2}}><h2 style={{color:"#fff"}}>🚀 ماذا سنتعلم الأسبوع القادم؟</h2><div style={{fontSize:12,opacity:.86}}>أهداف التعلم المستهدفة</div>{renderLessons(newsletter.nextLessons)}</div></section>
+    </div>
+    <div style={{padding:"0 20px 4px",fontSize:12,color:T.inkSoft}}>نشرها {newsletter.teacherName} · {newsletter.publishedAt ? new Date(newsletter.publishedAt).toLocaleString("ar-AE") : ""}</div>
+    {archive.length>1 && <div><div style={{padding:"8px 20px 0",fontWeight:700}}>رحلتنا التعليمية — أرشيف النشرات</div><div className="nl-timeline">{archive.map((x,i)=><button className={`nl-timebtn ${x.id===newsletter.id?"on":""}`} key={x.id} onClick={()=>onSelect&&onSelect(x.id)}>الأسبوع {archive.length-i} · {dateAr(x.publishedAt)}</button>)}</div></div>}
+  </div>;
+}
+
+function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, onSave }) {
+  const mineStudents = students.filter(s=>!teacherEmail || !s.teacherEmail || normEmail(s.teacherEmail)===normEmail(teacherEmail));
+  const grades = [...new Set(mineStudents.map(s=>+s.grade).filter(Boolean))].sort((a,b)=>a-b);
+  const [grade,setGrade]=useState(grades[0]||7);
+  const availableBlocks=[...new Set(mineStudents.filter(s=>+s.grade===+grade).map(s=>s.block).filter(Boolean))].sort();
+  const [blocks,setBlocks]=useState([]);
+  const [weekStart,setWeekStart]=useState(()=>new Date().toISOString().slice(0,10));
+  const [weekEnd,setWeekEnd]=useState(()=>{const d=new Date();d.setDate(d.getDate()+6);return d.toISOString().slice(0,10)});
+  const [currentLessons,setCurrentLessons]=useState([{title:"",objectives:[""]}]);
+  const [nextLessons,setNextLessons]=useState([{title:"",objectives:[""]}]);
+  const [busy,setBusy]=useState(false),[msg,setMsg]=useState("");
+  const addLesson=(which)=>which==="current"?setCurrentLessons(v=>[...v,{title:"",objectives:[""]}]):setNextLessons(v=>[...v,{title:"",objectives:[""]}]);
+  const updateLesson=(which,idx,field,val)=>{const setter=which==="current"?setCurrentLessons:setNextLessons;setter(prev=>prev.map((l,i)=>i===idx?{...l,[field]:val}:l));};
+  const clean=(arr)=>arr.map(l=>({title:l.title.trim(),objectives:(l.objectives||[]).map(o=>o.trim()).filter(Boolean)})).filter(l=>l.title||l.objectives.length);
+  const improve=async()=>{setBusy(true);setMsg("");const prompt=`أنت محرر تربوي عربي. حسّن صياغة عناوين الدروس وأهداف التعلم الآتية دون تغيير المعنى أو إضافة محتوى غير موجود. اجعل الأهداف قصيرة وقابلة للملاحظة ومناسبة للصف ${grade}. أعد JSON فقط بهذا الشكل: {"currentLessons":[{"title":"","objectives":[""]}],"nextLessons":[{"title":"","objectives":[""]}]}.\nهذا الأسبوع: ${JSON.stringify(clean(currentLessons))}\nالأسبوع القادم: ${JSON.stringify(clean(nextLessons))}`;const out=await ask(prompt,"auto");if(out?.currentLessons) setCurrentLessons(out.currentLessons);if(out?.nextLessons) setNextLessons(out.nextLessons);setMsg(out?"✅ تم تحسين الصياغة. راجعها ثم قرر النشر.":"تعذّر التحسين الآن؛ يمكنك النشر بصياغتك الحالية.");setBusy(false)};
+  const submit=async(status)=>{const c=clean(currentLessons),n=clean(nextLessons);if(!blocks.length)return setMsg("اختر بلوكًا واحدًا على الأقل.");if(!c.length||!n.length)return setMsg("أدخل درسًا واحدًا على الأقل لكل أسبوع.");setBusy(true);const rec={id:uid(),teacherName,teacherEmail:normEmail(teacherEmail),grade:+grade,blocks,weekStart,weekEnd,currentLessons:c,nextLessons:n,status,createdAt:new Date().toISOString()};const r=await onSave(rec);setMsg(status==="published"?`✅ تم نشر النشرة وإرسالها. ${r?.sendStats?`الطلاب: ${r.sendStats.studentSent}/${r.sendStats.studentTotal} · أولياء الأمور: ${r.sendStats.parentSent}/${r.sendStats.parentTotal}`:""}`:"✅ تم حفظ المسودة.");setBusy(false)};
+  const myNews=(newsletters||[]).filter(n=>n.teacherName===teacherName).sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
+  return <div style={{display:"grid",gap:16}}>
+    <div className="card" style={{padding:18}}><div style={{display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap",alignItems:"center"}}><div><h2>📰 النشرة الأسبوعية</h2><p style={{margin:"3px 0",fontSize:12,color:T.inkSoft}}>أنت من يكتب المحتوى. الذكاء الاصطناعي يحسن الصياغة فقط، وقرار النشر لك.</p></div><div style={{display:"flex",gap:8}}><button className="btn btn-o" disabled={busy} onClick={improve}>✨ تحسين بالذكاء الاصطناعي</button><button className="btn btn-p" disabled={busy} onClick={()=>submit("published")}>📢 اعتماد ونشر</button></div></div>
+      <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",marginTop:14}}><div><label className="lbl">الصف</label><select className="inp" value={grade} onChange={e=>{setGrade(+e.target.value);setBlocks([])}}>{(grades.length?grades:[7,8,9,10,11,12]).map(g=><option key={g}>{g}</option>)}</select></div><div style={{gridColumn:"span 2"}}><label className="lbl">البلوكات</label><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{availableBlocks.map(b=><button key={b} className={`btn ${blocks.includes(b)?"btn-p":"btn-o"}`} onClick={()=>setBlocks(v=>v.includes(b)?v.filter(x=>x!==b):[...v,b])}>{b}</button>)}</div></div><div><label className="lbl">من</label><input type="date" className="inp" value={weekStart} onChange={e=>setWeekStart(e.target.value)}/></div><div><label className="lbl">إلى</label><input type="date" className="inp" value={weekEnd} onChange={e=>setWeekEnd(e.target.value)}/></div></div>
+    </div>
+    <div className="nl-grid" style={{padding:0}}>{[["current",currentLessons,setCurrentLessons,"red","✅ ماذا تعلمنا هذا الأسبوع؟"],["next",nextLessons,setNextLessons,"blue","🚀 ماذا سنتعلم الأسبوع القادم؟"]].map(([which,list,setter,tone,title])=><section className={`nl-weekcard ${tone}`} key={which}><img src={LOGO_URL} className="nl-watermark" alt=""/><h2 style={{color:"#fff",position:"relative",zIndex:2}}>{title}</h2>{list.map((l,i)=><div className="nl-lesson" key={i}><input className="inp" placeholder="اسم الدرس" value={l.title} onChange={e=>updateLesson(which,i,"title",e.target.value)}/><textarea className="tarea" rows={4} style={{marginTop:8}} placeholder="هدف تعلم في كل سطر" value={(l.objectives||[]).join("\n")} onChange={e=>updateLesson(which,i,"objectives",e.target.value.split("\n"))}/></div>)}<button className="btn" style={{position:"relative",zIndex:2,marginTop:10,background:"rgba(255,255,255,.95)",color:tone==="red"?"#8D2132":"#12329B"}} onClick={()=>addLesson(which)}>+ إضافة درس</button></section>)}</div>
+    {msg&&<div className="card" style={{padding:12,background:T.greenSoft}}>{msg}</div>}
+    <div className="card" style={{padding:18}}><h3>سجل نشراتك</h3>{myNews.length===0?<p style={{color:T.inkSoft}}>لا توجد نشرات منشورة بعد.</p>:<table className="tbl"><thead><tr><th>تاريخ النشر</th><th>الصف</th><th>البلوكات</th><th>الحالة</th><th>الإرسال</th></tr></thead><tbody>{myNews.slice(0,20).map(n=><tr key={n.id}><td>{n.publishedAt?new Date(n.publishedAt).toLocaleString("ar-AE"):"مسودة"}</td><td>{n.grade}</td><td>{(n.blocks||[]).join("، ")}</td><td>{n.status==="published"?<Chip tone="g">منشورة</Chip>:<Chip>مسودة</Chip>}</td><td>{n.sendStats?`${n.sendStats.studentSent}/${n.sendStats.studentTotal} طلاب · ${n.sendStats.parentSent}/${n.sendStats.parentTotal} أولياء أمور`:"—"}</td></tr>)}</tbody></table>}</div>
+  </div>;
+}
+
+function StudentHome({ user, courses, progress, attempts, newsletters = [], onOpen }) {
   const mine = courses.filter((c) => assignedTo(c, user));
   const ph = phaseFor(user.grade);
+  const publishedNews = newsletters.filter(n => n.status === "published" && +n.grade === +user.grade && (n.blocks || []).includes(user.block)).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
+  const [newsId,setNewsId]=useState(publishedNews[0]?.id||null);
+  const activeNews = publishedNews.find(n=>n.id===newsId) || publishedNews[0] || null;
   const passedCourseIds = new Set(attempts.filter((a) => a.student === user.key && a.passed).map((a) => a.course));
   const stateOf = (c) => {
     const p = progress[pKey(user.key, c.id)] || { done: [], cycle: 1 };
@@ -3358,12 +3456,13 @@ function StudentHome({ user, courses, progress, attempts, onOpen }) {
   };
   return (
     <div className="wrap" style={{ paddingBottom: 60 }}>
+      <div className="card" style={{padding:20,marginBottom:16,background:"linear-gradient(110deg,#fff,#f7f9ff)"}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:12,flexWrap:"wrap"}}><div><h1 style={{fontSize:30}}>🧠 كورساتي</h1><div style={{fontSize:13,color:T.inkSoft}}>كورساتك المهارية هي محور رحلتك — أكملها، حسّن نتيجتك، واحصل على شهادتك.</div></div>{activeNews&&<button className="btn btn-o" onClick={()=>document.getElementById("weekly-newsletter")?.scrollIntoView({behavior:"smooth"})}>📰 النشرة الأسبوعية</button>}</div></div>
       <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", marginBottom: 22 }}>
         <Stat label="الكورسات المسندة إليك" value={mine.length} />
         <Stat label="أتقنتها" value={mine.filter((c) => stateOf(c).label === "مكتمل").length} tone={T.green} />
         <Stat label="طورك" value={ph.name} note={`النجاح ${ph.pass}% — ${ph.tries} محاولات`} />
       </div>
-      <h2 style={{ marginBottom: 12 }}>كورساتي</h2>
+      <h2 style={{ marginBottom: 12 }}>الكورسات المسندة إليّ</h2>
       {mine.length === 0 ? <div className="card" style={{ padding: 28, textAlign: "center", color: T.inkSoft }}>لا كورسات مسندة إلى الصف {user.grade} — {user.block}.</div> : (
         <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))" }}>
           {mine.map((c) => { const st = stateOf(c); const lock = lockOf(c);
@@ -3381,6 +3480,8 @@ function StudentHome({ user, courses, progress, attempts, onOpen }) {
               {!lock && <Bar pct={st.pct} tone={st.tone === "r" ? T.brick : st.tone === "a" ? T.gold : T.green} />}
             </button>); })}
         </div>)}
+      <section id="weekly-newsletter" style={{marginTop:28}}><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:10,flexWrap:"wrap",marginBottom:12}}><div><h2>📰 النشرة الأسبوعية</h2><div style={{fontSize:12,color:T.inkSoft}}>ما تعلمناه هذا الأسبوع وما سنبدأه في الأسبوع القادم.</div></div>{publishedNews.length>1&&<span className="chip">{publishedNews.length} نشرات محفوظة</span>}</div><NewsletterViewer newsletter={activeNews} archive={publishedNews} onSelect={setNewsId}/></section>
+      <footer className="adm-footer" style={{marginTop:30,borderRadius:18}}><div style={{position:"relative",zIndex:1,fontSize:11}}>منصة بالعربي أحلى — رحلة تعلم مستمرة</div><div className="adm-footer-main"><div className="adm-footer-tag">نزدهر • ننجح • ننمو</div><div style={{opacity:.72}}>GEMS Founders School Dubai — Inspiring Minds, Empowering Futures</div></div><div style={{position:"relative",zIndex:1,fontSize:11}}>قسم اللغة العربية</div></footer>
     </div>
   );
 }
@@ -4661,7 +4762,7 @@ function TeacherDashboard({ students, courses, attempts, progress, onNavigate })
 
 
 /* ==================== لوحة المعلم الكاملة ==================== */
-function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
+function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, newsletters = [], onSaveNewsletter, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
   const [tab, setTab] = useState("d");
   const [aiProvider, setAiProvider] = useState("claude");
   const [aiBusy, setAiBusy] = useState(null);
@@ -4711,11 +4812,13 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
   return (
     <div className="wrap" style={{ paddingBottom: 60 }}>
       <div className="tabs">
-        {[["d", "🏠 لوحتي"], ["s", "👨‍🎓 طلابي"], ["c", "📚 كورساتي"], ["res", "📊 النتائج"], ["ai", "🤖 المساعد الذكي"]].map(([k, l]) => (
+        {[["d", "🏠 لوحتي"], ["s", "👨‍🎓 طلابي"], ["c", "📚 كورساتي"], ["nl", "📰 النشرة الأسبوعية"], ["res", "📊 النتائج"], ["ai", "🤖 المساعد الذكي"]].map(([k, l]) => (
           <button key={k} className="tabbtn" onClick={() => setTab(k)} style={{ background: tab === k ? T.ink : T.paper, color: tab === k ? "#fff" : T.inkSoft }}>{l}</button>))}
       </div>
 
       {tab === "d" && <TeacherDashboard students={students2} courses={mine} attempts={attempts2} progress={progress} onNavigate={setTab} />}
+
+      {tab === "nl" && <NewsletterEditor teacherName={teacherName} teacherEmail={teacherEmail} students={students2} newsletters={newsletters} onSave={onSaveNewsletter} />}
 
       {tab === "s" && (<div className="card" style={{ padding: 20, overflowX: "auto" }}>
         <h3 style={{ marginBottom: 12 }}>تحليل الطلاب وتقارير أولياء الأمور</h3>
@@ -5658,9 +5761,11 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
           const avgScore = myAttempts.length ? Math.round(myAttempts.reduce((s, a) => s + a.pct, 0) / myAttempts.length) : null;
           const myInterventions = interventions.filter((i) => i.responsible === t.name);
           const support = interventions.find((i) => i.teacherName === t.name);
+          const myNewsletters = newsletters.filter((n) => n.teacherName === t.name && n.status === "published").sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
+          const lastNewsletter = myNewsletters[0] || null;
           return { name: t.name, coursesCount: myCourses.length, studentsCount: targetedStudents.size,
             completionPct: targetedStudents.size ? Math.round((completedStudents.size / targetedStudents.size) * 100) : null,
-            avgScore, interventionsCount: myInterventions.length, lastUpdate: myCourses.reduce((max, c) => c.publishedAt && (!max || c.publishedAt > max) ? c.publishedAt : max, null), support };
+            avgScore, interventionsCount: myInterventions.length, newslettersCount: myNewsletters.length, newsletters: myNewsletters, lastNewsletter, lastUpdate: myCourses.reduce((max, c) => c.publishedAt && (!max || c.publishedAt > max) ? c.publishedAt : max, null), support };
         });
         const avgLoad = rows.length ? Math.round(rows.reduce((n,r)=>n+r.studentsCount,0)/rows.length) : 0;
         return (
@@ -5684,8 +5789,10 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
                     <Stat label="الطلاب المتابَعون" value={r.studentsCount} />
                     <Stat label="نسبة الإكمال" value={r.completionPct != null ? r.completionPct + "%" : "—"} />
                     <Stat label="متوسط نتائج طلابه" value={r.avgScore != null ? r.avgScore + "%" : "—"} />
-                    <Stat label="تدخلات مسجَّلة" value={r.interventionsCount} />
+                    <Stat label="تدخلات مسجَّلة" value={r.interventionsCount} /><Stat label="النشرات المنشورة" value={r.newslettersCount} />
                   </div>
+                  {r.lastNewsletter && <div style={{fontSize:12,color:T.inkSoft,marginBottom:10,padding:"8px 10px",background:T.paper,borderRadius:8}}>📰 آخر نشرة: {new Date(r.lastNewsletter.publishedAt).toLocaleString("ar-AE")} — الصف {r.lastNewsletter.grade} — {(r.lastNewsletter.blocks||[]).join("، ")} — الإرسال: {r.lastNewsletter.sendStats ? `${r.lastNewsletter.sendStats.studentSent}/${r.lastNewsletter.sendStats.studentTotal} طلاب · ${r.lastNewsletter.sendStats.parentSent}/${r.lastNewsletter.sendStats.parentTotal} أولياء أمور` : "—"}</div>}
+                  {r.newsletters?.length>0 && <details style={{marginBottom:10}}><summary style={{cursor:"pointer",fontSize:12,fontWeight:700}}>🗂 سجل نشرات المعلم ({r.newsletters.length})</summary><div style={{marginTop:8,display:"grid",gap:6}}>{r.newsletters.slice(0,8).map(n=><div key={n.id} style={{fontSize:12,padding:"7px 9px",background:"#fff",border:`1px solid ${T.ruleSoft}`,borderRadius:8}}><strong>{new Date(n.publishedAt).toLocaleString("ar-AE")}</strong> — الصف {n.grade} — {(n.blocks||[]).join("، ")} <span style={{color:T.inkSoft}}>· الطلاب {n.sendStats?`${n.sendStats.studentSent}/${n.sendStats.studentTotal}`:"—"} · أولياء الأمور {n.sendStats?`${n.sendStats.parentSent}/${n.sendStats.parentTotal}`:"—"}</span></div>)}</div></details>}
                   <label style={{ fontSize: 12, fontWeight: 700 }}>الإجراء الداعم المطلوب من رئيس القسم</label>
                   <div style={{ display: "flex", gap: 6 }}>
                     <input className="inp" placeholder="مثال: تدريب، موارد إضافية، مراجعة التخطيط، دعم تقني"
@@ -6069,7 +6176,7 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
 }
 
 /* ==================== بوابة ولي الأمر ==================== */
-function ParentPortal({ report, onBack, orgEmail = "" }) {
+function ParentPortal({ report, newsletters = [], onBack, orgEmail = "" }) {
   if (!report) return null;
   const { student, rows = [] } = report;
   const [tab, setTab] = useState("overview");
@@ -6097,6 +6204,9 @@ function ParentPortal({ report, onBack, orgEmail = "" }) {
   const status = avg == null ? { label: "بانتظار بيانات", color: T.inkSoft, bg: T.paper } : avg >= 80 ? { label: "مستقر ومتقدم", color: T.green, bg: T.greenSoft } : avg >= 60 ? { label: "يحتاج متابعة", color: T.gold, bg: T.goldSoft } : { label: "يحتاج تدخل", color: T.brick, bg: T.brickSoft };
   const trendPoints = allHistory.slice(-8).map((h) => ({ v: h.pct, label: new Date(h.at).toLocaleDateString("ar-AE", { day: "numeric", month: "numeric" }) }));
   const teacherEmail = normEmail(student.teacherEmail || "");
+  const parentNews = newsletters.filter(n=>n.status==="published" && +n.grade===+student.grade && (n.blocks||[]).includes(student.block)).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
+  const [parentNewsId,setParentNewsId]=useState(parentNews[0]?.id||null);
+  const activeParentNews=parentNews.find(n=>n.id===parentNewsId)||parentNews[0]||null;
 
   const sendContact = async (kind) => {
     const note = kind === "support" ? supportNote.trim() : contactMessage.trim();
@@ -6116,7 +6226,7 @@ function ParentPortal({ report, onBack, orgEmail = "" }) {
     setSending(false);
   };
 
-  const tabs = [["overview", "🏠 نظرة عامة"], ["courses", "📚 الكورسات"], ["skills", "🎯 نقاط القوة والدعم"], ["activity", "🕘 آخر النشاط"], ["contact", "✉️ التواصل والدعم"]];
+  const tabs = [["overview", "🏠 نظرة عامة"], ["newsletter", "📰 النشرة الأسبوعية"], ["courses", "📚 الكورسات"], ["skills", "🎯 نقاط القوة والدعم"], ["activity", "🕘 آخر النشاط"], ["contact", "✉️ التواصل والدعم"]];
 
   return (
     <div className="gfs"><style>{CSS}</style>
@@ -6167,6 +6277,9 @@ function ParentPortal({ report, onBack, orgEmail = "" }) {
             </ul><button className="btn" style={{ width: "100%", background: "#fff", color: "#102d68" }} onClick={() => setTab("contact")}>اطلب دعمًا لابني</button></section>
           </div>
         </>}
+
+
+        {tab === "newsletter" && <div><div style={{marginBottom:12}}><h2>📰 النشرة الأسبوعية</h2><div className="adm-muted">تظهر هنا النشرة نفسها التي نشرها المعلم، مع أرشيفها بالتاريخ.</div></div><NewsletterViewer newsletter={activeParentNews} archive={parentNews} onSelect={setParentNewsId}/></div>}
 
         {tab === "courses" && <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))" }}>
           {rows.length === 0 ? <div className="card" style={{ padding: 22 }}>لا توجد كورسات مسندة للطالب حاليًا.</div> : rows.map((r) => <article className="card" key={r.id || r.title} style={{ padding: 18 }}>
@@ -6219,6 +6332,7 @@ export default function App() {
   const [audit, setAudit] = useState([]);
   const [interventions, setInterventions] = useState([]);
   const [parentTokens, setParentTokens] = useState({});
+  const [newsletters, setNewsletters] = useState([]);
   const [parentReport, setParentReport] = useState(null);
   const [exam, setExam] = useState(null);
   const seq = useRef(0);
@@ -6285,6 +6399,9 @@ export default function App() {
     setOrgEmail(await readKey(K.orgEmail, ""));
     setBlocksAdmin(await readKey(K.blocksAdmin, {}));
     setBlockGroups(await readKey(K.blockGroups, {}));
+    const newsletterList = await listRecords(REC.newsletter);
+    newsletterList.sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
+    setNewsletters(newsletterList);
     setReady(true);
   })(); }, []);
 
@@ -6461,7 +6578,7 @@ export default function App() {
 
   if (!ready) return <div className="gfs"><style>{CSS}</style><div className="wrap" style={{ padding: 60, color: T.inkSoft }}>جارٍ فتح المنصة…</div></div>;
 
-  if (parentReport) return <ParentPortal report={parentReport} orgEmail={orgEmail} onBack={() => { setParentReport(null); }} />;
+  if (parentReport) return <ParentPortal report={parentReport} newsletters={newsletters} orgEmail={orgEmail} onBack={() => { setParentReport(null); }} />;
 
   if (!user) return <Login
     teachers={teachers}
@@ -6689,6 +6806,28 @@ export default function App() {
     setStudents((prev) => prev.filter((x) => x.key !== key)); deleteRecord(REC.student, key);
     log(actor, "حذف طالب من القائمة", s ? `${s.name} — ${key}` : key);
   };
+  const saveNewsletter = async (rec) => {
+    const publishedAt = rec.status === "published" ? new Date().toISOString() : null;
+    let next = { ...rec, publishedAt };
+    await putRecord(REC.newsletter, next.id, next);
+    setNewsletters(prev => [next, ...prev.filter(x=>x.id!==next.id)]);
+    if (rec.status !== "published") { log(user?.name||"معلم", "حفظ مسودة نشرة أسبوعية", `الصف ${rec.grade}`); return next; }
+    const targets = students.filter(s => +s.grade===+rec.grade && (rec.blocks||[]).includes(s.block) && (!rec.teacherEmail || !s.teacherEmail || normEmail(s.teacherEmail)===normEmail(rec.teacherEmail)));
+    let studentSent=0,parentSent=0,failed=0;
+    const tasks = [];
+    targets.forEach((st) => {
+      if (normEmail(st.email)) tasks.push(async()=>({kind:"student",result:await sendEmailTracked(st.email, `النشرة الأسبوعية — ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, false))}));
+      if (normEmail(st.parentEmail)) tasks.push(async()=>({kind:"parent",result:await sendEmailTracked(st.parentEmail, `النشرة الأسبوعية لابنكم ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, true))}));
+    });
+    const sendResults = await runEmailTasks(tasks, 8);
+    sendResults.forEach(({kind,result})=>{ if(result?.ok){ if(kind==="student") studentSent++; else parentSent++; } else failed++; });
+    next = { ...next, sendStats: { studentTotal: targets.filter(s=>normEmail(s.email)).length, studentSent, parentTotal: targets.filter(s=>normEmail(s.parentEmail)).length, parentSent, failed, at: new Date().toISOString() } };
+    await putRecord(REC.newsletter, next.id, next);
+    setNewsletters(prev => [next, ...prev.filter(x=>x.id!==next.id)]);
+    log(rec.teacherName||user?.name||"معلم", "نشر النشرة الأسبوعية", `الصف ${rec.grade} — ${(rec.blocks||[]).join("، ")} — الطلاب ${studentSent} — أولياء الأمور ${parentSent}`);
+    return next;
+  };
+
   // مسح كامل لقائمة الطلاب دفعة واحدة — للتراجع عن استيراد خاطئ بالكامل
   // بدل حذف كل طالب يدويًا واحدًا تلو الآخر.
   const clearAllStudents = (actor) => {
@@ -6718,7 +6857,7 @@ export default function App() {
       {user.role === "admin" ? (
         view.n === "admin-gen" ? <Generator teacherName={user.name} onCancel={()=>setView({n:"home"})} onSave={d=>{addCourse(d);log(user.name,"توليد كورس بالذكاء الاصطناعي",d.title);setView({n:"home"})}} />
         : view.n === "admin-ai-edit" && course ? <AIEditCourse course={course} onCancel={()=>setView({n:"home"})} onSave={d=>{replaceCourse(d);log(user.name,"تحسين كورس بالذكاء الاصطناعي",d.title);setView({n:"home"})}} />
-        : <AdminHome courses={courses} students={students} attempts={attempts} progress={progress} teachers={teachers} blocksAdmin={blocksAdmin} blockGroups={blockGroups} audit={audit}
+        : <AdminHome courses={courses} students={students} attempts={attempts} progress={progress} teachers={teachers} newsletters={newsletters} blocksAdmin={blocksAdmin} blockGroups={blockGroups} audit={audit}
           interventions={interventions} onAddIntervention={addIntervention} onUpdateIntervention={updateIntervention} onReopenAttempt={reopenAttempt} currentActor={user?.name||"رئيس القسم"}
           codes={codes} onUpdateCodes={next=>updateCodes(next,user.name)} orgEmail={orgEmail} onUpdateOrgEmail={email=>updateOrgEmail(email,user.name)}
           onSetTeacherEmail={(name,email)=>setTeacherEmail(name,email,user.name)} onAddTeacher={rec=>addTeacherAdmin(rec,user.name)} onDeleteTeacher={name=>deleteTeacherAdmin(name,user.name)} onSetTeacherCode={(name,code)=>setTeacherCodeAdmin(name,code,user.name)}
@@ -6750,7 +6889,7 @@ export default function App() {
                 <div style={{ fontWeight: 600 }}>{i + 1}. {b.q} <Chip>{QTYPE[b.t]}</Chip></div><div style={{ color: T.green }}>الصواب: {correctText(b)}</div><div style={{ color: T.inkSoft }}>{b.e}</div></div>))}
             </div>
           </div>
-        ) : <TeacherHome teacherName={user.name} teacherEmail={user.email} courses={courses} attempts={attempts} progress={progress} students={students}
+        ) : <TeacherHome teacherName={user.name} teacherEmail={user.email} courses={courses} attempts={attempts} progress={progress} students={students} newsletters={newsletters} onSaveNewsletter={saveNewsletter}
               onNew={() => nav({ n: "gen" })} onManual={() => nav({ n: "manual" })} onPaste={() => nav({ n: "paste" })}
               onView={(id) => nav({ n: "course", id })} onEdit={(id) => nav({ n: "manual", id, edit: true })}
               onPublish={(id) => { patchCourse(id, { status: "published" }); log(user.name, "نشر كورس", id); }}
@@ -6795,7 +6934,7 @@ export default function App() {
         <div className="wrap noprint"><button className="btn btn-q" onClick={goBack}>→ رجوع</button></div>
         <CourseView user={user} course={course} progress={progress} attempts={attempts} onProgress={saveProgress} onStartExam={startExam} onCert={(id) => nav({ n: "cert", id })} />
       </>) : (
-        <StudentHome user={user} courses={courses} progress={progress} attempts={attempts} onOpen={(id) => nav({ n: "course", id })} />
+        <StudentHome user={user} courses={courses} progress={progress} attempts={attempts} newsletters={newsletters} onOpen={(id) => nav({ n: "course", id })} />
       )}
     </div>
   );
