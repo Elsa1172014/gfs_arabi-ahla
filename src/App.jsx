@@ -266,6 +266,16 @@ const CSS = `
 @media(max-width:900px){.stu-home-actions{grid-template-columns:1fr 1fr}.nl-block-grid{grid-template-columns:repeat(6,1fr)}}
 @media(max-width:560px){.stu-home-actions{grid-template-columns:1fr}.stu-nav button{font-size:15px;min-width:132px;padding:11px 15px}.nl-block-grid{grid-template-columns:repeat(5,1fr)}}
 
+
+/* ===== Teacher primary navigation — GEMS hero strip ===== */
+.teacher-nav-spacer{height:72px;background:#fff}
+.teacher-nav-full{margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);background:linear-gradient(110deg,#8E2333 0%,#642849 30%,#2A2D68 62%,#12329B 100%);box-shadow:0 12px 28px -22px rgba(8,20,62,.5);min-height:40px}
+.teacher-nav-inner{max-width:1160px;margin:0 auto;padding:5px 20px;display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap}
+.teacher-nav-inner .tabbtn{margin:0;background:transparent!important;color:#fff!important;border:0;border-radius:9px;padding:7px 15px;font-size:15px;font-weight:800;min-height:34px}
+.teacher-nav-inner .tabbtn:hover{background:rgba(255,255,255,.12)!important}
+.teacher-nav-inner .tabbtn.on{background:rgba(255,255,255,.18)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}
+@media(max-width:760px){.teacher-nav-spacer{height:42px}.teacher-nav-inner{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}.teacher-nav-inner .tabbtn{white-space:nowrap;font-size:14px}}
+
 /* ===== Weekly Newsletter — التصميم المعتمد ===== */
 .nl-shell{border-radius:26px;overflow:hidden;background:#f8fafc;box-shadow:0 22px 60px -32px rgba(15,32,80,.45);border:1px solid #dce3ee}
 .nl-head{position:relative;overflow:hidden;background:linear-gradient(112deg,#7d1f31 0%,#622446 30%,#282966 60%,#102f8f 100%);color:#fff;padding:30px 34px 28px;text-align:center;min-height:158px;display:flex;align-items:center;justify-content:center}
@@ -3492,7 +3502,7 @@ function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, on
 الأسبوع القادم: ${JSON.stringify(clean(nextLessons))}`;const out=await ask(prompt,"auto");if(out?.currentLessons) setCurrentLessons(normalizeLessons(out.currentLessons));if(out?.nextLessons) setNextLessons(normalizeLessons(out.nextLessons));setMsg(out?"✅ تم تحسين الصياغة. راجعها ثم قرر النشر.":"تعذّر التحسين الآن؛ يمكنك النشر بصياغتك الحالية.");setBusy(false)};
   const submit=async(status)=>{const c=clean(currentLessons),n=clean(nextLessons);if(!blocks.length)return setMsg("اختر بلوكًا واحدًا على الأقل.");if(!c.length||!n.length)return setMsg("أدخل درسًا واحدًا على الأقل لكل أسبوع.");setBusy(true);const rec={id:uid(),teacherName,teacherEmail:normEmail(teacherEmail),grade:+grade,blocks,weekStart,weekEnd,currentLessons:c,nextLessons:n,status,createdAt:new Date().toISOString()};const r=await onSave(rec);setMsg(status==="published"?`✅ تم نشر النشرة وإرسالها. ${r?.sendStats?`الطلاب: ${r.sendStats.studentSent}/${r.sendStats.studentTotal} · أولياء الأمور: ${r.sendStats.parentSent}/${r.sendStats.parentTotal}`:""}`:"✅ تم حفظ المسودة.");setBusy(false)};
   const myNews=(newsletters||[]).filter(n=>n.teacherName===teacherName).sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
-  const side=(which,list,tone,title,icon)=><section className={`nl-editor-card ${tone}`}><img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/><div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>{list.map((l,i)=><div className="nl-editor-item" key={i}><input className="inp" placeholder="اسم الدرس" value={l.title} onChange={e=>updateLesson(which,i,"title",e.target.value)}/><div style={{marginTop:10,fontWeight:800,fontSize:14,color:"inherit"}}>في نهاية الدرس سيكون الطالب قادرًا على أن:</div><div className="grid" style={{gap:8,marginTop:8}}>{[0,1,2,3].map(j=><input key={j} className="inp" placeholder={`هدف التعلم ${j+1}`} value={normalizeObjectives(l.objectives)[j]} onChange={e=>updateObjective(which,i,j,e.target.value)}/>)}</div></div>)}<button className="btn nl-editor-add" onClick={()=>addLesson(which)}>+ إضافة درس</button></section>;
+  const side=(which,list,tone,title,icon)=><section className={`nl-editor-card ${tone}`}><img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/><div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>{list.map((l,i)=><div className="nl-editor-item" key={i}><input className="inp" placeholder="اسم الدرس" value={l.title} onChange={e=>updateLesson(which,i,"title",e.target.value)}/><div style={{marginTop:10,fontWeight:900,fontSize:15,color:"#17346E"}}>في نهاية الدرس سيكون الطالب قادرًا على أن:</div><div className="grid" style={{gap:8,marginTop:8}}>{[0,1,2,3].map(j=><input key={j} className="inp" placeholder={`هدف التعلم ${j+1}`} value={normalizeObjectives(l.objectives)[j]} onChange={e=>updateObjective(which,i,j,e.target.value)}/>)}</div></div>)}<button className="btn nl-editor-add" onClick={()=>addLesson(which)}>+ إضافة درس</button></section>;
   const toggleBlock=(b)=>setBlocks(v=>v.includes(b)?v.filter(x=>x!==b):[...v,b]);
   const removeNewsletter=async(n)=>{if(!onDelete)return;const ok=window.confirm(`هل تريد حذف نشرة الصف ${n.grade} — ${(n.blocks||[]).join("، ")}؟ ستختفي أيضًا من صفحة الطالب وولي الأمر.`);if(!ok)return;setBusy(true);await onDelete(n.id,n);setMsg("🗑️ تم حذف النشرة من المنصة ومن صفحات الطلاب وأولياء الأمور.");setBusy(false);};
   return <div className="nl-editor-shell">
@@ -3549,13 +3559,6 @@ function StudentHome({ user, courses, progress, attempts, newsletters = [], onOp
           <div className="stu-kpi" onClick={()=>setPage("journey")}><div className="stu-kpi-label">المكتمل</div><div className="stu-kpi-value">{completed}</div><div className="stu-kpi-note">اضغط لفتح إنجازاتي</div></div>
           <div className="stu-kpi" onClick={()=>setPage("journey")}><div className="stu-kpi-label">متوسط أدائك</div><div className="stu-kpi-value">{avg}%</div><div className="stu-kpi-note">اضغط لمشاهدة رحلتي</div></div>
           <div className="stu-kpi" onClick={()=>setPage("certificates")}><div className="stu-kpi-label">شهاداتك</div><div className="stu-kpi-value">{passedAttempts.length}</div><div className="stu-kpi-note">اضغط لفتح الشهادات</div></div>
-        </div>
-
-        <div className="stu-home-actions">
-          <button className="stu-home-card" onClick={()=>setPage("courses")}><span className="ico">🧠</span><b>كورساتي</b><small>الكورسات المهارية والتقدم والمحاولات</small></button>
-          <button className="stu-home-card" onClick={()=>setPage("newsletter")}><span className="ico">📰</span><b>النشرة الأسبوعية</b><small>ماذا تعلمنا وماذا سنتعلم الأسبوع القادم</small></button>
-          <button className="stu-home-card" onClick={()=>setPage("journey")}><span className="ico">🏅</span><b>إنجازاتي ورحلتي التعليمية</b><small>الإنجازات وتطور النتائج وآخر النشاطات</small></button>
-          <button className="stu-home-card" onClick={()=>setPage("certificates")}><span className="ico">📜</span><b>الشهادات</b><small>فتح شهادات إتمام الكورسات مباشرة</small></button>
         </div>
 
         <div className="stu-section-head"><div><h2>🧠 كورساتي</h2><p>أهم ما تحتاج إليه الآن — تابع كورساتك من هنا.</p></div><button className="btn btn-o" onClick={()=>setPage("courses")}>عرض جميع الكورسات</button></div>
@@ -4922,9 +4925,12 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
 
   return (
     <div className="wrap" style={{ paddingBottom: 60 }}>
-      <div className="tabs">
-        {[["d", "🏠 لوحتي"], ["s", "👨‍🎓 طلابي"], ["c", "📚 كورساتي"], ["nl", "📰 النشرة الأسبوعية"], ["res", "📊 النتائج"], ["ai", "🤖 المساعد الذكي"]].map(([k, l]) => (
-          <button key={k} className="tabbtn" onClick={() => setTab(k)} style={{ background: tab === k ? T.ink : T.paper, color: tab === k ? "#fff" : T.inkSoft }}>{l}</button>))}
+      <div className="teacher-nav-spacer" aria-hidden="true"></div>
+      <div className="teacher-nav-full">
+        <div className="teacher-nav-inner">
+          {[["d", "🏠 لوحتي"], ["s", "👨‍🎓 طلابي"], ["c", "📚 كورساتي"], ["nl", "📰 النشرة الأسبوعية"], ["res", "📊 النتائج"], ["ai", "🤖 المساعد الذكي"]].map(([k, l]) => (
+            <button key={k} className={`tabbtn ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{l}</button>))}
+        </div>
       </div>
 
       {tab === "d" && <TeacherDashboard students={students2} courses={mine} attempts={attempts2} progress={progress} onNavigate={setTab} />}
