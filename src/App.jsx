@@ -249,10 +249,10 @@ const CSS = `
 .stu-nav{padding:14px 18px;gap:14px}
 .stu-nav button{font-size:17px;padding:12px 22px;min-width:150px}
 .stu-nav button.on{box-shadow:0 9px 22px -14px rgba(48,68,190,.7)}
-.stu-home-actions{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:15px;margin:22px 0 28px}
-.stu-home-card{border:1px solid #e1e7f0;background:#fff;border-radius:20px;padding:22px 18px;min-height:145px;cursor:pointer;font-family:inherit;text-align:right;box-shadow:0 14px 32px -26px rgba(15,35,95,.45);transition:transform .18s ease,box-shadow .18s ease}
-.stu-home-card:hover{transform:translateY(-3px);box-shadow:0 18px 38px -25px rgba(15,35,95,.55)}
-.stu-home-card .ico{font-size:31px;display:block;margin-bottom:10px}.stu-home-card b{display:block;font-size:21px;color:#102d6d}.stu-home-card small{color:#6f7b91;font-size:12px}
+.stu-home-actions{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:0;margin:22px 0 28px;border-radius:18px;overflow:hidden;background:linear-gradient(110deg,#8E2333 0%,#642849 30%,#2A2D68 62%,#12329B 100%);box-shadow:0 16px 38px -26px rgba(15,35,95,.6)}
+.stu-home-card{border:0;border-left:1px solid rgba(255,255,255,.18);background:transparent;border-radius:0;padding:10px 16px;min-height:62px;cursor:pointer;font-family:inherit;text-align:center;color:#fff;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:none;transition:background .18s ease,transform .18s ease}
+.stu-home-card:last-child{border-left:0}.stu-home-card:hover{background:rgba(255,255,255,.12);transform:none}
+.stu-home-card .ico{font-size:24px;display:inline-block;margin:0}.stu-home-card b{display:inline-block;font-size:19px;color:#fff;white-space:nowrap}.stu-home-card small{display:none}
 .stu-page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 20px}
 .stu-page-back{border:1px solid #cad4e6;background:#fff;color:#17346e;border-radius:12px;padding:10px 16px;font-family:inherit;font-weight:800;cursor:pointer}
 .stu-kpi{cursor:pointer;transition:transform .15s ease}.stu-kpi:hover{transform:translateY(-2px)}
@@ -3442,7 +3442,7 @@ function NewsletterViewer({ newsletter, archive = [], onSelect }) {
   const firstCurrent=(newsletter.currentLessons||[])[0]||{title:"",objectives:[]};
   const firstNext=(newsletter.nextLessons||[])[0]||{title:"",objectives:[]};
   const extras=(arr)=>Math.max(0,(arr||[]).length-1);
-  const objectiveList=(objectives,tone)=><div className="nl-objective-list">{(objectives||[]).map((o,i)=><div className="nl-objective" key={i}><span className="nl-objective-num">{i+1}</span><span>{o}</span></div>)}</div>;
+  const objectiveList=(objectives,tone)=>{const items=(objectives||[]).map(o=>String(o||"").trim()).filter(Boolean);return items.length?<div className="nl-objective-list">{items.map((o,i)=><div className="nl-objective" key={i}><span className="nl-objective-num">{i+1}</span><span>{o}</span></div>)}</div>:null;};
   const renderSide=(tone,title,icon,lesson,allLessons)=> <section className={`nl-weekcard ${tone}`}>
     <img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/>
     <div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>
@@ -3450,7 +3450,7 @@ function NewsletterViewer({ newsletter, archive = [], onSelect }) {
       <div className="nl-lesson-orb"><div><small>الدرس</small><b>{lesson.title||"—"}</b></div></div>
       {objectiveList(lesson.objectives,tone)}
     </div>
-    {extras(allLessons)>0 && <div className="nl-extra-lessons">{allLessons.slice(1).map((l,i)=><div className="nl-extra" key={i}><b>{l.title||`درس إضافي ${i+2}`}</b><ul>{(l.objectives||[]).map((o,j)=><li key={j}>{o}</li>)}</ul></div>)}</div>}
+    {extras(allLessons)>0 && <div className="nl-extra-lessons">{allLessons.slice(1).map((l,i)=><div className="nl-extra" key={i}><b>{l.title||`درس إضافي ${i+2}`}</b><ul>{(l.objectives||[]).map(o=>String(o||"").trim()).filter(Boolean).map((o,j)=><li key={j}>{o}</li>)}</ul></div>)}</div>}
   </section>;
   return <div className="nl-shell">
     <header className="nl-head">
@@ -3468,28 +3468,33 @@ function NewsletterViewer({ newsletter, archive = [], onSelect }) {
   </div>;
 }
 
-function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, onSave }) {
+function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, onSave, onDelete }) {
   const mineStudents = students.filter(s=>!teacherEmail || !s.teacherEmail || normEmail(s.teacherEmail)===normEmail(teacherEmail));
   const allGrades = Array.from({length:13},(_,i)=>i+1);
   const allBlocks = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const emptyObjectives=()=>["","","",""];
+  const normalizeObjectives=(arr)=>[...(arr||[])].map(x=>String(x||"")).slice(0,4).concat(["","","",""]).slice(0,4);
+  const normalizeLessons=(arr)=>(arr||[]).map(l=>({...l,objectives:normalizeObjectives(l.objectives)}));
   const [grade,setGrade]=useState(7);
   const [blocks,setBlocks]=useState([]);
   const [blockPickerOpen,setBlockPickerOpen]=useState(false);
   const [weekStart,setWeekStart]=useState(()=>new Date().toISOString().slice(0,10));
   const [weekEnd,setWeekEnd]=useState(()=>{const d=new Date();d.setDate(d.getDate()+6);return d.toISOString().slice(0,10)});
-  const [currentLessons,setCurrentLessons]=useState([{title:"",objectives:[""]}]);
-  const [nextLessons,setNextLessons]=useState([{title:"",objectives:[""]}]);
+  const [currentLessons,setCurrentLessons]=useState([{title:"",objectives:emptyObjectives()}]);
+  const [nextLessons,setNextLessons]=useState([{title:"",objectives:emptyObjectives()}]);
   const [busy,setBusy]=useState(false),[msg,setMsg]=useState("");
-  const addLesson=(which)=>which==="current"?setCurrentLessons(v=>[...v,{title:"",objectives:[""]}]):setNextLessons(v=>[...v,{title:"",objectives:[""]}]);
+  const addLesson=(which)=>which==="current"?setCurrentLessons(v=>[...v,{title:"",objectives:emptyObjectives()}]):setNextLessons(v=>[...v,{title:"",objectives:emptyObjectives()}]);
   const updateLesson=(which,idx,field,val)=>{const setter=which==="current"?setCurrentLessons:setNextLessons;setter(prev=>prev.map((l,i)=>i===idx?{...l,[field]:val}:l));};
-  const clean=(arr)=>arr.map(l=>({title:l.title.trim(),objectives:(l.objectives||[]).map(o=>o.trim()).filter(Boolean)})).filter(l=>l.title||l.objectives.length);
-  const improve=async()=>{setBusy(true);setMsg("");const prompt=`أنت محرر تربوي عربي. حسّن صياغة عناوين الدروس وأهداف التعلم الآتية دون تغيير المعنى أو إضافة محتوى غير موجود. اجعل الأهداف قصيرة وقابلة للملاحظة ومناسبة للصف ${grade}. أعد JSON فقط بهذا الشكل: {"currentLessons":[{"title":"","objectives":[""]}],"nextLessons":[{"title":"","objectives":[""]}]}.
+  const updateObjective=(which,lessonIdx,objIdx,val)=>{const setter=which==="current"?setCurrentLessons:setNextLessons;setter(prev=>prev.map((l,i)=>{if(i!==lessonIdx)return l;const objectives=normalizeObjectives(l.objectives);objectives[objIdx]=val;return {...l,objectives};}));};
+  const clean=(arr)=>arr.map(l=>({title:l.title.trim(),objectives:(l.objectives||[]).map(o=>String(o||"").trim()).filter(Boolean).slice(0,4)})).filter(l=>l.title||l.objectives.length);
+  const improve=async()=>{setBusy(true);setMsg("");const prompt=`أنت محرر تربوي عربي. حسّن صياغة عناوين الدروس وأهداف التعلم الآتية دون تغيير المعنى أو إضافة محتوى غير موجود. اجعل الأهداف قصيرة وقابلة للملاحظة ومناسبة للصف ${grade}. لكل درس حد أقصى أربعة أهداف تعلم فقط. أعد JSON فقط بهذا الشكل: {"currentLessons":[{"title":"","objectives":["","","",""]}],"nextLessons":[{"title":"","objectives":["","","",""]}]}.
 هذا الأسبوع: ${JSON.stringify(clean(currentLessons))}
-الأسبوع القادم: ${JSON.stringify(clean(nextLessons))}`;const out=await ask(prompt,"auto");if(out?.currentLessons) setCurrentLessons(out.currentLessons);if(out?.nextLessons) setNextLessons(out.nextLessons);setMsg(out?"✅ تم تحسين الصياغة. راجعها ثم قرر النشر.":"تعذّر التحسين الآن؛ يمكنك النشر بصياغتك الحالية.");setBusy(false)};
+الأسبوع القادم: ${JSON.stringify(clean(nextLessons))}`;const out=await ask(prompt,"auto");if(out?.currentLessons) setCurrentLessons(normalizeLessons(out.currentLessons));if(out?.nextLessons) setNextLessons(normalizeLessons(out.nextLessons));setMsg(out?"✅ تم تحسين الصياغة. راجعها ثم قرر النشر.":"تعذّر التحسين الآن؛ يمكنك النشر بصياغتك الحالية.");setBusy(false)};
   const submit=async(status)=>{const c=clean(currentLessons),n=clean(nextLessons);if(!blocks.length)return setMsg("اختر بلوكًا واحدًا على الأقل.");if(!c.length||!n.length)return setMsg("أدخل درسًا واحدًا على الأقل لكل أسبوع.");setBusy(true);const rec={id:uid(),teacherName,teacherEmail:normEmail(teacherEmail),grade:+grade,blocks,weekStart,weekEnd,currentLessons:c,nextLessons:n,status,createdAt:new Date().toISOString()};const r=await onSave(rec);setMsg(status==="published"?`✅ تم نشر النشرة وإرسالها. ${r?.sendStats?`الطلاب: ${r.sendStats.studentSent}/${r.sendStats.studentTotal} · أولياء الأمور: ${r.sendStats.parentSent}/${r.sendStats.parentTotal}`:""}`:"✅ تم حفظ المسودة.");setBusy(false)};
   const myNews=(newsletters||[]).filter(n=>n.teacherName===teacherName).sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
-  const side=(which,list,tone,title,icon)=><section className={`nl-editor-card ${tone}`}><img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/><div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>{list.map((l,i)=><div className="nl-editor-item" key={i}><input className="inp" placeholder="اسم الدرس" value={l.title} onChange={e=>updateLesson(which,i,"title",e.target.value)}/><textarea className="tarea" rows={5} style={{marginTop:8}} placeholder="اكتب هدف تعلم في كل سطر" value={(l.objectives||[]).join("\n")} onChange={e=>updateLesson(which,i,"objectives",e.target.value.split("\n"))}/></div>)}<button className="btn nl-editor-add" onClick={()=>addLesson(which)}>+ إضافة درس</button></section>;
+  const side=(which,list,tone,title,icon)=><section className={`nl-editor-card ${tone}`}><img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/><div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>{list.map((l,i)=><div className="nl-editor-item" key={i}><input className="inp" placeholder="اسم الدرس" value={l.title} onChange={e=>updateLesson(which,i,"title",e.target.value)}/><div style={{marginTop:10,fontWeight:800,fontSize:14,color:"inherit"}}>في نهاية الدرس سيكون الطالب قادرًا على أن:</div><div className="grid" style={{gap:8,marginTop:8}}>{[0,1,2,3].map(j=><input key={j} className="inp" placeholder={`هدف التعلم ${j+1}`} value={normalizeObjectives(l.objectives)[j]} onChange={e=>updateObjective(which,i,j,e.target.value)}/>)}</div></div>)}<button className="btn nl-editor-add" onClick={()=>addLesson(which)}>+ إضافة درس</button></section>;
   const toggleBlock=(b)=>setBlocks(v=>v.includes(b)?v.filter(x=>x!==b):[...v,b]);
+  const removeNewsletter=async(n)=>{if(!onDelete)return;const ok=window.confirm(`هل تريد حذف نشرة الصف ${n.grade} — ${(n.blocks||[]).join("، ")}؟ ستختفي أيضًا من صفحة الطالب وولي الأمر.`);if(!ok)return;setBusy(true);await onDelete(n.id,n);setMsg("🗑️ تم حذف النشرة من المنصة ومن صفحات الطلاب وأولياء الأمور.");setBusy(false);};
   return <div className="nl-editor-shell">
     <div className="card" style={{padding:20}}><div className="nl-editor-actions"><div><h2>📰 إعداد النشرة الأسبوعية</h2><p style={{margin:"3px 0",fontSize:12,color:T.inkSoft}}>المعلم يكتب المحتوى، والذكاء الاصطناعي يحسّن الصياغة فقط. لا تظهر أي إعدادات للطالب أو ولي الأمر.</p></div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button className="btn btn-o" disabled={busy} onClick={improve}>✨ تحسين بالذكاء الاصطناعي</button><button className="btn btn-p" disabled={busy} onClick={()=>submit("published")}>📢 اعتماد ونشر وإرسال</button></div></div>
       <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",marginTop:15}}>
@@ -3501,7 +3506,7 @@ function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, on
     </div>
     <div className="nl-editor-cards">{side("current",currentLessons,"red","ماذا تعلمنا هذا الأسبوع؟","✅")}{side("next",nextLessons,"blue","ماذا سنتعلم الأسبوع القادم؟","🚀")}</div>
     {msg&&<div className="card" style={{padding:13,background:T.greenSoft}}>{msg}</div>}
-    <div className="card" style={{padding:18}}><h3>سجل نشراتك</h3>{myNews.length===0?<p style={{color:T.inkSoft}}>لا توجد نشرات منشورة بعد.</p>:<table className="tbl"><thead><tr><th>تاريخ النشر</th><th>الصف</th><th>البلوكات</th><th>الحالة</th><th>الإرسال</th></tr></thead><tbody>{myNews.slice(0,20).map(n=><tr key={n.id}><td>{n.publishedAt?new Date(n.publishedAt).toLocaleString("ar-AE"):"مسودة"}</td><td>{n.grade}</td><td>{(n.blocks||[]).join("، ")}</td><td>{n.status==="published"?<Chip tone="g">منشورة</Chip>:<Chip>مسودة</Chip>}</td><td>{n.sendStats?`${n.sendStats.studentSent}/${n.sendStats.studentTotal} طلاب · ${n.sendStats.parentSent}/${n.sendStats.parentTotal} أولياء أمور`:"—"}</td></tr>)}</tbody></table>}</div>
+    <div className="card" style={{padding:18}}><h3>النشرات المنشورة</h3>{myNews.length===0?<p style={{color:T.inkSoft}}>لا توجد نشرات منشورة بعد.</p>:<table className="tbl"><thead><tr><th>تاريخ النشر</th><th>الصف</th><th>البلوكات</th><th>الحالة</th><th>الإرسال</th><th>إجراء</th></tr></thead><tbody>{myNews.slice(0,20).map(n=><tr key={n.id}><td>{n.publishedAt?new Date(n.publishedAt).toLocaleString("ar-AE"):"مسودة"}</td><td>{n.grade}</td><td>{(n.blocks||[]).join("، ")}</td><td>{n.status==="published"?<Chip tone="g">منشورة</Chip>:<Chip>مسودة</Chip>}</td><td>{n.sendStats?`${n.sendStats.studentSent}/${n.sendStats.studentTotal} طلاب · ${n.sendStats.parentSent}/${n.sendStats.parentTotal} أولياء أمور`:"—"}</td><td><button className="btn btn-d" disabled={busy} onClick={()=>removeNewsletter(n)}>حذف</button></td></tr>)}</tbody></table>}</div>
   </div>;
 }
 
@@ -4868,7 +4873,7 @@ function TeacherDashboard({ students, courses, attempts, progress, onNavigate })
 
 
 /* ==================== لوحة المعلم الكاملة ==================== */
-function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, newsletters = [], onSaveNewsletter, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
+function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, newsletters = [], onSaveNewsletter, onDeleteNewsletter, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
   const [tab, setTab] = useState("d");
   const [aiProvider, setAiProvider] = useState("claude");
   const [aiBusy, setAiBusy] = useState(null);
@@ -4924,7 +4929,7 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
 
       {tab === "d" && <TeacherDashboard students={students2} courses={mine} attempts={attempts2} progress={progress} onNavigate={setTab} />}
 
-      {tab === "nl" && <NewsletterEditor teacherName={teacherName} teacherEmail={teacherEmail} students={students2} newsletters={newsletters} onSave={onSaveNewsletter} />}
+      {tab === "nl" && <NewsletterEditor teacherName={teacherName} teacherEmail={teacherEmail} students={students2} newsletters={newsletters} onSave={onSaveNewsletter} onDelete={onDeleteNewsletter} />}
 
       {tab === "s" && (<div className="card" style={{ padding: 20, overflowX: "auto" }}>
         <h3 style={{ marginBottom: 12 }}>تحليل الطلاب وتقارير أولياء الأمور</h3>
@@ -6934,6 +6939,13 @@ export default function App() {
     return next;
   };
 
+  const deleteNewsletter = async (id, rec = null) => {
+    await deleteRecord(REC.newsletter, id);
+    setNewsletters(prev => prev.filter(x => x.id !== id));
+    log(rec?.teacherName || user?.name || "معلم", "حذف نشرة أسبوعية", rec ? `الصف ${rec.grade} — ${(rec.blocks||[]).join("، ")}` : id);
+    return { ok: true };
+  };
+
   // مسح كامل لقائمة الطلاب دفعة واحدة — للتراجع عن استيراد خاطئ بالكامل
   // بدل حذف كل طالب يدويًا واحدًا تلو الآخر.
   const clearAllStudents = (actor) => {
@@ -6995,7 +7007,7 @@ export default function App() {
                 <div style={{ fontWeight: 600 }}>{i + 1}. {b.q} <Chip>{QTYPE[b.t]}</Chip></div><div style={{ color: T.green }}>الصواب: {correctText(b)}</div><div style={{ color: T.inkSoft }}>{b.e}</div></div>))}
             </div>
           </div>
-        ) : <TeacherHome teacherName={user.name} teacherEmail={user.email} courses={courses} attempts={attempts} progress={progress} students={students} newsletters={newsletters} onSaveNewsletter={saveNewsletter}
+        ) : <TeacherHome teacherName={user.name} teacherEmail={user.email} courses={courses} attempts={attempts} progress={progress} students={students} newsletters={newsletters} onSaveNewsletter={saveNewsletter} onDeleteNewsletter={deleteNewsletter}
               onNew={() => nav({ n: "gen" })} onManual={() => nav({ n: "manual" })} onPaste={() => nav({ n: "paste" })}
               onView={(id) => nav({ n: "course", id })} onEdit={(id) => nav({ n: "manual", id, edit: true })}
               onPublish={(id) => { patchCourse(id, { status: "published" }); log(user.name, "نشر كورس", id); }}
