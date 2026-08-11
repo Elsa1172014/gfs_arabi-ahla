@@ -167,7 +167,7 @@ const CSS = `
 .adm-subbtn.on{background:#e8ecff;color:#18389b;box-shadow:inset 0 0 0 1px #cfd7ff}
 .adm-content{padding:20px 28px 28px}
 .adm-filterbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.adm-kpis{display:grid;grid-template-columns:repeat(6,minmax(145px,1fr));gap:10px;margin-bottom:12px}
+.adm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:12px}
 .adm-kpi{background:#fff;border:1px solid #e0e6ee;border-radius:15px;padding:13px;min-height:116px}
 .adm-kpi-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
 .adm-kpi-icon{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;background:#f2f5fb}
@@ -2610,7 +2610,7 @@ const SEED_COURSES = [C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C1
 /* ============================ تخزين وأدوات ============================ */
 const K = {
   courses: "gfs:courses:v5", students: "gfs:students:v5", attempts: "gfs:attempts:v5", progress: "gfs:progress:v5",
-  teachers: "gfs:teachers:v5", blocksAdmin: "gfs:blocksadmin:v5", audit: "gfs:audit:v5", parentTok: "gfs:parenttok:v5",
+  teachers: "gfs:teachers:v5", blocksAdmin: "gfs:blocksadmin:v5", blockGroups: "gfs:blockgroups:v1", audit: "gfs:audit:v5", parentTok: "gfs:parenttok:v5",
   codes: "gfs:codes:v1", orgEmail: "gfs:orgemail:v1",
 };
 const readKey = async (k, f) => { try { const r = await window.storage.get(k, true); return r && r.value ? JSON.parse(r.value) : f; } catch { return f; } };
@@ -2663,15 +2663,42 @@ function dedupeBank(bank) {
     seen.add(k); return true;
   });
 }
+function collectLessonStrings(value, out = []) {
+  if (value == null) return out;
+  if (typeof value === "string") { out.push(value); return out; }
+  if (Array.isArray(value)) { value.forEach((v) => collectLessonStrings(v, out)); return out; }
+  if (typeof value === "object") Object.entries(value).forEach(([k, v]) => { if (k !== "bank") collectLessonStrings(v, out); });
+  return out;
+}
 function cleanBank(course) {
   const inLesson = new Set();
-  (course.stages || []).forEach((s) => (s.checks || []).forEach((c) => inLesson.add(norm(c.q))));
+  (course.stages || []).forEach((st) => (st.checks || []).forEach((c) => inLesson.add(norm(c.q))));
+  const lessonText = norm(collectLessonStrings(course.stages || []).join(" "));
   const seen = new Set();
   return (course.bank || []).filter((b) => {
-    const k = norm(b.q) + "|" + norm(correctText(b));
-    if (seen.has(k) || inLesson.has(norm(b.q))) return false;
+    if (!b || !b.t || !b.q || !QTYPE[b.t]) return false;
+    const nq = norm(b.q);
+    const k = nq + "|" + norm(correctText(b));
+    const repeatedInLesson = nq.length >= 18 && lessonText.includes(nq);
+    if (seen.has(k) || inLesson.has(nq) || repeatedInLesson) return false;
     seen.add(k); return true;
   });
+}
+function courseQuality(course) {
+  const original = Array.isArray(course?.bank) ? course.bank : [];
+  const clean = cleanBank(course || {});
+  const duplicateCount = Math.max(0, original.length - clean.length);
+  const stageCount = (course?.stages || []).length;
+  const types = new Set(clean.map((q) => q.t)).size;
+  const objectiveOk = String(course?.objective || "").trim().length >= 12;
+  const explanationChars = collectLessonStrings(course?.stages || []).join(" ").trim().length;
+  const questionScore = Math.min(30, Math.round(clean.length / 25 * 30));
+  const varietyScore = Math.min(20, types * 5);
+  const structureScore = Math.min(20, stageCount * 4);
+  const clarityScore = (objectiveOk ? 10 : 4) + (explanationChars >= 350 ? 10 : explanationChars >= 150 ? 7 : 3);
+  const duplicateScore = duplicateCount === 0 ? 10 : Math.max(0, 10 - duplicateCount * 3);
+  return { score: Math.max(0, Math.min(100, questionScore + varietyScore + structureScore + clarityScore + duplicateScore)),
+    cleanCount: clean.length, duplicateCount, stageCount, types, objectiveOk, explanationChars };
 }
 
 // إرسال بريد حقيقي عبر /api/send-email — "أطلق ولا تنتظر": فشل الإرسال لا
@@ -3002,7 +3029,7 @@ function StageBody({ s }) {
 }
 
 /* ============================ الدخول ============================ */
-function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, courses = [], attempts = [] }) {
+function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teachers = [], courses = [], attempts = [] }) {
   const [stage, setStage] = useState("welcome"); // welcome | pick | form
   const [role, setRole] = useState(null); // s | p | t | a
   const [step, setStep] = useState(1); // خطوة معالج الطالب
@@ -3235,11 +3262,13 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
                 {teacherMem && <button className="btn btn-q" style={{ alignSelf: "start", padding: "2px 0", color: T.brick }} onClick={() => forget("teacher")}>نسيان البيانات المحفوظة</button>}
                 {err && <div style={{ color: T.brick }}>{err}</div>}
                 <button className="btn btn-p lh-ripple-btn" onClick={async (e) => {
-                  if (code !== codes.teacher) return setErr("الرمز غير صحيح. راجع رئيس القسم للحصول عليه.");
                   const email = normEmail(temail);
                   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr("أدخل بريدك الإلكتروني المدرسي بصورة صحيحة.");
-                  ripple(e);
                   const name = tname.trim() || "معلم اللغة العربية";
+                  const knownTeacher = (teachers || []).find((t) => t.name === name || normEmail(t.email) === email);
+                  const expectedCode = knownTeacher?.code || codes.teacher;
+                  if (code !== expectedCode) return setErr("الرمز غير صحيح. راجع رئيس القسم للحصول عليه.");
+                  ripple(e);
                   if (rememberT) { try { await window.storage.set("gfs:mem:teacher", JSON.stringify({ name, email, code }), false); } catch { } }
                   else { try { await window.storage.delete("gfs:mem:teacher", false); } catch { } }
                   onTeacher(name, email);
@@ -4935,6 +4964,68 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
   );
 }
 
+/* ==================== محرر الكورس بالذكاء الاصطناعي لرئيس القسم ==================== */
+function AIEditCourse({ course, onSave, onCancel }) {
+  const [instruction, setInstruction] = useState("حسّن الشرح والأسئلة مع الحفاظ على مستوى الصف وعدم تكرار أي سؤال.");
+  const [provider, setProvider] = useState("auto");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  const [candidate, setCandidate] = useState(null);
+  const before = courseQuality(course);
+  const improve = async () => {
+    if (!instruction.trim()) return;
+    setBusy(true); setNote("جارٍ تحليل الكورس وإعداد نسخة محسّنة…"); setCandidate(null);
+    try {
+      const compact = { title: course.title, objective: course.objective, domain: course.domain, grade: course.grade, stages: course.stages || [], bank: course.bank || [] };
+      const prompt = `أنت خبير مناهج لغة عربية. عدّل الكورس التالي وفق التعليمات، وأعد JSON فقط بلا نص خارجه.
+تعليمات رئيس القسم: ${instruction}
+شروط إلزامية:
+1) حافظ على بنية stages وbank وعلى أنواع الأسئلة mcq/tf/fill/err/match.
+2) لا تكرر نص أي سؤال مرتين، ولا تكرر سؤالًا موجودًا داخل الشرح أو checks في بنك الاختبار.
+3) اجعل الأسئلة مناسبة للصف ${course.grade} ومتنوعة ومتدرجة.
+4) لا تغيّر هوية الكورس أو الصف أو المعلم أو حالة النشر.
+5) أعد: {"title":"","objective":"","stages":[],"bank":[]}
+الكورس الحالي: ${JSON.stringify(compact)}`;
+      const raw = await ask(prompt, provider);
+      if (!raw || !Array.isArray(raw.stages) || !Array.isArray(raw.bank)) throw new Error("صيغة غير صالحة");
+      const merged = { ...course, title: String(raw.title || course.title), objective: String(raw.objective || course.objective),
+        stages: raw.stages, bank: dedupeBank(raw.bank), id: course.id, teacher: course.teacher, grade: course.grade,
+        domain: course.domain, status: course.status, blocks: course.blocks, students: course.students };
+      merged.bank = cleanBank(merged);
+      if (merged.bank.length < 8) throw new Error("عدد الأسئلة الصالحة بعد منع التكرار أقل من الحد الآمن.");
+      setCandidate(merged);
+      const q = courseQuality(merged);
+      setNote(`تم إعداد النسخة المقترحة: جودة ${q.score}/100 · ${q.cleanCount} سؤالًا صالحًا · ${q.duplicateCount} تكرار.`);
+    } catch (e) { setNote(`تعذّر إنشاء نسخة آمنة: ${String(e?.message || e)}. لم يتغير الكورس الأصلي.`); }
+    finally { setBusy(false); }
+  };
+  const after = candidate ? courseQuality(candidate) : null;
+  return <div className="wrap" style={{paddingBottom:60,maxWidth:950}}><div className="card" style={{padding:22}}>
+    <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+      <div><h2>🤖 تحسين الكورس بالذكاء الاصطناعي</h2><p style={{fontSize:12,color:T.inkSoft,margin:"4px 0"}}>{course.title} · الصف {course.grade} · يبقى رقم الكورس {course.id} كما هو لحماية النتائج والشهادات.</p></div>
+      <button className="btn btn-q" onClick={onCancel}>عودة</button>
+    </div>
+    <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",margin:"16px 0"}}>
+      <Stat label="الجودة الحالية" value={`${before.score}/100`} tone={before.score>=80?T.green:before.score>=60?T.gold:T.brick}/>
+      <Stat label="الأسئلة الصالحة" value={before.cleanCount}/><Stat label="التكرارات" value={before.duplicateCount} tone={before.duplicateCount?T.brick:T.green}/><Stat label="الوحدات" value={before.stageCount}/>
+    </div>
+    <label className="lbl">ماذا تريد من الذكاء الاصطناعي أن يغيّر؟</label>
+    <textarea className="tarea" rows={4} value={instruction} onChange={e=>setInstruction(e.target.value)}/>
+    <div className="grid" style={{gridTemplateColumns:"minmax(180px,1fr) auto",marginTop:10}}>
+      <select className="inp" value={provider} onChange={e=>setProvider(e.target.value)}><option value="auto">تلقائي — Gemini أولًا</option>{Object.entries(PROVIDERS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select>
+      <button className="btn btn-p" disabled={busy} onClick={improve}>{busy?"جارٍ التحليل…":"إنشاء نسخة محسّنة"}</button>
+    </div>
+    {note&&<p style={{fontSize:12,color:note.startsWith("تعذّر")?T.brick:T.green,marginTop:10}}>{note}</p>}
+    {candidate&&<div style={{marginTop:18}}><h3 style={{marginBottom:10}}>مقارنة قبل الاعتماد</h3>
+      <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))"}}>
+        <div className="card" style={{padding:14,background:T.paper}}><strong>قبل</strong><p>{course.objective}</p><div style={{fontSize:12,color:T.inkSoft}}>جودة {before.score}/100 · {before.cleanCount} سؤالًا</div></div>
+        <div className="card" style={{padding:14,background:T.greenSoft}}><strong>بعد</strong><p>{candidate.objective}</p><div style={{fontSize:12,color:T.inkSoft}}>جودة {after.score}/100 · {after.cleanCount} سؤالًا · تكرار {after.duplicateCount}</div></div>
+      </div>
+      <div style={{display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}><button className="btn btn-p" onClick={()=>onSave(candidate)}>اعتماد التعديل وحفظه</button><button className="btn btn-q" onClick={()=>setCandidate(null)}>رفض النسخة</button></div>
+    </div>}
+  </div></div>;
+}
+
 /* ==================== وحدة الإدارة / رئيس القسم ==================== */
 // نموذج خطة تدخل حقيقي — سجلّ كامل يُحفَظ فعليًّا (لا نافذة تأكيد شكلية):
 // المشكلة، الإجراء، المسؤول، تاريخ المراجعة. حقل "الإجراء" يشمل خيارات
@@ -4987,8 +5078,8 @@ function InterventionModal({ target, courses, actor, onClose, onSave }) {
   );
 }
 
-function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmin, audit, codes, onUpdateCodes, orgEmail, onUpdateOrgEmail, onSetTeacherEmail, onToggleTeacher, onAddBlock, onRemoveBlock,
-  onPublishAny, onPublishWithDetails, onArchiveAny, onDeleteCourse, onExportStudents, onExportAudit, onImportStudents,
+function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmin, blockGroups, audit, codes, onUpdateCodes, orgEmail, onUpdateOrgEmail, onSetTeacherEmail, onToggleTeacher, onAddTeacher, onDeleteTeacher, onSetTeacherCode, onAddBlock, onRemoveBlock, onSaveBlockGroup, onDeleteBlockGroup,
+  onGenerateCourse, onAIEditCourse, onPublishAny, onPublishWithDetails, onArchiveAny, onDeleteCourse, onExportStudents, onExportAudit, onImportStudents,
   interventions, onAddIntervention, onUpdateIntervention, onReopenAttempt, currentActor }) {
   const [adminPublishOpen, setAdminPublishOpen] = useState(null);
   const [analysisGrade, setAnalysisGrade] = useState("all");
@@ -4997,6 +5088,11 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
   const [selectedStudentKey, setSelectedStudentKey] = useState(null);
   const [newOrgEmail, setNewOrgEmail] = useState(orgEmail || ""); const [orgEmailMsg, setOrgEmailMsg] = useState("");
   const [editEmailFor, setEditEmailFor] = useState(null); const [teacherEmailDraft, setTeacherEmailDraft] = useState("");
+  const [teacherForm, setTeacherForm] = useState({ name: "", email: "", code: "" });
+  const [teacherCodeFor, setTeacherCodeFor] = useState(null); const [teacherCodeDraft, setTeacherCodeDraft] = useState("");
+  const [openGradeBlocks, setOpenGradeBlocks] = useState(null);
+  const [groupDraft, setGroupDraft] = useState({ grade: 7, name: "", blocks: [] });
+  const [simGrade, setSimGrade] = useState(7); const [simThreshold, setSimThreshold] = useState(70); const [simCourseId, setSimCourseId] = useState("");
   const [tab, setTab] = useState("dash");
   const [navGroup, setNavGroup] = useState("lead");
   const [riskFilter, setRiskFilter] = useState("all");
@@ -5165,6 +5261,11 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
         if (worstBlock) priorities.push({level:worstBlock.avg<60?"عاجل":"متابعة", title:worstBlock.k, detail:`متوسط التحصيل ${worstBlock.avg}%`, value:worstBlock.avg});
         if (strugglingKeys.size) priorities.push({level:"عاجل", title:"طلاب متعثرون", detail:`${strugglingKeys.size} طالب يحتاجون تدخّلًا`, value:Math.max(1,Math.min(59,avgScore||0))});
         if (neverAttempted.length) priorities.push({level:"متابعة", title:"لم يبدؤوا", detail:`${neverAttempted.length} طالب بلا محاولة`, value:65});
+        const activityPct = students.length ? Math.round(activeThisWeek * 100 / students.length) : null;
+        const safePct = students.length ? Math.round((students.length - strugglingKeys.size) * 100 / students.length) : null;
+        const healthParts = [[avgScore, .40], [completionPct, .25], [activityPct, .15], [safePct, .20]].filter(([v]) => v != null);
+        const healthWeight = healthParts.reduce((n,[,w])=>n+w,0);
+        const healthScore = healthWeight ? Math.round(healthParts.reduce((n,[v,w])=>n+v*w,0)/healthWeight) : null;
 
         return (
           <div>
@@ -5182,6 +5283,7 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
 
             <div className="adm-kpis">
               {[
+                ["❤️","صحة القسم",healthScore!=null?healthScore+"/100":"—",healthScore==null?"تظهر مع توافر البيانات":healthScore>=80?"مستقر وقوي":healthScore>=60?"يحتاج متابعة":"أولوية تدخل"],
                 ["👥","إجمالي الطلاب",students.length,"الطلاب المسجّلون فعليًا"],
                 ["🎯","متوسط التحصيل",avgScore!=null?avgScore+"%":"—",weekDelta!=null?`${weekDelta>=0?"↑":"↓"} ${Math.abs(weekDelta)} نقطة عن الأسبوع السابق`:"لا مقارنة كافية"],
                 ["📗","نسبة الإكمال",completionPct!=null?completionPct+"%":"—",`${completedPairs} من ${assignedPairs||0} إسناد مكتمل`],
@@ -5327,8 +5429,16 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
           const overdueCourses = assigned.filter((c) => c.dueDate && new Date(c.dueDate) < now && !at.some((a) => a.course === c.id && a.passed));
           if (overdueCourses.length) reasons.push({ k: "overdue", label: `تجاوز الموعد النهائي في ${overdueCourses.length} كورس` });
 
-          return { ...s, avg, reasons, exhaustedCourses, notes: interventions.filter((i) => i.studentKey === s.key) };
-        }).filter((r) => r.reasons.length > 0);
+          const riskScore = Math.min(100,
+            (!at.length ? 35 : 0) +
+            (notStarted.length ? Math.min(20, notStarted.length * 7) : 0) +
+            (avg != null && avg < 70 ? Math.min(25, 70 - avg) : 0) +
+            (exhaustedCourses.length ? Math.min(25, exhaustedCourses.length * 15) : 0) +
+            (reasons.some((x) => x.k === "declining") ? 15 : 0) +
+            (overdueCourses.length ? Math.min(15, overdueCourses.length * 5) : 0)
+          );
+          return { ...s, avg, reasons, exhaustedCourses, riskScore, notes: interventions.filter((i) => i.studentKey === s.key) };
+        }).filter((r) => r.reasons.length > 0).sort((a,b)=>b.riskScore-a.riskScore);
 
         const filtered = riskFilter === "all" ? rows : rows.filter((r) => r.reasons.some((rs) => rs.k === riskFilter));
         const REASON_TYPES = [["all", "الكل"], ["notEntered", "لم يدخلوا"], ["notStarted", "لم يبدؤوا"], ["lowScore", "أداء ضعيف"], ["exhausted", "استنفدوا المحاولات"], ["declining", "تراجع الأداء"], ["overdue", "تجاوزوا الموعد"]];
@@ -5351,6 +5461,7 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
                     <div>
                       <div style={{ fontWeight: 700 }}>{r.name}</div>
                       <div style={{ fontSize: 12, color: T.inkSoft }}>الصف {r.grade} — {r.block} {r.avg != null && `— متوسط ${r.avg}%`}</div>
+                      <div style={{marginTop:5}}><Chip tone={r.riskScore>=60?"r":r.riskScore>=30?"a":"g"}>مؤشر الخطر {r.riskScore}/100</Chip></div>
                     </div>
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                       {r.reasons.map((rs) => <span key={rs.k} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 10, background: T.brickSoft, color: T.brick, fontWeight: 700 }}>{rs.label}</span>)}
@@ -5547,13 +5658,23 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
             completionPct: targetedStudents.size ? Math.round((completedStudents.size / targetedStudents.size) * 100) : null,
             avgScore, interventionsCount: myInterventions.length, lastUpdate: myCourses.reduce((max, c) => c.publishedAt && (!max || c.publishedAt > max) ? c.publishedAt : max, null), support };
         });
+        const avgLoad = rows.length ? Math.round(rows.reduce((n,r)=>n+r.studentsCount,0)/rows.length) : 0;
         return (
           <div>
+            <div className="card" style={{padding:14,marginBottom:12,background:T.paper}}>
+              <strong>⚖️ موازنة عبء المعلمين</strong>
+              <div style={{fontSize:12,color:T.inkSoft,marginTop:4}}>متوسط العبء الحالي {avgLoad} طالبًا لكل معلم. التصنيف يقارن عدد طلاب المعلم بمتوسط القسم ولا ينقل أي طالب تلقائيًا.</div>
+            </div>
             <p style={{ fontSize: 12, color: T.inkSoft, marginBottom: 12 }}>كل رقم محسوب من كورسات ومحاولات المعلم فعليًّا — لا تقييمًا يدويًّا.</p>
             <div style={{ display: "grid", gap: 10 }}>
               {rows.map((r) => (
                 <div key={r.name} className="card" style={{ padding: 16 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{r.name}</div>
+                  <div style={{ display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",marginBottom:8 }}>
+                    <div style={{ fontWeight: 700 }}>{r.name}</div>
+                    <Chip tone={avgLoad && r.studentsCount>avgLoad*1.25?"r":avgLoad && r.studentsCount<avgLoad*.75?"a":"g"}>
+                      {avgLoad && r.studentsCount>avgLoad*1.25?"عبء مرتفع":avgLoad && r.studentsCount<avgLoad*.75?"عبء منخفض":"متوازن"}
+                    </Chip>
+                  </div>
                   <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", marginBottom: 10 }}>
                     <Stat label="الكورسات" value={r.coursesCount} />
                     <Stat label="الطلاب المتابَعون" value={r.studentsCount} />
@@ -5626,28 +5747,28 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
       })()}
 
       {tab === "plans" && (() => {
-        return (
-          <div>
-            <p style={{ fontSize: 12, color: T.inkSoft, marginBottom: 12 }}>سجلّ كامل حقيقي لكل خطط التدخل المحفوظة ({interventions.filter((i) => i.studentKey).length}).</p>
-            <div className="card" style={{ overflow: "auto" }}>
-              <table className="tbl">
-                <thead><tr><th>الطالب</th><th>المشكلة</th><th>الإجراء</th><th>المسؤول</th><th>تاريخ البداية</th><th>تاريخ المراجعة</th><th>الحالة</th></tr></thead>
-                <tbody>
-                  {interventions.filter((i) => i.studentKey).map((i) => (
-                    <tr key={i.id}>
-                      <td>{i.studentName}</td><td>{i.problem}</td><td>{i.action}</td><td>{i.responsible}</td>
-                      <td className="mono">{dateAr(i.at)}</td><td className="mono">{i.reviewDate || "—"}</td>
-                      <td><select className="inp" style={{ fontSize: 11, padding: "2px 6px", width: "auto" }} value={i.status} onChange={(e) => onUpdateIntervention(i.id, { status: e.target.value })}>
-                        <option>مفتوح</option><option>قيد المتابعة</option><option>مكتمل</option>
-                      </select></td>
-                    </tr>
-                  ))}
-                  {!interventions.filter((i) => i.studentKey).length && <tr><td colSpan={7} style={{ textAlign: "center", color: T.inkSoft, padding: 20 }}>لا خطط تدخل مسجَّلة بعد.</td></tr>}
-                </tbody>
-              </table>
+        const rows=interventions.filter(i=>i.studentKey).map(i=>{const before=attempts.filter(a=>a.student===i.studentKey&&new Date(a.at)<new Date(i.at)).slice(-3);const after=attempts.filter(a=>a.student===i.studentKey&&new Date(a.at)>=new Date(i.at));const av=x=>x.length?Math.round(x.reduce((n,a)=>n+a.pct,0)/x.length):null;const beforeAvg=av(before),afterAvg=av(after);return {...i,beforeAvg,afterAvg,delta:beforeAvg!=null&&afterAvg!=null?afterAvg-beforeAvg:null}});
+        const simCourse=courses.find(c=>c.id===simCourseId);
+        const simTargets=studentRows.filter(st=>+st.grade===+simGrade && st.avg!=null && st.avg<simThreshold && (!simCourse || !attempts.some(a=>a.student===st.key&&a.course===simCourse.id&&a.passed)));
+        return <div><div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap",marginBottom:12}}><div><h3>الخطط والتدخلات وقياس الأثر</h3><p style={{fontSize:12,color:T.inkSoft,margin:"4px 0 0"}}>الأثر محسوب من نتائج الطالب الفعلية: متوسط آخر 3 محاولات قبل التدخل مقابل المحاولات بعده.</p></div><Chip tone="g">{rows.filter(r=>r.delta!=null&&r.delta>0).length} تدخلًا ذا تحسن مقاس</Chip></div>
+          <div className="card" style={{padding:16,marginBottom:14,background:T.paper}}>
+            <h4 style={{marginBottom:8}}>🧪 محاكي القرار — ماذا لو؟</h4>
+            <p style={{fontSize:12,color:T.inkSoft,marginTop:0}}>جرّب الخطة أولًا. لا يتغير أي سجل حتى تضغط «اعتماد التدخلات».</p>
+            <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))"}}>
+              <select className="inp" value={simGrade} onChange={e=>setSimGrade(+e.target.value)}>{Array.from({length:13},(_,i)=><option key={i+1} value={i+1}>الصف {i+1}</option>)}</select>
+              <select className="inp" value={simThreshold} onChange={e=>setSimThreshold(+e.target.value)}><option value={60}>أقل من 60%</option><option value={70}>أقل من 70%</option><option value={80}>أقل من 80%</option></select>
+              <select className="inp" value={simCourseId} onChange={e=>setSimCourseId(e.target.value)}><option value="">بدون كورس محدد</option>{courses.filter(c=>c.status==="published"&&+c.grade===+simGrade).map(c=><option key={c.id} value={c.id}>{c.title}</option>)}</select>
+              <div className="card" style={{padding:10,background:"#fff"}}><div style={{fontSize:11,color:T.inkSoft}}>الطلاب المستهدفون</div><div style={{fontSize:24,fontWeight:800}}>{simTargets.length}</div></div>
             </div>
+            {simTargets.length>0&&<div style={{fontSize:12,color:T.inkSoft,marginTop:8}}>يشمل: {simTargets.slice(0,8).map(x=>x.name).join("، ")}{simTargets.length>8?"…":""}</div>}
+            <button className="btn btn-p" style={{marginTop:10}} disabled={!simTargets.length} onClick={()=>{
+              if(!window.confirm(`إنشاء خطة تدخل لـ ${simTargets.length} طالبًا؟`)) return;
+              const review=new Date(Date.now()+14*86400000).toISOString().slice(0,10);
+              simTargets.forEach(st=>onAddIntervention({studentKey:st.key,studentName:st.name,problem:`أداء أقل من ${simThreshold}%`,action:simCourse?`كورس علاجي — ${simCourse.title}`:"متابعة علاجية موجهة",responsible:currentActor,reviewDate:review}));
+            }}>اعتماد التدخلات</button>
           </div>
-        );
+          <div className="card" style={{overflow:"auto"}}><table className="tbl"><thead><tr><th>الطالب</th><th>المشكلة</th><th>الإجراء</th><th>قبل</th><th>بعد</th><th>أثر التدخل</th><th>المراجعة</th><th>الحالة</th></tr></thead><tbody>{rows.map(i=><tr key={i.id}><td>{i.studentName}</td><td>{i.problem}</td><td>{i.action}</td><td className="mono">{i.beforeAvg!=null?i.beforeAvg+"%":"—"}</td><td className="mono">{i.afterAvg!=null?i.afterAvg+"%":"—"}</td><td>{i.delta!=null?<Chip tone={i.delta>0?"g":i.delta<0?"r":"a"}>{i.delta>0?"+":""}{i.delta} نقطة</Chip>:<span style={{color:T.inkSoft}}>بانتظار بيانات بعد التدخل</span>}</td><td className="mono">{i.reviewDate||"—"}</td><td><select className="inp" style={{fontSize:11,padding:"2px 6px",width:"auto"}} value={i.status} onChange={e=>onUpdateIntervention(i.id,{status:e.target.value})}><option>مفتوح</option><option>قيد المتابعة</option><option>مكتمل</option></select></td></tr>)}{!rows.length&&<tr><td colSpan={8} style={{textAlign:"center",color:T.inkSoft,padding:20}}>لا خطط تدخل مسجلة بعد.</td></tr>}</tbody></table></div>
+        </div>;
       })()}
 
       {tab === "reports" && (() => {
@@ -5665,7 +5786,13 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
 
         const toHTML = (rows) => `<table><tr>${rows[0].map((h) => `<th>${h}</th>`).join("")}</tr>${rows.slice(1).map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</table>`;
 
+        const evidenceRows = () => {
+          const avg = attempts.length ? Math.round(attempts.reduce((s,a)=>s+a.pct,0)/attempts.length) : 0;
+          const completedInterventions = interventions.filter(i=>i.status==="مكتمل").length;
+          return [["دليل القسم","القيمة"],["إجمالي الطلاب",students.length],["المعلمون",teachers.length],["الكورسات",courses.length],["الكورسات المنشورة",courses.filter(c=>c.status==="published").length],["المحاولات",attempts.length],["متوسط التحصيل",avg+"%"],["الشهادات",attempts.filter(a=>a.passed).length],["خطط التدخل",interventions.filter(i=>i.studentKey).length],["تدخلات مكتملة",completedInterventions],["تاريخ التقرير",new Date().toLocaleString("ar-AE")]];
+        };
         const REPORTS = [
+          { key: "evidence", title: "حزمة أدلة القسم — Evidence Pack", rows: evidenceRows },
           { key: "weekly", title: "تقرير أسبوعي لرئيس القسم", rows: weeklyRows },
           { key: "class", title: "تقرير أداء الصفوف", rows: classRows },
           { key: "struggling", title: "تقرير الطلاب المتعثرين", rows: strugglingRows },
@@ -5792,58 +5919,74 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
         </div>
       </Locked>)}
 
-      {tab === "u" && (<div className="card" style={{ padding: 20 }}>
-        <h3 style={{ marginBottom: 12 }}>المعلمون وحالات الحسابات</h3>
-        <Locked title="حسابات المعلمين" note="تفعيل وتعطيل الحسابات — إجراء حسّاس يظهر فقط بعد ضغطة صريحة.">
-        {teachers.length === 0 ? <p style={{ color: T.inkSoft }}>لم يسجّل دخول أي معلم بعد.</p> : (
-          <table className="tbl"><thead><tr><th>المعلم</th><th>الكورسات</th><th>البريد للتنبيهات</th><th>الحالة</th><th></th></tr></thead>
-            <tbody>{teachers.map((t) => (<tr key={t.name}><td style={{ fontWeight: 600 }}>{t.name}</td>
-              <td>{courses.filter((c) => c.teacher === t.name).length}</td>
-              <td>
-                {editEmailFor === t.name ? (
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <input className="inp mono" style={{ minWidth: 170 }} type="email" value={teacherEmailDraft} onChange={(e) => setTeacherEmailDraft(e.target.value)} placeholder="name@school.ae" />
-                    <button className="btn btn-q" onClick={() => { onSetTeacherEmail(t.name, teacherEmailDraft.trim()); setEditEmailFor(null); }}>حفظ</button>
-                  </div>
-                ) : (
-                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                    {t.email || <span style={{ color: T.inkSoft }}>—</span>}
-                    <button className="btn btn-q" onClick={() => { setEditEmailFor(t.name); setTeacherEmailDraft(t.email || ""); }}>تعديل</button>
-                  </span>
-                )}
-              </td>
-              <td>{t.active ? <Chip tone="g">مفعّل</Chip> : <Chip tone="r">معطَّل</Chip>}</td>
-              <td><Switch on={t.active} onClick={() => onToggleTeacher(t.name)} /></td></tr>))}</tbody></table>)}
-        <p style={{ fontSize: 12, color: T.inkSoft, marginTop: 12 }}>تعطيل المعلم يمنع نشر كورسات جديدة باسمه في هذه الجلسة التجريبية؛ الربط الكامل بحسابات Entra ID يتم في الإصدار المؤسسي. بريد المعلم يُستعمل لإشعارات نشر الكورسات وإتمام الطلاب.</p>
-        </Locked>
-      </div>)}
-
-      {tab === "b" && (<div className="card" style={{ padding: 20 }}>
-        <h3 style={{ marginBottom: 12 }}>إدارة الصفوف والبلوكات</h3>
-        {Array.from({ length: 13 }, (_, i) => i + 1).map((g) => (
-          <div key={g} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${T.ruleSoft}`, flexWrap: "wrap" }}>
-            <strong style={{ minWidth: 60 }}>الصف {g}</strong>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {(blocksAdmin[g] || DEFAULT_BLOCKS).map((b) => (<Chip key={b}>{b} <span style={{ cursor: "pointer", marginRight: 4 }} onClick={() => onRemoveBlock(g, b)}>×</span></Chip>))}
-            </div>
-            <button className="btn btn-q" onClick={() => { const n = prompt(`اسم البلوك الجديد للصف ${g}`); if (n) onAddBlock(g, n); }}>+ بلوك</button>
-          </div>))}
-      </div>)}
-
-      {tab === "c" && (<div className="grid">
-        {courses.map((c) => (<div key={c.id} className="card" style={{ padding: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-            <div><h4>{c.title}</h4><div style={{ fontSize: 12, color: T.inkSoft }}>المعلم: {c.teacher} · الصف {c.grade} · {DOMAINS[c.domain]}</div></div>
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              {c.status === "published" ? <Chip tone="g">منشور</Chip> : c.status === "archived" ? <Chip>مؤرشف</Chip> : <Chip tone="a">مسودة — غير مرئي لأي طالب</Chip>}
-              {c.status !== "published" && <button className="btn btn-q" onClick={() => setAdminPublishOpen(adminPublishOpen === c.id ? null : c.id)}>{adminPublishOpen === c.id ? "إغلاق" : "نشر"}</button>}
-              {c.status === "published" && <button className="btn btn-q" onClick={() => onArchiveAny(c.id)}>أرشفة</button>}
-              <button className="btn btn-q" style={{ color: T.brick }} onClick={() => onDeleteCourse(c.id)}>حذف</button>
+      {tab === "u" && (<div style={{ display:"grid", gap:16 }}>
+        <div className="card" style={{ padding:20 }}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
+            <div><h3>المعلمون والصلاحيات</h3><p style={{margin:"4px 0 0",fontSize:12,color:T.inkSoft}}>إضافة المعلمين، تعديل بياناتهم، تفعيل الحساب، وتخصيص رمز دخول لكل معلم مع بقاء الرمز العام احتياطيًا.</p></div>
+            <Chip tone="g">{teachers.filter(t=>t.active).length} مفعّل من {teachers.length}</Chip>
+          </div>
+          <div className="card" style={{padding:14,background:T.paper,marginBottom:16}}>
+            <h4 style={{marginBottom:10}}>➕ إضافة معلم جديد</h4>
+            <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))"}}>
+              <input className="inp" placeholder="اسم المعلم" value={teacherForm.name} onChange={e=>setTeacherForm({...teacherForm,name:e.target.value})}/>
+              <input className="inp mono" type="email" placeholder="البريد الإلكتروني" value={teacherForm.email} onChange={e=>setTeacherForm({...teacherForm,email:e.target.value})}/>
+              <input className="inp mono" placeholder="رمز دخول خاص (اختياري)" value={teacherForm.code} onChange={e=>setTeacherForm({...teacherForm,code:e.target.value})}/>
+              <button className="btn btn-p" onClick={()=>{ const name=teacherForm.name.trim(); if(!name) return alert("اكتب اسم المعلم."); onAddTeacher({name,email:teacherForm.email.trim(),code:teacherForm.code.trim()}); setTeacherForm({name:"",email:"",code:""}); }}>إضافة المعلم</button>
             </div>
           </div>
-          {adminPublishOpen === c.id && <PublishPanel course={c} students={students} onClose={() => setAdminPublishOpen(null)} onPublish={(patch) => { onPublishWithDetails(c.id, patch); setAdminPublishOpen(null); }} />}
-        </div>))}
+          <Locked title="حسابات المعلمين" note="تغيير حالة الحساب أو حذف معلم إجراء إداري حساس.">
+          {teachers.length===0?<p style={{color:T.inkSoft}}>لا يوجد معلمون مسجلون بعد.</p>:<div style={{overflowX:"auto"}}><table className="tbl"><thead><tr><th>المعلم</th><th>الكورسات</th><th>البريد</th><th>رمز الدخول</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>
+            {teachers.map(t=><tr key={t.name}><td style={{fontWeight:700}}>{t.name}</td><td>{courses.filter(c=>c.teacher===t.name).length}</td>
+              <td>{editEmailFor===t.name?<div style={{display:"flex",gap:6}}><input className="inp mono" value={teacherEmailDraft} onChange={e=>setTeacherEmailDraft(e.target.value)}/><button className="btn btn-q" onClick={()=>{onSetTeacherEmail(t.name,teacherEmailDraft.trim());setEditEmailFor(null)}}>حفظ</button></div>:<span style={{display:"flex",gap:6,alignItems:"center"}}>{t.email||"—"}<button className="btn btn-q" onClick={()=>{setEditEmailFor(t.name);setTeacherEmailDraft(t.email||"")}}>تعديل</button></span>}</td>
+              <td>{teacherCodeFor===t.name?<div style={{display:"flex",gap:6}}><input className="inp mono" value={teacherCodeDraft} onChange={e=>setTeacherCodeDraft(e.target.value)} placeholder={codes.teacher}/><button className="btn btn-q" onClick={()=>{onSetTeacherCode(t.name,teacherCodeDraft.trim());setTeacherCodeFor(null);setTeacherCodeDraft("")}}>حفظ</button></div>:<button className="btn btn-q" onClick={()=>{setTeacherCodeFor(t.name);setTeacherCodeDraft(t.code||"")}}>{t.code?"تغيير الرمز":"تخصيص رمز"}</button>}</td>
+              <td>{t.active?<Chip tone="g">مفعّل</Chip>:<Chip tone="r">معطّل</Chip>}</td>
+              <td><div style={{display:"flex",gap:6,alignItems:"center"}}><Switch on={t.active} onClick={()=>onToggleTeacher(t.name)}/><button className="btn btn-q" style={{color:T.brick}} onClick={()=>{const linked=courses.filter(c=>c.teacher===t.name).length; const msg=linked?`لدى هذا المعلم ${linked} كورس/كورسات مرتبطة. الحذف سيزيل حساب المعلم فقط ولن يحذف الكورسات. هل تريد المتابعة؟`:"حذف حساب المعلم؟"; if(window.confirm(msg))onDeleteTeacher(t.name)}}>حذف</button></div></td>
+            </tr>)}
+          </tbody></table></div>}
+          </Locked>
+        </div>
       </div>)}
+
+      {tab === "b" && (<div style={{display:"grid",gap:16}}>
+        <div className="card" style={{padding:20}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
+            <div><h3>إدارة الصفوف والبلوكات</h3><p style={{margin:"4px 0 0",fontSize:12,color:T.inkSoft}}>اعرض بلوكات أي صف عند الحاجة فقط، وأنشئ مجموعات لاستخدامها لاحقًا في الإسناد والتقارير.</p></div>
+            <Chip>{Object.values(blockGroups||{}).reduce((n,a)=>n+(Array.isArray(a)?a.length:0),0)} مجموعة محفوظة</Chip>
+          </div>
+          <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))"}}>
+            {Array.from({length:13},(_,i)=>i+1).map(g=>{const blocks=blocksAdmin[g]||DEFAULT_BLOCKS;const groups=(blockGroups&&blockGroups[g])||[];const stCount=students.filter(st=>+st.grade===+g).length;return <div key={g} className="card" style={{padding:14,background:"#fff"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}><div><strong>الصف {g}</strong><div style={{fontSize:11,color:T.inkSoft}}>{stCount} طالب · {blocks.length} بلوك · {groups.length} مجموعة</div></div><button className="btn btn-q" onClick={()=>setOpenGradeBlocks(openGradeBlocks===g?null:g)}>{openGradeBlocks===g?"إخفاء":"عرض البلوكات"}</button></div>
+              {openGradeBlocks===g&&<div style={{marginTop:12}}><div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>{blocks.map(b=><Chip key={b}>{b} <span style={{cursor:"pointer",marginRight:4}} onClick={()=>onRemoveBlock(g,b)}>×</span></Chip>)}</div>
+                <button className="btn btn-q" onClick={()=>{const n=prompt(`اسم البلوك الجديد للصف ${g}`);if(n)onAddBlock(g,n.trim())}}>+ بلوك</button>
+                {groups.length>0&&<div style={{marginTop:12,borderTop:`1px solid ${T.ruleSoft}`,paddingTop:10}}><div style={{fontSize:12,fontWeight:700,marginBottom:6}}>مجموعات البلوكات</div>{groups.map(gr=><div key={gr.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,padding:"5px 0"}}><span><strong>{gr.name}</strong> · {(gr.blocks||[]).join("، ")}</span><button className="btn btn-q" style={{color:T.brick}} onClick={()=>onDeleteBlockGroup(g,gr.id)}>حذف</button></div>)}</div>}
+              </div>}
+            </div>})}
+          </div>
+        </div>
+        <div className="card" style={{padding:20}}><h3 style={{marginBottom:10}}>➕ إنشاء مجموعة بلوكات</h3>
+          <div className="grid" style={{gridTemplateColumns:"160px minmax(220px,1fr)"}}><select className="inp" value={groupDraft.grade} onChange={e=>setGroupDraft({grade:+e.target.value,name:"",blocks:[]})}>{Array.from({length:13},(_,i)=><option key={i+1} value={i+1}>الصف {i+1}</option>)}</select><input className="inp" placeholder="اسم المجموعة، مثال: A إلى E" value={groupDraft.name} onChange={e=>setGroupDraft({...groupDraft,name:e.target.value})}/></div>
+          <div style={{display:"flex",gap:7,flexWrap:"wrap",margin:"12px 0"}}>{(blocksAdmin[groupDraft.grade]||DEFAULT_BLOCKS).map(b=>{const on=groupDraft.blocks.includes(b);return <button key={b} className="btn btn-q" style={{background:on?T.greenSoft:T.paper,color:on?T.green:T.inkSoft,border:`1px solid ${on?T.green:T.rule}`}} onClick={()=>setGroupDraft({...groupDraft,blocks:on?groupDraft.blocks.filter(x=>x!==b):[...groupDraft.blocks,b]})}>{on?"✓ ":""}{b}</button>})}</div>
+          <button className="btn btn-p" onClick={()=>{if(!groupDraft.name.trim()||groupDraft.blocks.length<2)return alert("اكتب اسم المجموعة واختر بلوكين على الأقل.");onSaveBlockGroup(groupDraft.grade,{id:"bg-"+uid(),name:groupDraft.name.trim(),blocks:groupDraft.blocks});setGroupDraft({...groupDraft,name:"",blocks:[]})}}>حفظ المجموعة</button>
+        </div>
+      </div>)}
+
+      {tab === "c" && (() => {
+        const publishedCount=courses.filter(c=>c.status==="published").length, draftCount=courses.filter(c=>c.status!=="published"&&c.status!=="archived").length, archivedCount=courses.filter(c=>c.status==="archived").length;
+        const certCount=attempts.filter(a=>a.passed).length; const byGradeCourses={}; courses.forEach(c=>{byGradeCourses[c.grade]=(byGradeCourses[c.grade]||0)+1}); const maxGradeCount=Math.max(1,...Object.values(byGradeCourses));
+        return <div style={{display:"grid",gap:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}><div><h3>مركز الكورسات والمهارات</h3><p style={{fontSize:12,color:T.inkSoft,margin:"4px 0 0"}}>إنشاء، مراجعة، تحسين بالذكاء الاصطناعي، نشر وتحليل الكورسات من مكان واحد.</p></div><button className="btn btn-p" onClick={onGenerateCourse}>✨ توليد كورس بالذكاء الاصطناعي</button></div>
+          <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))"}}><Stat label="إجمالي الكورسات" value={courses.length}/><Stat label="منشورة" value={publishedCount} tone={T.green}/><Stat label="مسودات" value={draftCount} tone={T.gold}/><Stat label="مؤرشفة" value={archivedCount}/><Stat label="شهادات صادرة" value={certCount} tone={T.green}/></div>
+          <div className="card" style={{padding:16}}><h4 style={{marginBottom:10}}>توزيع الكورسات حسب الصف</h4>{Object.keys(byGradeCourses).length===0?<p style={{color:T.inkSoft}}>لا توجد كورسات بعد.</p>:<div style={{display:"grid",gap:8}}>{Object.entries(byGradeCourses).sort((a,b)=>+a[0]-+b[0]).map(([g,n])=><div key={g} style={{display:"grid",gridTemplateColumns:"80px 1fr 44px",gap:8,alignItems:"center"}}><span>الصف {g}</span><div className="inkbar"><i style={{width:`${Math.round(n/maxGradeCount*100)}%`,background:n>=maxGradeCount*.66?T.green:n>=maxGradeCount*.33?T.gold:T.brick}}/></div><strong>{n}</strong></div>)}</div>}</div>
+          <div className="grid">{courses.map(c=>{const q=courseQuality(c);const cAttempts=attempts.filter(a=>a.course===c.id);const avg=cAttempts.length?Math.round(cAttempts.reduce((n,a)=>n+a.pct,0)/cAttempts.length):null;const passed=new Set(cAttempts.filter(a=>a.passed).map(a=>a.student)).size;return <div key={c.id} className="card" style={{padding:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}><div style={{flex:1,minWidth:240}}><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><h4>{c.title}</h4>{c.status==="published"?<Chip tone="g">منشور</Chip>:c.status==="archived"?<Chip>مؤرشف</Chip>:<Chip tone="a">مسودة</Chip>}<Chip tone={q.score>=80?"g":q.score>=60?"a":"r"}>جودة {q.score}/100</Chip></div>
+              <div style={{fontSize:12,color:T.inkSoft,marginTop:4}}>المعلم: {c.teacher} · الصف {c.grade} · {DOMAINS[c.domain]} · {q.cleanCount} سؤالًا صالحًا · {q.stageCount} وحدات</div>
+              <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(105px,1fr))",marginTop:10}}><Stat label="المحاولات" value={cAttempts.length}/><Stat label="نجحوا" value={passed}/><Stat label="متوسط النتيجة" value={avg!=null?avg+"%":"—"}/><Stat label="تكرارات مكتشفة" value={q.duplicateCount} tone={q.duplicateCount?T.brick:T.green}/></div>
+              {q.duplicateCount>0&&<p style={{fontSize:12,color:T.brick,margin:"8px 0 0"}}>⚠️ بوابة الجودة اكتشفت {q.duplicateCount} سؤالًا مكررًا أو متعارضًا مع سؤال داخل الشرح؛ لن تدخل هذه التكرارات في اختبار الطالب.</p>}
+            </div><div style={{display:"flex",gap:6,alignItems:"flex-start",flexWrap:"wrap"}}><button className="btn btn-q" onClick={()=>onAIEditCourse(c.id)}>🤖 تعديل بالذكاء الاصطناعي</button>{c.status!=="published"&&<button className="btn btn-q" onClick={()=>setAdminPublishOpen(adminPublishOpen===c.id?null:c.id)}>{adminPublishOpen===c.id?"إغلاق":"نشر"}</button>}{c.status==="published"&&<button className="btn btn-q" onClick={()=>onArchiveAny(c.id)}>أرشفة</button>}<button className="btn btn-q" style={{color:T.brick}} onClick={()=>onDeleteCourse(c.id)}>حذف</button></div></div>
+            {adminPublishOpen===c.id&&<PublishPanel course={c} students={students} onClose={()=>setAdminPublishOpen(null)} onPublish={patch=>{onPublishWithDetails(c.id,patch);setAdminPublishOpen(null)}}/>}
+          </div>})}</div>
+        </div>
+      })()}
 
       {tab === "log" && (<div className="card" style={{ padding: 20 }}>
         <h3 style={{ marginBottom: 12 }}>سجل العمليات</h3>
@@ -5961,6 +6104,7 @@ export default function App() {
   const [progress, setProgress] = useState({});
   const [teachers, setTeachers] = useState([]);
   const [blocksAdmin, setBlocksAdmin] = useState({});
+  const [blockGroups, setBlockGroups] = useState({});
   const [codes, setCodes] = useState({ teacher: "GFS-2026", admin: "GFS-ADMIN-2026" });
   const [orgEmail, setOrgEmail] = useState("");
   const [audit, setAudit] = useState([]);
@@ -6031,6 +6175,7 @@ export default function App() {
     setCodes(await readKey(K.codes, { teacher: "GFS-2026", admin: "GFS-ADMIN-2026" }));
     setOrgEmail(await readKey(K.orgEmail, ""));
     setBlocksAdmin(await readKey(K.blocksAdmin, {}));
+    setBlockGroups(await readKey(K.blockGroups, {}));
     setReady(true);
   })(); }, []);
 
@@ -6119,6 +6264,15 @@ export default function App() {
     const v = teachers.map((t) => t.name === name ? { ...t, email: normalized } : t);
     setTeachers(v); writeKey(K.teachers, v); log(actor, "تسجيل بريد معلم", `${name} — ${normalized}`);
   };
+  const addTeacherAdmin = (rec, actor) => {
+    const name = String(rec?.name || "").trim(), email = normEmail(rec?.email);
+    if (!name) return;
+    if (teachers.some((t) => t.name === name || (email && normEmail(t.email) === email))) return alert("هذا المعلم أو البريد مسجل بالفعل.");
+    const next = [...teachers, { name, email, code: String(rec?.code || "").trim(), active: true }];
+    setTeachers(next); writeKey(K.teachers, next); log(actor, "إضافة معلم", `${name} — ${email || "بلا بريد"}`);
+  };
+  const deleteTeacherAdmin = (name, actor) => { const next=teachers.filter(t=>t.name!==name); setTeachers(next); writeKey(K.teachers,next); log(actor,"حذف حساب معلم",name); };
+  const setTeacherCodeAdmin = (name, code, actor) => { const next=teachers.map(t=>t.name===name?{...t,code:String(code||"").trim()}:t); setTeachers(next); writeKey(K.teachers,next); log(actor,"تغيير رمز معلم",name); };
 
   // كل انتقال بين الشاشات يمرّ عبر nav فيُحفظ مكان الوصول السابق تلقائيًا،
   // فزر "رجوع" الظاهر في كل صفحة يعيد المستخدم بالضبط إلى ما قبل الخطأ.
@@ -6201,6 +6355,7 @@ export default function App() {
   if (parentReport) return <ParentPortal report={parentReport} onBack={() => { setParentReport(null); }} />;
 
   if (!user) return <Login
+    teachers={teachers}
     onStudent={(u) => { setUser(u); setHist([]); setView({ n: "home" });
       const existing = students.find((s) => s.key === u.key);
       if (!existing) { const rec = { key: u.key, name: u.name, grade: u.grade, block: u.block, stream: u.stream, teacherEmail: normEmail(u.teacherEmail), email: normEmail(u.email), parentEmail: normEmail(u.parentEmail) }; setStudents((prev) => [...prev, rec]); putRecord(REC.student, rec.key, rec); }
@@ -6452,20 +6607,20 @@ export default function App() {
       </div>
 
       {user.role === "admin" ? (
-        <AdminHome courses={courses} students={students} attempts={attempts} progress={progress} teachers={teachers} blocksAdmin={blocksAdmin} audit={audit}
-          interventions={interventions} onAddIntervention={addIntervention} onUpdateIntervention={updateIntervention} onReopenAttempt={reopenAttempt}
-          currentActor={user?.name || "رئيس القسم"}
-          codes={codes} onUpdateCodes={(next) => updateCodes(next, user.name)}
-          orgEmail={orgEmail} onUpdateOrgEmail={(email) => updateOrgEmail(email, user.name)}
-          onSetTeacherEmail={(name, email) => setTeacherEmail(name, email, user.name)}
-          onToggleTeacher={(name) => { const v = teachers.map((t) => t.name === name ? { ...t, active: !t.active } : t); setTeachers(v); writeKey(K.teachers, v); log(user.name, "تبديل حالة معلم", name); }}
-          onAddBlock={(g, b) => { const v = { ...blocksAdmin, [g]: [...(blocksAdmin[g] || DEFAULT_BLOCKS), b] }; setBlocksAdmin(v); writeKey(K.blocksAdmin, v); log(user.name, "إضافة بلوك", `الصف ${g} — ${b}`); }}
-          onRemoveBlock={(g, b) => { const v = { ...blocksAdmin, [g]: (blocksAdmin[g] || DEFAULT_BLOCKS).filter((x) => x !== b) }; setBlocksAdmin(v); writeKey(K.blocksAdmin, v); log(user.name, "حذف بلوك", `الصف ${g} — ${b}`); }}
-          onPublishAny={(id) => { patchCourse(id, { status: "published" }); log(user.name, "نشر كورس", id); }}
-          onPublishWithDetails={(id, patch) => { patchCourse(id, patch); log(user.name, "نشر كورس بتفاصيل كاملة", `${id} — الصف ${patch.grade} — الموعد ${patch.dueDate}`); }}
-          onArchiveAny={(id) => { patchCourse(id, { status: "archived" }); log(user.name, "أرشفة كورس", id); }}
-          onDeleteCourse={(id) => { if (window.confirm("حذف الكورس نهائيًا؟")) { deleteCourseRec(id); log(user.name, "حذف كورس", id); } }}
-          onExportStudents={exportStudentsCSV} onExportAudit={exportAuditCSV} onImportStudents={importStudentsCSV} />
+        view.n === "admin-gen" ? <Generator teacherName={user.name} onCancel={()=>setView({n:"home"})} onSave={d=>{addCourse(d);log(user.name,"توليد كورس بالذكاء الاصطناعي",d.title);setView({n:"home"})}} />
+        : view.n === "admin-ai-edit" && course ? <AIEditCourse course={course} onCancel={()=>setView({n:"home"})} onSave={d=>{replaceCourse(d);log(user.name,"تحسين كورس بالذكاء الاصطناعي",d.title);setView({n:"home"})}} />
+        : <AdminHome courses={courses} students={students} attempts={attempts} progress={progress} teachers={teachers} blocksAdmin={blocksAdmin} blockGroups={blockGroups} audit={audit}
+          interventions={interventions} onAddIntervention={addIntervention} onUpdateIntervention={updateIntervention} onReopenAttempt={reopenAttempt} currentActor={user?.name||"رئيس القسم"}
+          codes={codes} onUpdateCodes={next=>updateCodes(next,user.name)} orgEmail={orgEmail} onUpdateOrgEmail={email=>updateOrgEmail(email,user.name)}
+          onSetTeacherEmail={(name,email)=>setTeacherEmail(name,email,user.name)} onAddTeacher={rec=>addTeacherAdmin(rec,user.name)} onDeleteTeacher={name=>deleteTeacherAdmin(name,user.name)} onSetTeacherCode={(name,code)=>setTeacherCodeAdmin(name,code,user.name)}
+          onToggleTeacher={name=>{const v=teachers.map(t=>t.name===name?{...t,active:!t.active}:t);setTeachers(v);writeKey(K.teachers,v);log(user.name,"تبديل حالة معلم",name)}}
+          onAddBlock={(g,b)=>{const list=[...(blocksAdmin[g]||DEFAULT_BLOCKS)];if(list.includes(b))return;const v={...blocksAdmin,[g]:[...list,b]};setBlocksAdmin(v);writeKey(K.blocksAdmin,v);log(user.name,"إضافة بلوك",`الصف ${g} — ${b}`)}}
+          onRemoveBlock={(g,b)=>{const v={...blocksAdmin,[g]:(blocksAdmin[g]||DEFAULT_BLOCKS).filter(x=>x!==b)};setBlocksAdmin(v);writeKey(K.blocksAdmin,v);log(user.name,"حذف بلوك",`الصف ${g} — ${b}`)}}
+          onSaveBlockGroup={(g,rec)=>{const next={...blockGroups,[g]:[...((blockGroups&&blockGroups[g])||[]),rec]};setBlockGroups(next);writeKey(K.blockGroups,next);log(user.name,"إضافة مجموعة بلوكات",`الصف ${g} — ${rec.name}`)}}
+          onDeleteBlockGroup={(g,id)=>{const next={...blockGroups,[g]:((blockGroups&&blockGroups[g])||[]).filter(x=>x.id!==id)};setBlockGroups(next);writeKey(K.blockGroups,next);log(user.name,"حذف مجموعة بلوكات",`الصف ${g}`)}}
+          onGenerateCourse={()=>setView({n:"admin-gen"})} onAIEditCourse={id=>setView({n:"admin-ai-edit",id})}
+          onPublishAny={id=>{patchCourse(id,{status:"published"});log(user.name,"نشر كورس",id)}} onPublishWithDetails={(id,patch)=>{patchCourse(id,patch);log(user.name,"نشر كورس بتفاصيل كاملة",`${id} — الصف ${patch.grade} — الموعد ${patch.dueDate}`)}} onArchiveAny={id=>{patchCourse(id,{status:"archived"});log(user.name,"أرشفة كورس",id)}}
+          onDeleteCourse={id=>{if(window.confirm("حذف الكورس نهائيًا؟")){deleteCourseRec(id);log(user.name,"حذف كورس",id)}}} onExportStudents={exportStudentsCSV} onExportAudit={exportAuditCSV} onImportStudents={importStudentsCSV} />
       ) : user.role === "teacher" ? (
         view.n === "gen" ? <Generator teacherName={user.name} onCancel={() => nav({ n: "home" })}
           onSave={(d) => { addCourse(d); log(user.name, "توليد كورس بالذكاء الاصطناعي", d.title); nav({ n: "home" }); }} />
