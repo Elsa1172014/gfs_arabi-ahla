@@ -1,28 +1,23 @@
 // ============================================================
-// GFS بالعربي أحلى — Email Service
+// GFS بالعربي أحلى — Email + Openable Certificate Service
 // ============================================================
-// جميع رسائل المنصة تستمر عبر Resend كما كانت.
-// التغيير الوحيد:
-// عند نجاح الطالب، تُرفق شهادة إتمام الكورس تلقائيًا
-// برسالة الطالب ورسالة ولي الأمر.
-//
-// لا يغيّر:
-// الطلاب - الدرجات - المحاولات - الكورسات - قاعدة البيانات
-// تسجيل الدخول - الواجهة - التصميم - أي وظيفة أخرى.
+// - يرسل جميع رسائل المنصة عبر Resend.
+// - عند رسالة النجاح: ينشئ شهادة HTML قابلة للفتح.
+// - يحفظ نسخة الشهادة في Redis.
+// - يضيف زر "فتح شهادة الإتمام" داخل البريد.
+// - يرفق نسخة .html بدل SVG.
 // ============================================================
 
-function escapeXml(value = "") {
-  return String(value).replace(
-    /[&<>"']/g,
-    (c) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;",
-      })[c]
-  );
+import { getRedis } from "./_redis.js";
+
+function escapeHtml(value = "") {
+  return String(value).replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[c]);
 }
 
 function stripHtml(html = "") {
@@ -36,10 +31,6 @@ function stripHtml(html = "") {
     .replace(/\n\s+/g, "\n")
     .trim();
 }
-
-/* ============================================================
-   استخراج بيانات الشهادة من رسالة النجاح الموجودة أصلًا
-   ============================================================ */
 
 function getCertificateData(subject = "", html = "") {
   const text = stripHtml(html);
@@ -65,7 +56,7 @@ function getCertificateData(subject = "", html = "") {
     text.match(/رقم الشهادة:\s*([^\s—\n]+)/)?.[1] || "";
 
   const token =
-    text.match(/رمز التحقق:\s*([^\s\n]+)/)?.[1] || "";
+    text.match(/رمز التحقق:\s*([^\s—\n]+)/)?.[1] || "";
 
   return {
     student: student.trim(),
@@ -77,503 +68,6 @@ function getCertificateData(subject = "", html = "") {
   };
 }
 
-/* ============================================================
-   تصميم الشهادة
-   ألوان GEMS: الأزرق + الأحمر مدمجان في الجانبين
-   ============================================================ */
-
-function createCertificateSvg(data) {
-  const student = escapeXml(data.student);
-  const course = escapeXml(data.course);
-  const score = escapeXml(data.score);
-  const date = escapeXml(data.date);
-  const serial = escapeXml(data.serial);
-  const token = escapeXml(data.token);
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-
-<svg xmlns="http://www.w3.org/2000/svg"
-     width="1600"
-     height="1000"
-     viewBox="0 0 1600 1000">
-
-  <defs>
-
-    <linearGradient id="gemsGradient"
-      x1="0" y1="0"
-      x2="1" y2="1">
-
-      <stop offset="0%"
-        stop-color="#0646A8"/>
-
-      <stop offset="49%"
-        stop-color="#0646A8"/>
-
-      <stop offset="51%"
-        stop-color="#C91F2C"/>
-
-      <stop offset="100%"
-        stop-color="#C91F2C"/>
-
-    </linearGradient>
-
-    <pattern id="pattern"
-      width="75"
-      height="75"
-      patternUnits="userSpaceOnUse">
-
-      <path
-        d="M37 4 L71 37 L37 71 L4 37 Z"
-        fill="none"
-        stroke="#0646A8"
-        stroke-opacity="0.035"
-      />
-
-    </pattern>
-
-  </defs>
-
-
-  <!-- الخلفية -->
-
-  <rect
-    width="1600"
-    height="1000"
-    fill="#FFFFFF"
-  />
-
-  <rect
-    width="1600"
-    height="1000"
-    fill="url(#pattern)"
-  />
-
-
-  <!-- زخرفة الجانب العلوي الأيسر -->
-
-  <path
-    d="
-    M0 0
-    H430
-    C270 95 125 260 0 510
-    Z"
-    fill="url(#gemsGradient)"
-  />
-
-  <path
-    d="
-    M0 58
-    C120 160 205 275 250 390"
-    stroke="#FFFFFF"
-    stroke-width="15"
-    fill="none"
-    opacity=".90"
-  />
-
-
-  <!-- زخرفة الجانب السفلي الأيمن -->
-
-  <path
-    d="
-    M1600 1000
-    H1170
-    C1330 905 1475 740 1600 490
-    Z"
-    fill="url(#gemsGradient)"
-  />
-
-  <path
-    d="
-    M1600 942
-    C1480 840 1395 725 1350 610"
-    stroke="#FFFFFF"
-    stroke-width="15"
-    fill="none"
-    opacity=".90"
-  />
-
-
-  <!-- الإطار -->
-
-  <rect
-    x="28"
-    y="28"
-    width="1544"
-    height="944"
-    rx="28"
-    fill="none"
-    stroke="#0646A8"
-    stroke-width="4"
-  />
-
-  <rect
-    x="39"
-    y="39"
-    width="1522"
-    height="922"
-    rx="24"
-    fill="none"
-    stroke="#C91F2C"
-    stroke-width="2"
-  />
-
-
-  <!-- رأس الشهادة -->
-
-  <g
-    font-family="Arial, Tahoma, sans-serif"
-    text-anchor="middle">
-
-    <text
-      x="800"
-      y="105"
-      font-size="43"
-      font-weight="700"
-      fill="#0646A8">
-
-      GEMS Founders School Dubai
-
-    </text>
-
-    <text
-      x="800"
-      y="158"
-      font-size="29"
-      font-weight="700"
-      fill="#0646A8"
-      direction="rtl">
-
-      مدرسة جيمس فاوندرز دبي
-
-    </text>
-
-    <text
-      x="800"
-      y="205"
-      font-size="28"
-      font-weight="700"
-      fill="#C91F2C"
-      direction="rtl">
-
-      قسم اللغة العربية
-
-    </text>
-
-
-    <!-- العنوان -->
-
-    <text
-      x="800"
-      y="305"
-      font-size="72"
-      font-weight="700"
-      fill="#0646A8"
-      direction="rtl">
-
-      شهادة إتمام دورة
-
-    </text>
-
-    <line
-      x1="505"
-      y1="342"
-      x2="1095"
-      y2="342"
-      stroke="#C91F2C"
-      stroke-width="4"
-    />
-
-
-    <!-- بيانات الطالب -->
-
-    <text
-      x="800"
-      y="405"
-      font-size="28"
-      fill="#233B66"
-      direction="rtl">
-
-      تشهد إدارة مدرسة جيمس فاوندرز دبي – قسم اللغة العربية بأن الطالب
-
-    </text>
-
-    <text
-      x="800"
-      y="495"
-      font-size="62"
-      font-weight="700"
-      fill="#0646A8"
-      direction="rtl">
-
-      ${student}
-
-    </text>
-
-    <text
-      x="800"
-      y="555"
-      font-size="27"
-      fill="#233B66"
-      direction="rtl">
-
-      قد أتم بنجاح دورة
-
-    </text>
-
-    <text
-      x="800"
-      y="630"
-      font-size="52"
-      font-weight="700"
-      fill="#C91F2C"
-      direction="rtl">
-
-      ${course}
-
-    </text>
-
-    <text
-      x="800"
-      y="680"
-      font-size="25"
-      fill="#233B66"
-      direction="rtl">
-
-      وأظهر التزامًا وتميزًا في التعلم، وبناءً على ذلك مُنحت هذه الشهادة.
-
-    </text>
-
-  </g>
-
-
-  <!-- بيانات الشهادة -->
-
-  <g font-family="Arial, Tahoma, sans-serif">
-
-    <!-- الدرجة -->
-
-    <rect
-      x="290"
-      y="730"
-      width="290"
-      height="105"
-      rx="17"
-      fill="#FFFFFF"
-      stroke="#0646A8"
-      stroke-width="2"
-    />
-
-    <text
-      x="435"
-      y="768"
-      text-anchor="middle"
-      font-size="21"
-      fill="#233B66"
-      direction="rtl">
-
-      الدرجة النهائية
-
-    </text>
-
-    <text
-      x="435"
-      y="812"
-      text-anchor="middle"
-      font-size="35"
-      font-weight="700"
-      fill="#0646A8">
-
-      ${score ? score + "%" : "ناجح"}
-
-    </text>
-
-
-    <!-- التاريخ -->
-
-    <rect
-      x="655"
-      y="730"
-      width="290"
-      height="105"
-      rx="17"
-      fill="#FFFFFF"
-      stroke="#C91F2C"
-      stroke-width="2"
-    />
-
-    <text
-      x="800"
-      y="768"
-      text-anchor="middle"
-      font-size="21"
-      fill="#233B66"
-      direction="rtl">
-
-      تاريخ الإكمال
-
-    </text>
-
-    <text
-      x="800"
-      y="810"
-      text-anchor="middle"
-      font-size="26"
-      font-weight="700"
-      fill="#0646A8"
-      direction="rtl">
-
-      ${date}
-
-    </text>
-
-
-    <!-- رقم الشهادة -->
-
-    <rect
-      x="1020"
-      y="730"
-      width="290"
-      height="105"
-      rx="17"
-      fill="#FFFFFF"
-      stroke="#0646A8"
-      stroke-width="2"
-    />
-
-    <text
-      x="1165"
-      y="768"
-      text-anchor="middle"
-      font-size="21"
-      fill="#233B66"
-      direction="rtl">
-
-      رقم الشهادة
-
-    </text>
-
-    <text
-      x="1165"
-      y="810"
-      text-anchor="middle"
-      font-size="23"
-      font-weight="700"
-      fill="#0646A8">
-
-      ${serial}
-
-    </text>
-
-
-    <!-- رئيس القسم -->
-
-    <text
-      x="405"
-      y="895"
-      text-anchor="middle"
-      font-size="28"
-      font-weight="700"
-      fill="#0646A8"
-      direction="rtl">
-
-      السيد يوسف
-
-    </text>
-
-    <line
-      x1="290"
-      y1="910"
-      x2="520"
-      y2="910"
-      stroke="#C91F2C"
-      stroke-width="2"
-    />
-
-    <text
-      x="405"
-      y="944"
-      text-anchor="middle"
-      font-size="20"
-      fill="#233B66"
-      direction="rtl">
-
-      رئيس قسم اللغة العربية
-
-    </text>
-
-
-    <!-- رئيسة المواد الوزارية -->
-
-    <text
-      x="1195"
-      y="895"
-      text-anchor="middle"
-      font-size="28"
-      font-weight="700"
-      fill="#0646A8"
-      direction="rtl">
-
-      شيماء عبدالرحمن
-
-    </text>
-
-    <line
-      x1="1070"
-      y1="910"
-      x2="1320"
-      y2="910"
-      stroke="#C91F2C"
-      stroke-width="2"
-    />
-
-    <text
-      x="1195"
-      y="944"
-      text-anchor="middle"
-      font-size="20"
-      fill="#233B66"
-      direction="rtl">
-
-      رئيسة المواد الوزارية
-
-    </text>
-
-
-    <!-- رمز التحقق -->
-
-    <text
-      x="800"
-      y="885"
-      text-anchor="middle"
-      font-size="17"
-      fill="#667085"
-      direction="rtl">
-
-      رمز التحقق: ${token}
-
-    </text>
-
-    <text
-      x="800"
-      y="930"
-      text-anchor="middle"
-      font-size="17"
-      fill="#667085">
-
-      Inspiring Minds, Empowering Futures
-
-    </text>
-
-  </g>
-
-</svg>`;
-}
-
-
-/* ============================================================
-   هل الرسالة رسالة شهادة نجاح؟
-   ============================================================ */
-
 function isCertificateEmail(subject = "") {
   return (
     /^شهادة إتقان — /.test(subject) ||
@@ -581,31 +75,599 @@ function isCertificateEmail(subject = "") {
   );
 }
 
+function getBaseUrl(req) {
+  const forwardedHost = req.headers["x-forwarded-host"];
+  const host = forwardedHost || req.headers.host;
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const proto = forwardedProto || "https";
 
-/* ============================================================
-   API
-   ============================================================ */
+  return (
+    process.env.APP_BASE_URL ||
+    (host ? `${proto}://${host}` : "https://gfsarabiahla.vercel.app")
+  ).replace(/\/+$/, "");
+}
+
+function createCertificateHtml(data) {
+  const student = escapeHtml(data.student || "الطالب");
+  const course = escapeHtml(data.course || "الكورس");
+  const score = escapeHtml(data.score || "");
+  const date = escapeHtml(data.date || "");
+  const serial = escapeHtml(data.serial || "");
+  const token = escapeHtml(data.token || "");
+
+  return `<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>شهادة إتمام — ${course}</title>
+
+<style>
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 28px;
+  background: #eef2f7;
+  color: #233b66;
+  font-family: Tahoma, Arial, "Segoe UI", sans-serif;
+}
+
+.actions {
+  max-width: 1100px;
+  margin: 0 auto 14px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn {
+  border: 0;
+  border-radius: 10px;
+  padding: 11px 20px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  background: #0646A8;
+  color: #fff;
+}
+
+.certificate {
+  position: relative;
+  max-width: 1100px;
+  min-height: 690px;
+  margin: auto;
+  background: #fff;
+  border: 4px solid #0646A8;
+  border-radius: 24px;
+  padding: 42px 54px 34px;
+  overflow: hidden;
+  box-shadow: 0 18px 55px rgba(28,48,84,.16);
+}
+
+.certificate:before,
+.certificate:after {
+  content: "";
+  position: absolute;
+  width: 330px;
+  height: 330px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    #0646A8 0 50%,
+    #C91F2C 50% 100%
+  );
+  opacity: .96;
+}
+
+.certificate:before {
+  left: -190px;
+  top: -185px;
+}
+
+.certificate:after {
+  right: -190px;
+  bottom: -185px;
+}
+
+.inner {
+  position: relative;
+  z-index: 2;
+  border: 2px solid #C91F2C;
+  border-radius: 18px;
+  padding: 30px 40px;
+  min-height: 600px;
+  text-align: center;
+}
+
+.school {
+  font-size: 30px;
+  font-weight: 800;
+  color: #0646A8;
+}
+
+.arabic-school {
+  font-size: 24px;
+  font-weight: 800;
+  color: #0646A8;
+  margin-top: 8px;
+}
+
+.dept {
+  font-size: 21px;
+  font-weight: 800;
+  color: #C91F2C;
+  margin-top: 6px;
+}
+
+h1 {
+  font-size: 48px;
+  color: #0646A8;
+  margin: 30px 0 10px;
+}
+
+.line {
+  height: 4px;
+  width: 330px;
+  background: #C91F2C;
+  margin: 0 auto 30px;
+}
+
+.lead {
+  font-size: 19px;
+  margin: 8px 0;
+}
+
+.student {
+  font-size: 42px;
+  font-weight: 900;
+  color: #0646A8;
+  margin: 16px 0;
+}
+
+.course {
+  font-size: 34px;
+  font-weight: 900;
+  color: #C91F2C;
+  margin: 14px 0 20px;
+}
+
+.meta {
+  margin: 28px auto 8px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(160px, 1fr));
+  gap: 16px;
+  max-width: 820px;
+}
+
+.meta > div {
+  border: 2px solid #dce5f2;
+  border-radius: 14px;
+  padding: 15px;
+  background: #fbfdff;
+}
+
+.label {
+  font-size: 13px;
+  color: #67768f;
+}
+
+.value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0646A8;
+  margin-top: 5px;
+}
+
+.verify {
+  font-size: 12px;
+  color: #667085;
+  margin-top: 24px;
+  direction: ltr;
+}
+
+.footer {
+  margin-top: 18px;
+  color: #667085;
+  font-size: 13px;
+}
+
+@media(max-width:760px) {
+
+  body {
+    padding: 10px;
+  }
+
+  .certificate {
+    padding: 15px;
+    border-radius: 14px;
+  }
+
+  .inner {
+    padding: 22px 14px;
+  }
+
+  .school {
+    font-size: 20px;
+  }
+
+  .arabic-school {
+    font-size: 18px;
+  }
+
+  h1 {
+    font-size: 34px;
+  }
+
+  .student {
+    font-size: 30px;
+  }
+
+  .course {
+    font-size: 25px;
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+  }
+
+  .line {
+    width: 210px;
+  }
+}
+
+@media print {
+
+  body {
+    background: #fff;
+    padding: 0;
+  }
+
+  .actions {
+    display: none;
+  }
+
+  .certificate {
+    box-shadow: none;
+    max-width: none;
+    border-radius: 0;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="actions">
+
+  <button
+    class="btn"
+    onclick="window.print()"
+  >
+    طباعة / حفظ PDF
+  </button>
+
+</div>
+
+<section class="certificate">
+
+  <div class="inner">
+
+    <div class="school">
+      GEMS Founders School Dubai
+    </div>
+
+    <div class="arabic-school">
+      مدرسة جيمس فاوندرز دبي
+    </div>
+
+    <div class="dept">
+      قسم اللغة العربية
+    </div>
+
+    <h1>
+      شهادة إتمام دورة
+    </h1>
+
+    <div class="line"></div>
+
+    <p class="lead">
+      تشهد إدارة مدرسة جيمس فاوندرز دبي
+      – قسم اللغة العربية بأن الطالب
+    </p>
+
+    <div class="student">
+      ${student}
+    </div>
+
+    <p class="lead">
+      قد أتم بنجاح دورة
+    </p>
+
+    <div class="course">
+      ${course}
+    </div>
+
+    <p class="lead">
+      وأظهر التزامًا وتميزًا في التعلم،
+      وبناءً على ذلك مُنحت هذه الشهادة.
+    </p>
+
+    <div class="meta">
+
+      <div>
+
+        <div class="label">
+          الدرجة النهائية
+        </div>
+
+        <div class="value">
+          ${score ? score + "%" : "ناجح"}
+        </div>
+
+      </div>
+
+      <div>
+
+        <div class="label">
+          تاريخ الإكمال
+        </div>
+
+        <div class="value">
+          ${date || "—"}
+        </div>
+
+      </div>
+
+      <div>
+
+        <div class="label">
+          رقم الشهادة
+        </div>
+
+        <div class="value">
+          ${serial || "—"}
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="verify">
+      Verification Code: ${token || "—"}
+    </div>
+
+    <div class="footer">
+      Inspiring Minds, Empowering Futures
+    </div>
+
+  </div>
+
+</section>
+
+</body>
+</html>`;
+}
+
+function openButton(url) {
+
+  const safeUrl = escapeHtml(url);
+
+  return `
+
+  <div
+    dir="rtl"
+    style="
+      text-align:center;
+      margin:24px 0;
+    "
+  >
+
+    <a
+      href="${safeUrl}"
+      target="_blank"
+      style="
+        display:inline-block;
+        background:#0646A8;
+        color:#fff;
+        text-decoration:none;
+        padding:13px 26px;
+        border-radius:10px;
+        font-family:Tahoma,Arial,sans-serif;
+        font-weight:700;
+        font-size:16px;
+      "
+    >
+      🏆 فتح شهادة الإتمام
+    </a>
+
+    <p
+      style="
+        font-family:Tahoma,Arial,sans-serif;
+        color:#667085;
+        font-size:12px;
+      "
+    >
+      اضغط الزر لفتح الشهادة مباشرة
+      في المتصفح، ثم يمكنك طباعتها
+      أو حفظها PDF.
+    </p>
+
+  </div>
+  `;
+}
 
 export default async function handler(req, res) {
 
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
+  /* ==========================================================
+     فتح الشهادة
+     ========================================================== */
 
-    return res.status(405).json({
-      error: "method not allowed",
-    });
+  if (req.method === "GET") {
+
+    try {
+
+      const token =
+        String(
+          req.query?.certificate ||
+          ""
+        ).trim();
+
+      if (!token) {
+
+        return res
+          .status(400)
+          .send(
+            "Missing certificate token"
+          );
+      }
+
+      const redis =
+        getRedis();
+
+      const stored =
+        await redis.get(
+          `certificate:${token}`
+        );
+
+      if (!stored) {
+
+        res.setHeader(
+          "Content-Type",
+          "text/html; charset=utf-8"
+        );
+
+        return res
+          .status(404)
+          .send(`
+
+<!doctype html>
+
+<html
+  lang="ar"
+  dir="rtl"
+>
+
+<head>
+
+<meta charset="utf-8">
+
+<meta
+  name="viewport"
+  content="width=device-width,initial-scale=1"
+>
+
+<title>
+الشهادة غير موجودة
+</title>
+
+</head>
+
+<body
+  style="
+    font-family:Tahoma,Arial,sans-serif;
+    padding:40px;
+    text-align:center;
+    background:#f5f7fb;
+    color:#233b66;
+  "
+>
+
+<h2>
+  تعذّر العثور على الشهادة
+</h2>
+
+<p>
+  قد يكون الرابط غير صحيح
+  أو أن بيانات الشهادة غير متاحة.
+</p>
+
+</body>
+
+</html>
+
+          `);
+      }
+
+      const data =
+        typeof stored === "string"
+          ? JSON.parse(stored)
+          : stored;
+
+      res.setHeader(
+        "Content-Type",
+        "text/html; charset=utf-8"
+      );
+
+      res.setHeader(
+        "Content-Disposition",
+        "inline"
+      );
+
+      res.setHeader(
+        "Cache-Control",
+        "private, no-store, max-age=0"
+      );
+
+      return res
+        .status(200)
+        .send(
+          createCertificateHtml(
+            data
+          )
+        );
+
+    } catch (error) {
+
+      console.error(
+        "open certificate error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .send(
+          "Unable to open certificate"
+        );
+    }
   }
 
+  /* ==========================================================
+     POST
+     ========================================================== */
+
+  if (req.method !== "POST") {
+
+    res.setHeader(
+      "Allow",
+      "GET, POST"
+    );
+
+    return res
+      .status(405)
+      .json({
+        error:
+          "method not allowed",
+      });
+  }
 
   if (!process.env.RESEND_API_KEY) {
 
-    return res.status(500).json({
-      error:
-        "RESEND_API_KEY غير مضبوط في متغيرات البيئة على Vercel",
-    });
+    return res
+      .status(500)
+      .json({
 
+        error:
+          "RESEND_API_KEY غير مضبوط في متغيرات البيئة على Vercel",
+
+      });
   }
-
 
   try {
 
@@ -613,35 +675,45 @@ export default async function handler(req, res) {
       to,
       subject,
       html,
-    } = req.body || {};
+    } =
+      req.body ||
+      {};
 
+    if (
+      !to ||
+      !subject ||
+      !html
+    ) {
 
-    if (!to || !subject || !html) {
+      return res
+        .status(400)
+        .json({
 
-      return res.status(400).json({
-        error: "missing to/subject/html",
-      });
+          error:
+            "missing to/subject/html",
 
+        });
     }
 
-
     const recipients =
-      (Array.isArray(to) ? to : [to])
+      (
+        Array.isArray(to)
+          ? to
+          : [to]
+      )
         .filter(Boolean);
-
 
     if (!recipients.length) {
 
-      return res.status(400).json({
-        error: "no valid recipients",
-      });
+      return res
+        .status(400)
+        .json({
 
+          error:
+            "no valid recipients",
+
+        });
     }
-
-
-    /* ========================================================
-       نفس البريد الحالي
-       ======================================================== */
 
     const payload = {
 
@@ -649,7 +721,8 @@ export default async function handler(req, res) {
         process.env.RESEND_FROM ||
         "GFS بالعربي أحلى <onboarding@resend.dev>",
 
-      to: recipients,
+      to:
+        recipients,
 
       subject,
 
@@ -657,14 +730,17 @@ export default async function handler(req, res) {
 
     };
 
+    const certificateEmail =
+      isCertificateEmail(
+        subject
+      );
+
+    let certificateUrl =
+      null;
 
     /* ========================================================
-       فقط رسائل نجاح الطالب
+       إنشاء وحفظ الشهادة
        ======================================================== */
-
-    const certificateEmail =
-      isCertificateEmail(subject);
-
 
     if (certificateEmail) {
 
@@ -674,17 +750,64 @@ export default async function handler(req, res) {
           html
         );
 
+      if (!certData.token) {
 
-      const certificate =
-        createCertificateSvg(
-          certData
+        certData.token =
+          (
+            `CERT-${Date.now()}-` +
+            Math.random()
+              .toString(36)
+              .slice(2, 10)
+          )
+            .toUpperCase();
+      }
+
+      const redis =
+        getRedis();
+
+      await redis.set(
+
+        `certificate:${certData.token}`,
+
+        JSON.stringify({
+
+          ...certData,
+
+          createdAt:
+            new Date()
+              .toISOString(),
+
+        }),
+
+        {
+
+          ex:
+            60 *
+            60 *
+            24 *
+            365 *
+            2,
+
+        }
+
+      );
+
+      certificateUrl =
+        `${getBaseUrl(req)}/api/send-email?certificate=` +
+        encodeURIComponent(
+          certData.token
         );
 
+      payload.html =
+        `${html}` +
+        `${openButton(
+          certificateUrl
+        )}`;
 
-      /*
-       * Resend يستقبل المرفق Base64.
-       * هذا المرفق لا يؤثر على أي رسالة أخرى.
-       */
+      const certificateHtml =
+        createCertificateHtml(
+          certData
+        );
 
       payload.attachments = [
 
@@ -693,32 +816,37 @@ export default async function handler(req, res) {
           filename:
             `GFS-Certificate-${
               certData.serial ||
-              Date.now()
-            }.svg`,
+              certData.token
+            }.html`,
 
           content:
-            Buffer.from(
-              certificate,
-              "utf8"
-            ).toString("base64"),
+            Buffer
+              .from(
+                certificateHtml,
+                "utf8"
+              )
+              .toString(
+                "base64"
+              ),
 
         },
 
       ];
-
     }
 
-
     /* ========================================================
-       إرسال البريد
+       إرسال البريد عبر Resend
        ======================================================== */
 
     const response =
       await fetch(
+
         "https://api.resend.com/emails",
+
         {
 
-          method: "POST",
+          method:
+            "POST",
 
           headers: {
 
@@ -736,37 +864,51 @@ export default async function handler(req, res) {
             ),
 
         }
+
       );
 
+    let data = {};
 
-    const data =
-      await response.json();
+    try {
 
+      data =
+        await response.json();
+
+    } catch {
+
+      data = {};
+    }
 
     if (!response.ok) {
 
       return res
-        .status(response.status)
+        .status(
+          response.status
+        )
         .json({
-          error: data,
+
+          error:
+            data,
+
         });
-
     }
-
 
     return res
       .status(200)
       .json({
 
-        ok: true,
+        ok:
+          true,
 
-        id: data.id,
+        id:
+          data.id,
 
         certificateAttached:
           certificateEmail,
 
-      });
+        certificateUrl,
 
+      });
 
   } catch (error) {
 
@@ -775,16 +917,15 @@ export default async function handler(req, res) {
       error
     );
 
-
     return res
       .status(500)
       .json({
 
         error:
-          String(error),
+          String(
+            error
+          ),
 
       });
-
   }
-
 }
