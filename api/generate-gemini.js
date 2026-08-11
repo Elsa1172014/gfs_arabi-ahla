@@ -1,12 +1,13 @@
-// Gemini API serverless endpoint
-// The API key stays securely on Vercel as GEMINI_API_KEY.
+// وسيط آمن بين الواجهة و Google Gemini API.
+// المفتاح يبقى على الخادم فقط داخل Vercel باسم GEMINI_API_KEY.
+// يعيد دائمًا { text } عند النجاح، و { error, details } عند الفشل لتسهيل التشخيص.
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
 
     return res.status(405).json({
-      error: "Method not allowed",
+      error: "method not allowed",
     });
   }
 
@@ -14,9 +15,9 @@ export default async function handler(req, res) {
 
   if (!apiKey) {
     return res.status(500).json({
-      error: "GEMINI_API_KEY غير موجود في Vercel",
+      error: "GEMINI_API_KEY غير مضبوط في Vercel",
       details:
-        "تأكد من إضافة GEMINI_API_KEY إلى Environment Variables ثم نفّذ Redeploy.",
+        "أضف المتغير إلى Production وPreview ثم نفّذ Redeploy.",
     });
   }
 
@@ -24,18 +25,18 @@ export default async function handler(req, res) {
     const {
       prompt,
       imageBase64,
-      imageMediaType
+      imageMediaType,
     } = req.body || {};
 
     if (!prompt || !String(prompt).trim()) {
       return res.status(400).json({
-        error: "لم يتم إرسال prompt إلى Gemini",
+        error: "missing prompt",
       });
     }
 
     const parts = [];
 
-    // Optional image
+    // إضافة الصورة إن وُجدت
     if (imageBase64) {
       parts.push({
         inline_data: {
@@ -45,7 +46,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Text prompt
+    // إضافة النص
     parts.push({
       text: String(prompt),
     });
@@ -60,8 +61,6 @@ export default async function handler(req, res) {
 
       headers: {
         "Content-Type": "application/json",
-
-        // Gemini API key
         "x-goog-api-key": apiKey,
       },
 
@@ -94,14 +93,16 @@ export default async function handler(req, res) {
       };
     }
 
-    // Google returned an error
+    // إذا أعاد Google خطأ
     if (!response.ok) {
       const googleError =
         data?.error?.message ||
         data?.message ||
-        (typeof data?.error === "string"
-          ? data.error
-          : "") ||
+        (
+          typeof data?.error === "string"
+            ? data.error
+            : ""
+        ) ||
         `HTTP ${response.status}`;
 
       console.error("Gemini API Error:", {
@@ -120,7 +121,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Extract generated text
+    // استخراج النص من Gemini
     const text =
       (
         data?.candidates?.[0]?.content?.parts || []
@@ -129,6 +130,7 @@ export default async function handler(req, res) {
         .join("")
         .trim();
 
+    // إذا نجح الطلب لكن لم يرجع نصًا
     if (!text) {
       console.error(
         "Gemini returned no text:",
@@ -149,7 +151,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Success
+    // نجاح
     return res.status(200).json({
       text,
     });
