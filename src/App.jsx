@@ -245,6 +245,27 @@ const CSS = `
 @media(max-width:900px){.stu-kpis{grid-template-columns:repeat(2,1fr)}.stu-lower{grid-template-columns:1fr}}
 @media(max-width:560px){.stu-kpis{grid-template-columns:1fr 1fr}.stu-course-grid{grid-template-columns:1fr}.stu-nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}.stu-nav button{white-space:nowrap}}
 
+/* ===== Student internal pages + teacher multi-block picker ===== */
+.stu-nav{padding:14px 18px;gap:14px}
+.stu-nav button{font-size:17px;padding:12px 22px;min-width:150px}
+.stu-nav button.on{box-shadow:0 9px 22px -14px rgba(48,68,190,.7)}
+.stu-home-actions{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:15px;margin:22px 0 28px}
+.stu-home-card{border:1px solid #e1e7f0;background:#fff;border-radius:20px;padding:22px 18px;min-height:145px;cursor:pointer;font-family:inherit;text-align:right;box-shadow:0 14px 32px -26px rgba(15,35,95,.45);transition:transform .18s ease,box-shadow .18s ease}
+.stu-home-card:hover{transform:translateY(-3px);box-shadow:0 18px 38px -25px rgba(15,35,95,.55)}
+.stu-home-card .ico{font-size:31px;display:block;margin-bottom:10px}.stu-home-card b{display:block;font-size:21px;color:#102d6d}.stu-home-card small{color:#6f7b91;font-size:12px}
+.stu-page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 20px}
+.stu-page-back{border:1px solid #cad4e6;background:#fff;color:#17346e;border-radius:12px;padding:10px 16px;font-family:inherit;font-weight:800;cursor:pointer}
+.stu-kpi{cursor:pointer;transition:transform .15s ease}.stu-kpi:hover{transform:translateY(-2px)}
+.nl-block-picker{position:relative}
+.nl-block-trigger{width:100%;min-height:44px;border:1px solid ${T.rule};border-radius:10px;background:#fff;color:${T.ink};font-family:inherit;font-weight:800;padding:9px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.nl-block-panel{position:absolute;z-index:30;top:calc(100% + 7px);right:0;left:0;background:#fff;border:1px solid #dce3ed;border-radius:15px;padding:12px;box-shadow:0 18px 42px -20px rgba(15,35,95,.45)}
+.nl-block-actions{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.nl-block-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:7px}
+.nl-block-letter{border:1px solid #d9e0eb;background:#f8fafc;color:#17346e;border-radius:9px;padding:7px 4px;font-family:inherit;font-weight:900;cursor:pointer}
+.nl-block-letter.on{background:${T.green};color:#fff;border-color:${T.green}}
+@media(max-width:900px){.stu-home-actions{grid-template-columns:1fr 1fr}.nl-block-grid{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:560px){.stu-home-actions{grid-template-columns:1fr}.stu-nav button{font-size:15px;min-width:132px;padding:11px 15px}.nl-block-grid{grid-template-columns:repeat(5,1fr)}}
+
 /* ===== Weekly Newsletter — التصميم المعتمد ===== */
 .nl-shell{border-radius:26px;overflow:hidden;background:#f8fafc;box-shadow:0 22px 60px -32px rgba(15,32,80,.45);border:1px solid #dce3ee}
 .nl-head{position:relative;overflow:hidden;background:linear-gradient(112deg,#7d1f31 0%,#622446 30%,#282966 60%,#102f8f 100%);color:#fff;padding:30px 34px 28px;text-align:center;min-height:158px;display:flex;align-items:center;justify-content:center}
@@ -3449,10 +3470,11 @@ function NewsletterViewer({ newsletter, archive = [], onSelect }) {
 
 function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, onSave }) {
   const mineStudents = students.filter(s=>!teacherEmail || !s.teacherEmail || normEmail(s.teacherEmail)===normEmail(teacherEmail));
-  const grades = [...new Set(mineStudents.map(s=>+s.grade).filter(Boolean))].sort((a,b)=>a-b);
-  const [grade,setGrade]=useState(grades[0]||7);
-  const availableBlocks=[...new Set(mineStudents.filter(s=>+s.grade===+grade).map(s=>s.block).filter(Boolean))].sort();
+  const allGrades = Array.from({length:13},(_,i)=>i+1);
+  const allBlocks = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const [grade,setGrade]=useState(7);
   const [blocks,setBlocks]=useState([]);
+  const [blockPickerOpen,setBlockPickerOpen]=useState(false);
   const [weekStart,setWeekStart]=useState(()=>new Date().toISOString().slice(0,10));
   const [weekEnd,setWeekEnd]=useState(()=>{const d=new Date();d.setDate(d.getDate()+6);return d.toISOString().slice(0,10)});
   const [currentLessons,setCurrentLessons]=useState([{title:"",objectives:[""]}]);
@@ -3467,9 +3489,15 @@ function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, on
   const submit=async(status)=>{const c=clean(currentLessons),n=clean(nextLessons);if(!blocks.length)return setMsg("اختر بلوكًا واحدًا على الأقل.");if(!c.length||!n.length)return setMsg("أدخل درسًا واحدًا على الأقل لكل أسبوع.");setBusy(true);const rec={id:uid(),teacherName,teacherEmail:normEmail(teacherEmail),grade:+grade,blocks,weekStart,weekEnd,currentLessons:c,nextLessons:n,status,createdAt:new Date().toISOString()};const r=await onSave(rec);setMsg(status==="published"?`✅ تم نشر النشرة وإرسالها. ${r?.sendStats?`الطلاب: ${r.sendStats.studentSent}/${r.sendStats.studentTotal} · أولياء الأمور: ${r.sendStats.parentSent}/${r.sendStats.parentTotal}`:""}`:"✅ تم حفظ المسودة.");setBusy(false)};
   const myNews=(newsletters||[]).filter(n=>n.teacherName===teacherName).sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
   const side=(which,list,tone,title,icon)=><section className={`nl-editor-card ${tone}`}><img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/><div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>{list.map((l,i)=><div className="nl-editor-item" key={i}><input className="inp" placeholder="اسم الدرس" value={l.title} onChange={e=>updateLesson(which,i,"title",e.target.value)}/><textarea className="tarea" rows={5} style={{marginTop:8}} placeholder="اكتب هدف تعلم في كل سطر" value={(l.objectives||[]).join("\n")} onChange={e=>updateLesson(which,i,"objectives",e.target.value.split("\n"))}/></div>)}<button className="btn nl-editor-add" onClick={()=>addLesson(which)}>+ إضافة درس</button></section>;
+  const toggleBlock=(b)=>setBlocks(v=>v.includes(b)?v.filter(x=>x!==b):[...v,b]);
   return <div className="nl-editor-shell">
     <div className="card" style={{padding:20}}><div className="nl-editor-actions"><div><h2>📰 إعداد النشرة الأسبوعية</h2><p style={{margin:"3px 0",fontSize:12,color:T.inkSoft}}>المعلم يكتب المحتوى، والذكاء الاصطناعي يحسّن الصياغة فقط. لا تظهر أي إعدادات للطالب أو ولي الأمر.</p></div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button className="btn btn-o" disabled={busy} onClick={improve}>✨ تحسين بالذكاء الاصطناعي</button><button className="btn btn-p" disabled={busy} onClick={()=>submit("published")}>📢 اعتماد ونشر وإرسال</button></div></div>
-      <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(170px,1fr))",marginTop:15}}><div><label className="lbl">الصف</label><select className="inp" value={grade} onChange={e=>{setGrade(+e.target.value);setBlocks([])}}>{(grades.length?grades:[7,8,9,10,11,12]).map(g=><option key={g}>{g}</option>)}</select></div><div style={{gridColumn:"span 2"}}><label className="lbl">البلوكات</label><div style={{display:"flex",gap:6,flexWrap:"wrap"}}>{availableBlocks.map(b=><button key={b} className={`btn ${blocks.includes(b)?"btn-p":"btn-o"}`} onClick={()=>setBlocks(v=>v.includes(b)?v.filter(x=>x!==b):[...v,b])}>{b}</button>)}</div></div><div><label className="lbl">من</label><input type="date" className="inp" value={weekStart} onChange={e=>setWeekStart(e.target.value)}/></div><div><label className="lbl">إلى</label><input type="date" className="inp" value={weekEnd} onChange={e=>setWeekEnd(e.target.value)}/></div></div>
+      <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",marginTop:15}}>
+        <div><label className="lbl">الصف</label><select className="inp" value={grade} onChange={e=>{setGrade(+e.target.value);setBlocks([])}}>{allGrades.map(g=><option key={g} value={g}>الصف {g}</option>)}</select></div>
+        <div className="nl-block-picker" style={{gridColumn:"span 2"}}><label className="lbl">البلوكات</label><button type="button" className="nl-block-trigger" onClick={()=>setBlockPickerOpen(v=>!v)}><span>{blocks.length?`تم اختيار ${blocks.length}: ${blocks.join("، ")}`:"اضغط لاختيار البلوكات A–Z"}</span><span>{blockPickerOpen?"▲":"▼"}</span></button>{blockPickerOpen&&<div className="nl-block-panel"><div className="nl-block-actions"><button type="button" className="btn btn-o" onClick={()=>setBlocks(allBlocks)}>تحديد الكل</button><button type="button" className="btn btn-q" onClick={()=>setBlocks([])}>مسح الاختيار</button><button type="button" className="btn btn-p" onClick={()=>setBlockPickerOpen(false)}>تم</button></div><div className="nl-block-grid">{allBlocks.map(b=><button type="button" key={b} className={`nl-block-letter ${blocks.includes(b)?"on":""}`} onClick={()=>toggleBlock(b)}>{b}</button>)}</div></div>}</div>
+        <div><label className="lbl">من</label><input type="date" className="inp" value={weekStart} onChange={e=>setWeekStart(e.target.value)}/></div>
+        <div><label className="lbl">إلى</label><input type="date" className="inp" value={weekEnd} onChange={e=>setWeekEnd(e.target.value)}/></div>
+      </div>
     </div>
     <div className="nl-editor-cards">{side("current",currentLessons,"red","ماذا تعلمنا هذا الأسبوع؟","✅")}{side("next",nextLessons,"blue","ماذا سنتعلم الأسبوع القادم؟","🚀")}</div>
     {msg&&<div className="card" style={{padding:13,background:T.greenSoft}}>{msg}</div>}
@@ -3482,6 +3510,7 @@ function StudentHome({ user, courses, progress, attempts, newsletters = [], onOp
   const ph = phaseFor(user.grade);
   const publishedNews = newsletters.filter(n => n.status === "published" && +n.grade === +user.grade && (n.blocks || []).includes(user.block)).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
   const [newsId,setNewsId]=useState(publishedNews[0]?.id||null);
+  const [page,setPage]=useState("home");
   const activeNews = publishedNews.find(n=>n.id===newsId) || publishedNews[0] || null;
   const mineAttempts=(attempts||[]).filter(a=>a.student===user.key).sort((a,b)=>(b.at||b.createdAt||"").localeCompare(a.at||a.createdAt||""));
   const passedAttempts=mineAttempts.filter(a=>a.passed);
@@ -3493,23 +3522,69 @@ function StudentHome({ user, courses, progress, attempts, newsletters = [], onOp
   const trend=mineAttempts.slice(0,6).reverse().map(a=>+a.pct||0); while(trend.length<6) trend.unshift(0);
   const points=trend.map((v,i)=>`${i*18+5},${100-(v*.75+12)}`).join(" ");
   const colors=["green","blue","purple","red"];
-  const scroll=(id)=>document.getElementById(id)?.scrollIntoView({behavior:"smooth",block:"start"});
+  const completed=mine.filter(c=>stateOf(c).label==="مكتمل").length;
+  const bestScore=mineAttempts.length?Math.max(...mineAttempts.map(a=>+a.pct||0)):0;
+
+  const CourseCards=()=>mine.length===0?<div className="card" style={{padding:28,textAlign:"center",color:T.inkSoft}}>لا توجد كورسات مسندة إليك حاليًا.</div>:<div className="stu-course-grid">{mine.map((c,idx)=>{const st=stateOf(c),lock=lockOf(c),best=bestOf(c),at=mineAttempts.filter(a=>a.course===c.id);const passed=at.find(a=>a.passed);const color=colors[idx%colors.length];return <div className={`stu-course ${color}`} key={c.id}><div className="stu-course-top"><div style={{position:"relative",zIndex:2}}><div style={{fontSize:11,opacity:.9}}>{DOMAINS[c.domain]} · الصف {c.grade}</div><h3 style={{color:"#fff",fontSize:22,marginTop:8}}>{c.title}</h3><div style={{marginTop:8}}><Chip tone={st.tone}>{lock?"مقفل":st.label}</Chip></div></div></div><div className="stu-course-body"><div className="stu-ring" style={{"--pct":st.pct,"--ring":color==="green"?"#16816d":color==="blue"?"#2154c7":color==="purple"?"#7650ba":"#d62d49"}}><b>{st.pct}%</b></div><div className="stu-course-meta"><div>أفضل نتيجة<b>{best||"—"}{best?"%":""}</b></div><div>المحاولات<b>{at.length}/{c.tries||ph.tries}</b></div></div>{lock&&<div style={{fontSize:11,color:T.brick,textAlign:"center"}}>أكمل «{lock}» أولًا</div>}{passed?<button className="stu-course-btn" onClick={()=>onCert&&onCert(passed.id)}>🏆 عرض الشهادة</button>:<button className="stu-course-btn" disabled={!!lock} onClick={()=>!lock&&onOpen(c.id)}>{st.label==="جديد"?"ابدأ الآن":"متابعة الكورس"} ←</button>}</div></div>})}</div>;
+
+  const Back=()=> <button className="stu-page-back" onClick={()=>setPage("home")}>← رجوع للصفحة الرئيسية</button>;
+
   return <div className="stu-shell">
-    <div className="stu-nav"><button className="on" onClick={()=>scroll("student-top")}>🏠 الرئيسية</button><button onClick={()=>scroll("my-courses")}>🧠 كورساتي</button><button onClick={()=>scroll("weekly-newsletter")}>📰 النشرة الأسبوعية</button><button onClick={()=>scroll("achievements")}>🏅 إنجازاتي</button><button onClick={()=>scroll("certificates")}>📜 الشهادات</button></div>
-    <div className="wrap" id="student-top">
-      <div className="stu-kpis"><div className="stu-kpi"><div className="stu-kpi-label">الكورسات المسندة إليك</div><div className="stu-kpi-value">{mine.length}</div><div className="stu-kpi-note">كورسات مهارية مخصصة لك</div></div><div className="stu-kpi"><div className="stu-kpi-label">المكتمل</div><div className="stu-kpi-value">{mine.filter(c=>stateOf(c).label==="مكتمل").length}</div><div className="stu-kpi-note">كورسات أتقنتها</div></div><div className="stu-kpi"><div className="stu-kpi-label">متوسط أدائك</div><div className="stu-kpi-value">{avg}%</div><div className="stu-kpi-note">من محاولاتك الفعلية</div></div><div className="stu-kpi"><div className="stu-kpi-label">شهاداتك</div><div className="stu-kpi-value">{passedAttempts.length}</div><div className="stu-kpi-note">شهادات إتمام مستحقة</div></div></div>
+    <div className="stu-nav">
+      <button className={page==="courses"?"on":""} onClick={()=>setPage("courses")}>🧠 كورساتي</button>
+      <button className={page==="newsletter"?"on":""} onClick={()=>setPage("newsletter")}>📰 النشرة الأسبوعية</button>
+      <button className={page==="journey"?"on":""} onClick={()=>setPage("journey")}>🏅 إنجازاتي ورحلتي التعليمية</button>
+      <button className={page==="certificates"?"on":""} onClick={()=>setPage("certificates")}>📜 الشهادات</button>
+    </div>
 
-      <section id="my-courses"><div className="stu-section-head"><div><h2>🧠 كورساتي</h2><p>تابع تقدمك في الكورسات المهارية المسندة إليك.</p></div><span className="chip">{mine.length} كورسات</span></div>
-      {mine.length===0?<div className="card" style={{padding:28,textAlign:"center",color:T.inkSoft}}>لا توجد كورسات مسندة إليك حاليًا.</div>:<div className="stu-course-grid">{mine.map((c,idx)=>{const st=stateOf(c),lock=lockOf(c),best=bestOf(c),at=mineAttempts.filter(a=>a.course===c.id);const passed=at.find(a=>a.passed);const color=colors[idx%colors.length];return <div className={`stu-course ${color}`} key={c.id}><div className="stu-course-top"><div style={{position:"relative",zIndex:2}}><div style={{fontSize:11,opacity:.9}}>{DOMAINS[c.domain]} · الصف {c.grade}</div><h3 style={{color:"#fff",fontSize:22,marginTop:8}}>{c.title}</h3><div style={{marginTop:8}}><Chip tone={st.tone}>{lock?"مقفل":st.label}</Chip></div></div></div><div className="stu-course-body"><div className="stu-ring" style={{"--pct":st.pct,"--ring":color==="green"?"#16816d":color==="blue"?"#2154c7":color==="purple"?"#7650ba":"#d62d49"}}><b>{st.pct}%</b></div><div className="stu-course-meta"><div>أفضل نتيجة<b>{best||"—"}{best?"%":""}</b></div><div>المحاولات<b>{at.length}/{c.tries||ph.tries}</b></div></div>{lock&&<div style={{fontSize:11,color:T.brick,textAlign:"center"}}>أكمل «{lock}» أولًا</div>}{passed?<button className="stu-course-btn" onClick={()=>onCert&&onCert(passed.id)}>🏆 عرض الشهادة</button>:<button className="stu-course-btn" disabled={!!lock} onClick={()=>!lock&&onOpen(c.id)}>{st.label==="جديد"?"ابدأ الآن":"متابعة الكورس"} ←</button>}</div></div>})}</div>}
-      </section>
+    <div className="wrap">
+      {page==="home" && <>
+        <div className="stu-kpis">
+          <div className="stu-kpi" onClick={()=>setPage("courses")}><div className="stu-kpi-label">الكورسات المسندة إليك</div><div className="stu-kpi-value">{mine.length}</div><div className="stu-kpi-note">اضغط لفتح كورساتي</div></div>
+          <div className="stu-kpi" onClick={()=>setPage("journey")}><div className="stu-kpi-label">المكتمل</div><div className="stu-kpi-value">{completed}</div><div className="stu-kpi-note">اضغط لفتح إنجازاتي</div></div>
+          <div className="stu-kpi" onClick={()=>setPage("journey")}><div className="stu-kpi-label">متوسط أدائك</div><div className="stu-kpi-value">{avg}%</div><div className="stu-kpi-note">اضغط لمشاهدة رحلتي</div></div>
+          <div className="stu-kpi" onClick={()=>setPage("certificates")}><div className="stu-kpi-label">شهاداتك</div><div className="stu-kpi-value">{passedAttempts.length}</div><div className="stu-kpi-note">اضغط لفتح الشهادات</div></div>
+        </div>
 
-      <section id="achievements"><div className="stu-section-head"><div><h2>🏅 إنجازاتي</h2><p>كل تقدم حقيقي تحققه يظهر هنا.</p></div></div><div className="stu-achievements"><div className="stu-ach"><span>🏆</span><b>{passedAttempts.length} شهادة</b><small>شهادات إتمام مستحقة</small></div><div className="stu-ach"><span>⭐</span><b>{mineAttempts.length?Math.max(...mineAttempts.map(a=>+a.pct||0)):0}% أفضل نتيجة</b><small>أعلى نتيجة حققتها</small></div><div className="stu-ach"><span>🔥</span><b>{mine.filter(c=>stateOf(c).label==="مكتمل").length} كورس مكتمل</b><small>استمر في التقدم</small></div></div></section>
+        <div className="stu-home-actions">
+          <button className="stu-home-card" onClick={()=>setPage("courses")}><span className="ico">🧠</span><b>كورساتي</b><small>الكورسات المهارية والتقدم والمحاولات</small></button>
+          <button className="stu-home-card" onClick={()=>setPage("newsletter")}><span className="ico">📰</span><b>النشرة الأسبوعية</b><small>ماذا تعلمنا وماذا سنتعلم الأسبوع القادم</small></button>
+          <button className="stu-home-card" onClick={()=>setPage("journey")}><span className="ico">🏅</span><b>إنجازاتي ورحلتي التعليمية</b><small>الإنجازات وتطور النتائج وآخر النشاطات</small></button>
+          <button className="stu-home-card" onClick={()=>setPage("certificates")}><span className="ico">📜</span><b>الشهادات</b><small>فتح شهادات إتمام الكورسات مباشرة</small></button>
+        </div>
 
-      <section id="weekly-newsletter" style={{marginTop:30}}><div className="stu-section-head"><div><h2>📰 النشرة الأسبوعية</h2><p>ما تعلمناه هذا الأسبوع وما سنبدأه في الأسبوع القادم.</p></div>{publishedNews.length>1&&<span className="chip">{publishedNews.length} نشرات محفوظة</span>}</div><NewsletterViewer newsletter={activeNews} archive={publishedNews} onSelect={setNewsId}/></section>
+        <div className="stu-section-head"><div><h2>🧠 كورساتي</h2><p>أهم ما تحتاج إليه الآن — تابع كورساتك من هنا.</p></div><button className="btn btn-o" onClick={()=>setPage("courses")}>عرض جميع الكورسات</button></div>
+        <CourseCards/>
+      </>}
 
-      <div className="stu-lower"><section className="stu-panel"><div className="stu-section-head" style={{marginTop:0}}><div><h2 style={{fontSize:22}}>📈 رحلتي التعليمية</h2><p>اتجاه نتائج آخر محاولاتك.</p></div></div><svg viewBox="0 0 100 100" style={{width:"100%",height:210,overflow:"visible"}}><line x1="5" y1="88" x2="95" y2="88" stroke="#dfe5ee"/><polyline points={points} fill="none" stroke="#2454c6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>{trend.map((v,i)=><g key={i}><circle cx={i*18+5} cy={100-(v*.75+12)} r="2.7" fill="#2454c6"/><text x={i*18+5} y={100-(v*.75+17)} fontSize="5" textAnchor="middle" fill="#51617e">{v}%</text></g>)}</svg></section><section className="stu-panel"><div className="stu-section-head" style={{marginTop:0}}><div><h2 style={{fontSize:22}}>🕘 آخر النشاطات</h2><p>آخر ما أنجزته في المنصة.</p></div></div><div className="stu-activity">{mineAttempts.slice(0,6).map((a,i)=>{const c=courses.find(x=>x.id===a.course);return <div className="stu-act" key={a.id||i}><span>{a.passed?"🏆 أكملت":"📝 محاولة في"} {c?.title||"كورس"}</span><b>{a.pct||0}%</b></div>})}{mineAttempts.length===0&&<div style={{color:T.inkSoft,fontSize:12}}>لم تسجل محاولات بعد.</div>}</div></section></div>
+      {page==="courses" && <section>
+        <div className="stu-page-head"><div><h1>🧠 كورساتي</h1><p style={{margin:0,color:T.inkSoft}}>تابع تقدمك في الكورسات المهارية المسندة إليك.</p></div><Back/></div>
+        <CourseCards/>
+      </section>}
 
-      <section id="certificates"><div className="stu-section-head"><div><h2>📜 الشهادات</h2><p>افتح شهادات إتمام الكورسات مباشرة.</p></div></div>{passedAttempts.length===0?<div className="card" style={{padding:22,color:T.inkSoft}}>لا توجد شهادات حتى الآن.</div>:<div className="stu-achievements">{passedAttempts.map(a=>{const c=courses.find(x=>x.id===a.course);return <button key={a.id} className="stu-ach" style={{textAlign:"right",cursor:"pointer",fontFamily:"inherit"}} onClick={()=>onCert&&onCert(a.id)}><span>📜</span><b>{c?.title||"شهادة إتمام"}</b><small>{a.pct}% · اضغط لفتح الشهادة</small></button>})}</div>}</section>
+      {page==="newsletter" && <section>
+        <div className="stu-page-head"><div><h1>📰 النشرة الأسبوعية</h1><p style={{margin:0,color:T.inkSoft}}>ما تعلمناه هذا الأسبوع وما سنبدأه في الأسبوع القادم.</p></div><Back/></div>
+        {publishedNews.length>1&&<div style={{marginBottom:12}}><span className="chip">{publishedNews.length} نشرات محفوظة</span></div>}
+        <NewsletterViewer newsletter={activeNews} archive={publishedNews} onSelect={setNewsId}/>
+      </section>}
+
+      {page==="journey" && <section>
+        <div className="stu-page-head"><div><h1>🏅 إنجازاتي ورحلتي التعليمية</h1><p style={{margin:0,color:T.inkSoft}}>إنجازاتك الحقيقية واتجاه تقدمك في مكان واحد.</p></div><Back/></div>
+        <div className="stu-achievements">
+          <div className="stu-ach"><span>🏆</span><b>{passedAttempts.length} شهادة</b><small>شهادات إتمام مستحقة</small></div>
+          <div className="stu-ach"><span>⭐</span><b>{bestScore}% أفضل نتيجة</b><small>أعلى نتيجة حققتها</small></div>
+          <div className="stu-ach"><span>🔥</span><b>{completed} كورس مكتمل</b><small>استمر في التقدم</small></div>
+        </div>
+        <div className="stu-lower">
+          <section className="stu-panel"><div className="stu-section-head" style={{marginTop:0}}><div><h2 style={{fontSize:22}}>📈 رحلتي التعليمية</h2><p>اتجاه نتائج آخر محاولاتك.</p></div></div><svg viewBox="0 0 100 100" style={{width:"100%",height:210,overflow:"visible"}}><line x1="5" y1="88" x2="95" y2="88" stroke="#dfe5ee"/><polyline points={points} fill="none" stroke="#2454c6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>{trend.map((v,i)=><g key={i}><circle cx={i*18+5} cy={100-(v*.75+12)} r="2.7" fill="#2454c6"/><text x={i*18+5} y={100-(v*.75+17)} fontSize="5" textAnchor="middle" fill="#51617e">{v}%</text></g>)}</svg></section>
+          <section className="stu-panel"><div className="stu-section-head" style={{marginTop:0}}><div><h2 style={{fontSize:22}}>🕘 آخر النشاطات</h2><p>آخر ما أنجزته في المنصة.</p></div></div><div className="stu-activity">{mineAttempts.slice(0,8).map((a,i)=>{const c=courses.find(x=>x.id===a.course);return <div className="stu-act" key={a.id||i}><span>{a.passed?"🏆 أكملت":"📝 محاولة في"} {c?.title||"كورس"}</span><b>{a.pct||0}%</b></div>})}{mineAttempts.length===0&&<div style={{color:T.inkSoft,fontSize:12}}>لم تسجل محاولات بعد.</div>}</div></section>
+        </div>
+      </section>}
+
+      {page==="certificates" && <section>
+        <div className="stu-page-head"><div><h1>📜 الشهادات</h1><p style={{margin:0,color:T.inkSoft}}>افتح شهادات إتمام الكورسات مباشرة.</p></div><Back/></div>
+        {passedAttempts.length===0?<div className="card" style={{padding:22,color:T.inkSoft}}>لا توجد شهادات حتى الآن.</div>:<div className="stu-achievements">{passedAttempts.map(a=>{const c=courses.find(x=>x.id===a.course);return <button key={a.id} className="stu-ach" style={{textAlign:"right",cursor:"pointer",fontFamily:"inherit"}} onClick={()=>onCert&&onCert(a.id)}><span>📜</span><b>{c?.title||"شهادة إتمام"}</b><small>{a.pct}% · اضغط لفتح الشهادة</small></button>})}</div>}
+      </section>}
 
       <footer className="adm-footer" style={{marginTop:32,borderRadius:18}}><div style={{position:"relative",zIndex:1,fontSize:11}}>منصة بالعربي أحلى — رحلة تعلم مستمرة</div><div className="adm-footer-main"><div className="adm-footer-tag">نزدهر • ننجح • ننمو</div><div style={{opacity:.72}}>GEMS Founders School Dubai — Inspiring Minds, Empowering Futures</div></div><div style={{position:"relative",zIndex:1,fontSize:11}}>قسم اللغة العربية</div></footer>
     </div>
