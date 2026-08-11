@@ -3691,24 +3691,62 @@ function parseJSON(txt) {
   if (k > 0) { try { return JSON.parse(s.slice(0, k + 1) + "]}"); } catch { } }
   return null;
 }
-const PROVIDERS = { claude: { endpoint: "/api/generate", label: "Claude" }, gemini: { endpoint: "/api/generate-gemini", label: "Gemini" }, openai: { endpoint: "/api/generate-openai", label: "ChatGPT" } };
-async function ask(prompt, provider = "claude", image = null) {
-  // في نسخة النشر هذه، كل طلب يمر عبر خادمنا الخاص — لا اتصال مباشر
-  // بـ Anthropic من المتصفح (سيُحجب بلا مفتاح CORS/API في الإنتاج).
-  const endpoint = (PROVIDERS[provider] || PROVIDERS.claude).endpoint;
-  const body = { prompt };
-  if (image) { body.imageBase64 = image.base64; body.imageMediaType = image.mediaType; }
-  const r = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const d = await r.json();
-  if (!r.ok || d.error) return null;
-  return parseJSON(d.text || "");
+const PROVIDERS = {
+  gemini: { endpoint: "/api/generate-gemini", label: "Gemini", env: "GEMINI_API_KEY" },
+  claude: { endpoint: "/api/generate", label: "Claude", env: "ANTHROPIC_API_KEY" },
+  openai: { endpoint: "/api/generate-openai", label: "ChatGPT", env: "OPENAI_API_KEY" },
+};
+const PROVIDER_ORDER = ["gemini", "claude", "openai"];
+
+async function callProvider(prompt, provider, image = null) {
+  const cfg = PROVIDERS[provider];
+  if (!cfg) return { ok: false, provider, error: "مزود غير معروف" };
+  try {
+    const body = { prompt };
+    if (image) { body.imageBase64 = image.base64; body.imageMediaType = image.mediaType; }
+    const r = await fetch(cfg.endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    let d = {};
+    try { d = await r.json(); } catch { d = {}; }
+    if (!r.ok || d.error) {
+      const msg = typeof d.error === "string"
+        ? d.error
+        : (d.error?.message || d.message || `HTTP ${r.status}`);
+      return { ok: false, provider, error: msg };
+    }
+    return { ok: true, provider, text: d.text || "" };
+  } catch (e) {
+    return { ok: false, provider, error: String(e) };
+  }
 }
-async function askText(prompt, provider = "claude") {
-  const endpoint = (PROVIDERS[provider] || PROVIDERS.claude).endpoint;
-  const r = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) });
-  const d = await r.json();
-  if (!r.ok || d.error) return null;
-  return d.text || "";
+
+async function ask(prompt, provider = "auto", image = null) {
+  const order = provider === "auto" ? PROVIDER_ORDER : [provider, ...PROVIDER_ORDER.filter((p) => p !== provider)];
+  for (const p of order) {
+    const r = await callProvider(prompt, p, image);
+    if (!r.ok) continue;
+    const parsed = parseJSON(r.text || "");
+    if (parsed) return parsed;
+  }
+  return null;
+}
+
+async function askText(prompt, provider = "auto") {
+  const order = provider === "auto" ? PROVIDER_ORDER : [provider, ...PROVIDER_ORDER.filter((p) => p !== provider)];
+  for (const p of order) {
+    const r = await callProvider(prompt, p);
+    if (r.ok && r.text) return r.text;
+  }
+  return null;
+}
+
+function providerHelpText(provider = "auto") {
+  if (provider === "auto") return "لم يعمل أي مزوّد. أضف مفتاحًا واحدًا على الأقل في Vercel: GEMINI_API_KEY أو ANTHROPIC_API_KEY أو OPENAI_API_KEY.";
+  const cfg = PROVIDERS[provider];
+  return cfg ? `تعذّر الاتصال بـ ${cfg.label}. تحقّق من المتغير ${cfg.env} في Vercel، وستحاول المنصة المزوّدات الأخرى تلقائيًا.` : "تعذّر الاتصال بمزوّد الذكاء الاصطناعي.";
 }
 // مساعد تحليل بالذكاء الاصطناعي — يُرسل ملخّصًا رقميًّا مجمَّعًا فقط (لا إجابات
 // الطلاب الخام ولا بيانات اتصال) إلى المزوّد المختار.
@@ -3752,6 +3790,7 @@ function Generator({ teacherName, onSave, onCancel }) {
   const [f, setF] = useState({ skill: "", domain: "SP", grade: 7, stream: "A", blocks: ["A"] });
   const [busy, setBusy] = useState(false); const [note, setNote] = useState(""); const [draft, setDraft] = useState(null);
   const [vid, setVid] = useState({ url: "", label: "" });
+  const [provider, setProvider] = useState("auto");
 
   const gen = async () => {
     if (!f.skill.trim()) return setNote("اكتب المهارة المستهدفة أولًا.");
@@ -3766,12 +3805,12 @@ function Generator({ teacherName, onSave, onCancel }) {
       `${head} {"bank":[{"t":"tf","sn":"","q":"عبارة","a":true,"e":""}]} — 8 أسئلة صواب وخطأ.`,
       `${head} {"bank":[{"t":"fill","sn":"","q":"سؤال","a":["الإجابة"],"e":""},{"t":"err","sn":"","q":"حدّد الكلمة الخاطئة","words":["ك١","ك٢","ك٣"],"a":1,"fix":"الصواب","e":""}]} — 6 fill و6 err.`,
     ];
-    const res = await Promise.allSettled(P.map(ask));
+    const res = await Promise.allSettled(P.map((prompt) => ask(prompt, provider)));
     const g = (i) => (res[i].status === "fulfilled" && res[i].value) || null;
     const a = g(0) || {}, ex = g(1) || {}, disc = g(2) || {}, sortD = g(3) || {};
     const rawBank = [4, 5, 6].flatMap((i) => ((g(i) || {}).bank || [])).filter((x) => x && x.t && x.q && QTYPE[x.t]);
     const bank = dedupeBank(rawBank);
-    if (bank.length < 8) { setNote("تعذّر التوليد. أعد المحاولة."); setBusy(false); return; }
+    if (bank.length < 8) { setNote(`تعذّر التوليد. ${providerHelpText(provider)}`); setBusy(false); return; }
     const stages = [];
     if (disc.table && disc.table.rows && disc.table.rows.length)
       stages.push({ t: "discover", title: "استقرئ ثم استنتج", strat: "التعلّم بالاكتشاف",
@@ -3801,7 +3840,7 @@ function Generator({ teacherName, onSave, onCancel }) {
     if (need <= 0) return;
     setBusy(true); setNote(`جارٍ توليد ${need} سؤالًا إضافيًا…`);
     const head2 = `مهارة "${f.skill}" — ${DOMAINS[f.domain]} — الصف ${f.grade} — ${f.stream === "A" ? "الناطقون بالعربية" : "غير الناطقين بها"}. أعد JSON فقط بلا نص خارجه.`;
-    const res = await ask(`${head2} {"bank":[{"t":"mcq","sn":"","q":"سؤال","o":["أ","ب","ج","د"],"a":0,"e":""}]} — ${need} سؤالًا اختيار من متعدد، بصياغة مختلفة تمامًا عن أي أسئلة سابقة عن هذه المهارة.`);
+    const res = await ask(`${head2} {"bank":[{"t":"mcq","sn":"","q":"سؤال","o":["أ","ب","ج","د"],"a":0,"e":""}]} — ${need} سؤالًا اختيار من متعدد، بصياغة مختلفة تمامًا عن أي أسئلة سابقة عن هذه المهارة.`, provider);
     const merged = dedupeBank([...draft.bank, ...((res && res.bank) || [])]);
     setDraft({ ...draft, bank: merged });
     setNote(merged.length >= 25 ? `اكتمل البنك: ${merged.length} سؤالًا. راجعها قبل الحفظ.` : `لا يزال البنك ${merged.length} فقط. أعد الضغط أو أضف أسئلة يدويًا من زر «تعديل» بعد الحفظ.`);
@@ -3820,7 +3859,17 @@ function Generator({ teacherName, onSave, onCancel }) {
     <div className="wrap" style={{ paddingBottom: 60, maxWidth: 820 }}>
       <div className="card" style={{ padding: 22 }}>
         <h2>توليد كورس بالذكاء الاصطناعي</h2>
-        <p style={{ color: T.inkSoft, fontSize: 13 }}>سبعة طلبات متوازية — سريعة ولا تنقطع. تُنتج كورسًا مبتكرًا: استقراء واستنتاج، قاعدة مصوَّرة، فيديو، أمثلة محلَّلة، فرز بطاقات، وأسئلة بعضها مصحوب بصورة. الناتج مسودة دائمًا وتحتاج مراجعتك واعتمادك قبل النشر.</p>
+        <p style={{ color: T.inkSoft, fontSize: 13 }}>سبعة طلبات متوازية تُنتج كورسًا بنفس آلية المنصة: استقراء واستنتاج، شرح القاعدة، أمثلة محلَّلة، أنشطة، ثم بنك اختبار موحّد. الناتج مسودة دائمًا وتحتاج مراجعتك واعتمادك قبل النشر.</p>
+        <div className="card" style={{ padding: 12, margin: "12px 0", background: T.paper }}>
+          <label className="lbl">مزوّد الذكاء الاصطناعي</label>
+          <select className="inp" value={provider} onChange={(e) => setProvider(e.target.value)}>
+            <option value="auto">تلقائي — Gemini ثم Claude ثم ChatGPT</option>
+            {Object.entries(PROVIDERS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+          <p style={{ fontSize: 11, color: T.inkSoft, margin: "6px 0 0" }}>
+            إذا تعذّر المزوّد المختار، تحاول المنصة المزوّدات الأخرى تلقائيًا. يلزم وجود مفتاح API واحد صالح على الأقل في Vercel.
+          </p>
+        </div>
         <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", marginTop: 10 }}>
           <div style={{ gridColumn: "1/-1" }}><label className="lbl">المهارة أو القاعدة</label><input className="inp" value={f.skill} onChange={(e) => setF({ ...f, skill: e.target.value })} placeholder="التمييز الملحوظ والملفوظ" /></div>
           <div><label className="lbl">المجال</label><select className="inp" value={f.domain} onChange={(e) => setF({ ...f, domain: e.target.value })}>{Object.entries(DOMAINS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
@@ -3877,70 +3926,232 @@ function Generator({ teacherName, onSave, onCancel }) {
 // هيكلته إلى وحدات شرح وبنك أسئلة بصيغة العرض القياسية نفسها التي يراها
 // الطالب في كل كورس آخر. هذا مسار بديل كامل عن زر التوليد الداخلي، فلا
 // يتعطّل عمل المعلم أبدًا مهما حدث لمفاتيح API الداخلية.
+
+function cleanExternalLine(line = "") {
+  return String(line).replace(/^\s*(?:[-*•#]+|\d+[\).\-\s]+)\s*/, "").trim();
+}
+
+function parseExternalBank(raw = "") {
+  const lines = String(raw).split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+  const out = [];
+  const optRe = /^(?:[أابتثجحخدABCD]|[1-4])[\)\.\-:]\s*(.+)$/i;
+  const ansRe = /^(?:الإجابة(?:\s+الصحيحة)?|الجواب|الصواب)\s*[:：\-]\s*(.+)$/i;
+  const tfRe = /^(?:الإجابة(?:\s+الصحيحة)?|الجواب|الصواب)\s*[:：\-]\s*(صح|صواب|خطأ|خطا|true|false)$/i;
+
+  for (let i = 0; i < lines.length; i++) {
+    const rawQ = lines[i];
+    const qLine = cleanExternalLine(rawQ);
+    const looksQ = /[؟?]$/.test(qLine) || /^(?:سؤال|اختر|حدّد|حدد|أكمل|صح أم خطأ|صواب أم خطأ)/.test(qLine);
+    if (!looksQ) continue;
+
+    const options = [];
+    let answer = "";
+    let j = i + 1;
+    for (; j < Math.min(lines.length, i + 8); j++) {
+      const om = lines[j].match(optRe);
+      if (om) { options.push(cleanExternalLine(om[1])); continue; }
+      const am = lines[j].match(ansRe);
+      if (am) { answer = cleanExternalLine(am[1]); break; }
+      if (/[؟?]$/.test(cleanExternalLine(lines[j])) && options.length === 0) break;
+    }
+
+    if (options.length >= 2 && answer) {
+      let idx = options.findIndex((o) => norm(o) === norm(answer));
+      if (idx < 0 && /^[أابتثجحخدABCD1-4]$/i.test(answer)) {
+        const letters = ["أ", "ب", "ج", "د"];
+        idx = letters.indexOf(answer);
+        if (idx < 0 && /^[1-4]$/.test(answer)) idx = +answer - 1;
+      }
+      if (idx >= 0 && idx < options.length) {
+        out.push({ t: "mcq", sn: "", q: qLine, o: options.slice(0, 4), a: idx, e: "من محتوى الكورس الملصوق." });
+        i = j;
+        continue;
+      }
+    }
+
+    const tf = lines.slice(i + 1, Math.min(lines.length, i + 5)).map((x) => x.match(tfRe)).find(Boolean);
+    if (tf) {
+      const val = /^(صح|صواب|true)$/i.test(tf[1]);
+      out.push({ t: "tf", sn: "", q: qLine, a: val, e: "من محتوى الكورس الملصوق." });
+      continue;
+    }
+
+    if (answer && options.length === 0) {
+      out.push({ t: "fill", sn: "", q: qLine, a: [answer], e: "من محتوى الكورس الملصوق." });
+    }
+  }
+  return dedupeBank(out);
+}
+
+function buildLocalExternalDraft(raw, f, teacherName) {
+  const parsed = parseJSON(raw);
+  if (parsed && (parsed.bank || parsed.stages)) {
+    const bank = dedupeBank((parsed.bank || []).filter((x) => x && x.t && x.q && QTYPE[x.t]));
+    const stages = Array.isArray(parsed.stages) && parsed.stages.length ? parsed.stages : [
+      { t: "rule", title: "الشرح والقاعدة", strat: "العرض المباشر", body: parsed.rule || parsed.explanation || "", concepts: parsed.concepts || [], note: "" },
+      { t: "worked", title: "أمثلة محلَّلة", strat: "النمذجة المتدرّجة", intro: "راجع الأمثلة ثم انتقل للتطبيق.", items: parsed.examples || [] },
+      { t: "summary", title: "الخلاصة", strat: "بطاقة الخروج", body: parsed.summary || "", bullets: parsed.bullets || [], note: "الاختبار يعمل بآلية المنصة نفسها." },
+    ];
+    return {
+      id: "c-" + uid(), title: parsed.title || "كورس مُعاد تنظيمه", objective: parsed.objective || "",
+      domain: f.domain, grade: f.grade, stream: f.stream, blocks: f.blocks, students: [], status: "draft",
+      q: 25, teacher: teacherName, resources: [], stages, bank,
+    };
+  }
+
+  const lines = String(raw).split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
+  const plain = lines.map(cleanExternalLine).filter(Boolean);
+  const firstUseful = plain.find((x) => x.length >= 3 && x.length <= 100) || "كورس مُعاد تنظيمه";
+  const objectiveLine = plain.find((x) => /^(?:الهدف|هدف التعلم|نواتج التعلم|الناتج)/.test(x));
+  const objective = objectiveLine ? objectiveLine.replace(/^[^:：\-]*[:：\-]?\s*/, "") : `إتقان محتوى «${firstUseful}» وتطبيقه بصورة صحيحة.`;
+
+  const qStart = lines.findIndex((x) => /^(?:#+\s*)?(?:الأسئلة|الاختبار|التقييم|أسئلة)/.test(cleanExternalLine(x)));
+  const explanationLines = (qStart > 0 ? lines.slice(0, qStart) : lines).filter((x) => !/^(?:الهدف|هدف التعلم|نواتج التعلم)/.test(cleanExternalLine(x)));
+  const rule = explanationLines.map(cleanExternalLine).slice(1).join("\n").slice(0, 3500) || plain.slice(1, 15).join("\n");
+
+  const examples = plain.filter((x) => /^(?:مثال|مثال\s*\d|مثال:)/.test(x)).slice(0, 5)
+    .map((x) => ({ w: x.replace(/^مثال(?:\s*\d+)?\s*[:：\-]?\s*/, "") || x, steps: ["اقرأ المثال.", "حدّد موضع المهارة.", "طبّق القاعدة.", "تحقّق من الصواب."] }));
+
+  const summaryLine = plain.find((x) => /^(?:الخلاصة|ملخص|ملخّص)/.test(x));
+  const summary = summaryLine ? summaryLine.replace(/^[^:：\-]*[:：\-]?\s*/, "") : "راجع القاعدة والأمثلة ثم طبّقها في الاختبار.";
+  const bank = parseExternalBank(raw);
+
+  return {
+    id: "c-" + uid(), title: firstUseful.replace(/^(?:عنوان|الكورس|المهارة)\s*[:：\-]?\s*/, ""), objective,
+    domain: f.domain, grade: f.grade, stream: f.stream, blocks: f.blocks, students: [], status: "draft",
+    q: 25, teacher: teacherName, resources: [],
+    stages: [
+      { t: "rule", title: "الشرح والقاعدة", strat: "العرض المباشر", body: rule, concepts: [], note: "" },
+      ...(examples.length ? [{ t: "worked", title: "أمثلة محلَّلة", strat: "النمذجة المتدرّجة", intro: "راجع الأمثلة ثم انتقل للتطبيق.", items: examples }] : []),
+      { t: "summary", title: "الخلاصة", strat: "بطاقة الخروج", body: summary, bullets: [], note: "الاختبار يعمل بآلية المنصة نفسها: 25 سؤالًا ودرجة النجاح والمحاولات وفق إعدادات الصف." },
+    ],
+    bank,
+  };
+}
+
+// مسار اللصق لا يعتمد على مفتاح API: يبني الكورس محليًا أولًا، ثم يستخدم
+// الذكاء الاصطناعي — إن كان متاحًا — لتحسين الشرح وإكمال بنك الاختبار.
 function PasteReorganizer({ teacherName, onSave, onCancel }) {
   const [f, setF] = useState({ domain: "SP", grade: 7, stream: "A", blocks: ["A"] });
   const [raw, setRaw] = useState("");
+  const [provider, setProvider] = useState("auto");
   const [busy, setBusy] = useState(false); const [note, setNote] = useState(""); const [draft, setDraft] = useState(null);
 
   const reorganize = async () => {
-    if (raw.trim().length < 80) return setNote("الصق نصًّا أطول — يبدو المحتوى الملصوق قصيرًا جدًّا ليُعاد تنظيمه بجودة.");
-    setBusy(true); setNote("جارٍ إعادة التنظيم… ثلاثة طلبات متوازية."); setDraft(null);
-    const ctx = `الصف ${f.grade} — ${DOMAINS[f.domain]} — ${f.stream === "A" ? "الناطقون بالعربية" : "غير الناطقين بها"}. فيما يلي محتوى وضعه معلّم لغة عربية بعد توليده على منصة ذكاء اصطناعي خارجية؛ مهمتك إعادة تنظيمه بصيغة منصّتنا فقط دون اختراع معلومات مضادة لما ورد فيه. أعد JSON فقط بلا نص خارجه.\n--- بداية النص الملصوق ---\n${raw.slice(0, 6000)}\n--- نهاية النص الملصوق ---\n\n`;
+    if (raw.trim().length < 80) return setNote("الصق محتوى الكورس كاملًا: الشرح والأمثلة والأسئلة إن وُجدت.");
+    setBusy(true); setDraft(null);
+
+    const local = buildLocalExternalDraft(raw, f, teacherName);
+    setDraft(local);
+    setNote(`تم ترتيب المحتوى محليًا فورًا. تم التعرّف على ${local.bank.length} سؤالًا. جارٍ محاولة تحسينه وإكمال بنك الاختبار بالذكاء الاصطناعي إن كان متاحًا…`);
+
+    const ctx = `الصف ${f.grade} — ${DOMAINS[f.domain]} — ${f.stream === "A" ? "الناطقون بالعربية" : "غير الناطقين بها"}.
+أعد تنظيم النص التالي في بنية تعليمية، مع الحفاظ على معناه، وبصيغة JSON فقط بلا أي نص خارج JSON.
+يجب أن يكون الشرح واضحًا ومناسبًا للصف، وأن يتكوّن بنك الاختبار من 25 سؤالًا على الأقل، متنوعًا بين mcq وtf وfill وerr.
+--- بداية النص ---
+${raw.slice(0, 12000)}
+--- نهاية النص ---`;
+
     const P = [
-      `${ctx}استخرج من النص: {"title":"عنوان قصير للمهارة","objective":"هدف تعليمي في سطر","rule":"القاعدة أو الشرح في ٤ إلى ٦ جمل مفصَّلة معاد صياغتها بوضوح","concepts":[{"label":"مصطلح قصير","note":"إيضاح قصير"}],"summary":"سطر ختامي","bullets":["","","",""]}`,
-      `${ctx}استخرج من النص أمثلة توضيحية وأعد صياغتها: {"examples":[{"w":"مثال","steps":["خطوة1","خطوة2","خطوة3","خطوة4"]}]} — أربعة أمثلة إن وُجدت مادة كافية في النص، وإلا استنبط أمثلة مناسبة لنفس القاعدة المشروحة في النص.`,
-      `${ctx}أعد تنظيم أي أسئلة موجودة في النص إلى صيغتنا القياسية، وأكمل العدد بأسئلة إضافية بنفس مستوى القاعدة المشروحة حتى يصل الإجمالي 25 سؤالًا على الأقل: {"bank":[{"t":"mcq","sn":"مهارة فرعية","q":"سؤال","o":["أ","ب","ج","د"],"a":0,"e":"تفسير قصير"}]} — نوّع بين mcq وtf وfill وerr، ولا تكرّر صياغة أي سؤال.`,
+      `${ctx}\nأعد: {"title":"عنوان","objective":"هدف","rule":"شرح منظم مفصل","concepts":[{"label":"مفهوم","note":"توضيح"}],"summary":"خلاصة","bullets":["نقطة"]}`,
+      `${ctx}\nأعد: {"examples":[{"w":"مثال","steps":["تحليل1","تحليل2","تحليل3","تحليل4"]}]} — من 4 إلى 6 أمثلة.`,
+      `${ctx}\nأعد: {"bank":[{"t":"mcq","sn":"مهارة فرعية","q":"سؤال","o":["أ","ب","ج","د"],"a":0,"e":"سبب الإجابة"},{"t":"tf","sn":"","q":"عبارة","a":true,"e":""},{"t":"fill","sn":"","q":"أكمل","a":["الإجابة"],"e":""},{"t":"err","sn":"","q":"حدّد الخطأ","words":["ك1","ك2","ك3"],"a":1,"fix":"الصواب","e":""}]} — 30 سؤالًا على الأقل دون تكرار.`,
     ];
-    const res = await Promise.allSettled(P.map(ask));
+
+    const res = await Promise.allSettled(P.map((prompt) => ask(prompt, provider)));
     const g = (i) => (res[i].status === "fulfilled" && res[i].value) || null;
-    const a = g(0) || {}, ex = g(1) || {};
-    const bank = dedupeBank((g(2) || {}).bank || []);
-    if (bank.length < 8) { setNote("تعذّرت إعادة التنظيم. تحقّق أن النص الملصوق يحتوي شرحًا فعليًا، أو أعد المحاولة."); setBusy(false); return; }
-    setDraft({
-      id: "c-" + uid(), title: a.title || "كورس مُعاد تنظيمه", objective: a.objective || "", domain: f.domain, grade: f.grade,
-      stream: f.stream, blocks: f.blocks, students: [], status: "draft", q: 25, teacher: teacherName,
-      resources: [],
-      stages: [
-        { t: "rule", title: "القاعدة", strat: "العرض المباشر", body: a.rule || "", concepts: a.concepts || [], note: "" },
-        { t: "worked", title: "أمثلة محلَّلة", strat: "النمذجة المتدرّجة", intro: "اضغط المثال لترى التحليل.", items: ex.examples || [] },
-        { t: "summary", title: "الخلاصة", strat: "بطاقة الخروج", body: a.summary || "", bullets: a.bullets || [], note: "الاختبار 25 سؤالًا متنوعًا وتتغيّر أسئلته في كل محاولة." },
-      ], bank,
-    });
-    setNote(bank.length >= 25 ? `أُعيد تنظيم ${bank.length} سؤالًا بنجاح. راجع المحتوى قبل الحفظ — لم يُغيَّر معناه، فقط أُعيدت صياغته وترتيبه.` : `أُعيد تنظيم ${bank.length} سؤالًا فقط — أقل من 25. أعد المحاولة أو أضف أسئلة يدويًا بعد الحفظ من زر «تعديل».`);
+    const a = g(0), ex = g(1), qb = g(2);
+
+    if (a || ex || qb) {
+      const bank = dedupeBank([...(local.bank || []), ...((qb && qb.bank) || [])]);
+      const stages = [
+        { t: "rule", title: "الشرح والقاعدة", strat: "العرض المباشر", body: (a && a.rule) || local.stages.find((s) => s.t === "rule")?.body || "", concepts: (a && a.concepts) || [], note: "" },
+        { t: "worked", title: "أمثلة محلَّلة", strat: "النمذجة المتدرّجة", intro: "راجع الأمثلة ثم انتقل للتطبيق.", items: (ex && ex.examples) || local.stages.find((s) => s.t === "worked")?.items || [] },
+        { t: "summary", title: "الخلاصة", strat: "بطاقة الخروج", body: (a && a.summary) || local.stages.find((s) => s.t === "summary")?.body || "", bullets: (a && a.bullets) || [], note: "الاختبار يعمل بآلية المنصة نفسها: 25 سؤالًا، نجاح ومحاولات وشهادة عند الاجتياز." },
+      ];
+      const enhanced = { ...local, title: (a && a.title) || local.title, objective: (a && a.objective) || local.objective, stages, bank };
+      setDraft(enhanced);
+      setNote(bank.length >= 25
+        ? `تمت إعادة التنظيم بنجاح: ${stages.length} وحدات و${bank.length} سؤالًا. الكورس الآن يعمل بنفس آليات كورسات المنصة.`
+        : `تم تحسين الكورس، لكن البنك يحتوي ${bank.length} سؤالًا فقط. اضغط «أكمل الأسئلة» أو ألصق أسئلة أكثر.`);
+    } else {
+      setNote(local.bank.length >= 25
+        ? `لم يتصل أي مزوّد AI، لكن المنصة أعادت ترتيب النص محليًا واستخرجت ${local.bank.length} سؤالًا، ويمكن حفظ الكورس الآن.`
+        : `تم ترتيب النص محليًا دون API، لكن تم التعرّف على ${local.bank.length} سؤالًا فقط. ${providerHelpText(provider)}`);
+    }
+    setBusy(false);
+  };
+
+  const topUp = async () => {
+    if (!draft) return;
+    const need = Math.max(0, 25 - draft.bank.length);
+    if (!need) return;
+    setBusy(true); setNote(`جارٍ إكمال ${need} سؤالًا…`);
+    const prompt = `اعتمادًا على هذا الشرح فقط:\n${draft.stages.find((s) => s.t === "rule")?.body || raw.slice(0, 5000)}
+\nأنشئ JSON فقط: {"bank":[{"t":"mcq","sn":"","q":"سؤال","o":["أ","ب","ج","د"],"a":0,"e":"تفسير"}]}.
+أنشئ ${Math.max(need + 5, 12)} سؤالًا جديدًا متنوعًا، ولا تكرر الأسئلة الموجودة.`;
+    const r = await ask(prompt, provider);
+    const bank = dedupeBank([...(draft.bank || []), ...((r && r.bank) || [])]);
+    setDraft({ ...draft, bank });
+    setNote(bank.length >= 25 ? `اكتمل بنك الاختبار: ${bank.length} سؤالًا.` : `أصبح البنك ${bank.length} سؤالًا. ${providerHelpText(provider)}`);
     setBusy(false);
   };
 
   return (
-    <div className="wrap" style={{ paddingBottom: 60, maxWidth: 820 }}>
+    <div className="wrap" style={{ paddingBottom: 60, maxWidth: 860 }}>
       <div className="card" style={{ padding: 22 }}>
         <h2>الصق كورسًا من أي منصة ذكاء اصطناعي</h2>
         <p style={{ color: T.inkSoft, fontSize: 13 }}>
-          ولّد الشرح والأسئلة على ChatGPT أو Gemini أو أي أداة تفضّلها، ثم الصق الناتج كاملًا هنا — بلا حاجة لتنسيقه بنفسك.
-          المنصة تعيد ترتيبه إلى وحدات شرح وبنك أسئلة بنفس الشكل الذي يراه الطالب في كل كورس آخر، وتُكمل العدد إلى 25 سؤالًا إن قصر النص الملصوق.
+          الصق الكورس كما خرج من ChatGPT أو Gemini أو Claude: شرح، أمثلة وأسئلة. المنصة تعيد ترتيبه إلى نفس بنية كورساتها،
+          وتستخرج الأسئلة محليًا أولًا؛ لذلك لا يتوقف هذا المسار إذا تعطل مفتاح الذكاء الاصطناعي الداخلي.
         </p>
+
+        <div className="card" style={{ padding: 12, background: T.paper, marginBottom: 12 }}>
+          <label className="lbl">التحسين بالذكاء الاصطناعي (اختياري)</label>
+          <select className="inp" value={provider} onChange={(e) => setProvider(e.target.value)}>
+            <option value="auto">تلقائي — Gemini ثم Claude ثم ChatGPT</option>
+            {Object.entries(PROVIDERS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
+          </select>
+        </div>
+
         <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", marginTop: 10 }}>
           <div style={{ gridColumn: "1/-1" }}>
-            <label className="lbl">النص الملصوق (شرح القاعدة، وأي أسئلة أُرفقت معه)</label>
-            <textarea className="tarea" rows={10} value={raw} onChange={(e) => setRaw(e.target.value)} placeholder="الصق هنا كل ما ولّدته على منصة الذكاء الاصطناعي الخارجية…" />
+            <label className="lbl">النص الملصوق</label>
+            <textarea className="tarea" rows={12} value={raw} onChange={(e) => setRaw(e.target.value)}
+              placeholder="الصق هنا الكورس كاملًا: العنوان، الهدف، الشرح، الأمثلة، ثم أسئلة الاختبار مع الإجابات الصحيحة…" />
           </div>
           <div><label className="lbl">المجال</label><select className="inp" value={f.domain} onChange={(e) => setF({ ...f, domain: e.target.value })}>{Object.entries(DOMAINS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}</select></div>
           <div><label className="lbl">الصف</label><select className="inp" value={f.grade} onChange={(e) => setF({ ...f, grade: +e.target.value })}>{Array.from({ length: 13 }, (_, i) => i + 1).map((g) => <option key={g} value={g}>{g}</option>)}</select></div>
           <div><label className="lbl">المسار</label><select className="inp" value={f.stream} onChange={(e) => setF({ ...f, stream: e.target.value })}><option value="A">عربي أ</option><option value="B">عربي ب</option></select></div>
           <div style={{ gridColumn: "1/-1" }}><label className="lbl">البلوكات</label><div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{DEFAULT_BLOCKS.map((b) => (
-            <button key={b} className="btn" onClick={() => setF({ ...f, blocks: f.blocks.includes(b) ? f.blocks.filter((x) => x !== b) : [...f.blocks, b] })}
+            <button key={b} type="button" className="btn" onClick={() => setF({ ...f, blocks: f.blocks.includes(b) ? f.blocks.filter((x) => x !== b) : [...f.blocks, b] })}
               style={{ background: f.blocks.includes(b) ? T.green : "transparent", color: f.blocks.includes(b) ? "#fff" : T.inkSoft, border: `1px solid ${T.rule}` }}>{b}</button>))}</div></div>
         </div>
         {note && <div style={{ marginTop: 12, color: draft ? T.green : busy ? T.inkSoft : T.gold, fontWeight: 600 }}>{note}</div>}
-        <div style={{ display: "flex", gap: 8, marginTop: 16 }}><button className="btn btn-p" disabled={busy} onClick={reorganize}>{busy ? "جارٍ إعادة التنظيم…" : "أعد التنظيم للمنصة"}</button><button className="btn btn-q" onClick={onCancel}>عودة</button></div>
+        <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
+          <button className="btn btn-p" disabled={busy} onClick={reorganize}>{busy ? "جارٍ إعادة التنظيم…" : "أعد التنظيم للمنصة"}</button>
+          <button className="btn btn-q" onClick={onCancel}>عودة</button>
+        </div>
       </div>
+
       {draft && (<div className="card" style={{ padding: 22, marginTop: 16, borderColor: T.gold }}>
-        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}><h3>{draft.title}</h3><Chip tone="a">مسودة — {draft.bank.length} سؤالًا</Chip></div>
+        <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <h3>{draft.title}</h3><Chip tone="a">مسودة — {draft.bank.length} سؤالًا</Chip>
+        </div>
         <p style={{ color: T.inkSoft }}>{draft.objective}</p>
-        {draft.stages.map((s, i) => (<details key={i} style={{ borderTop: `1px solid ${T.ruleSoft}`, padding: "8px 0" }}><summary style={{ cursor: "pointer", fontWeight: 600 }}>{s.title}</summary><div style={{ marginTop: 8 }}><StageBody s={s} /></div></details>))}
-        <h3 style={{ marginTop: 14 }}>الأسئلة</h3>
-        {draft.bank.map((b, i) => (<div key={i} style={{ padding: "8px 0", borderTop: `1px solid ${T.ruleSoft}`, fontSize: 13 }}>
-          <div style={{ fontWeight: 600 }}>{i + 1}. {b.q} <Chip>{QTYPE[b.t]}</Chip></div><div style={{ color: T.green }}>الصواب: {correctText(b)}</div><div style={{ color: T.inkSoft }}>{b.e}</div></div>))}
-        <button className="btn btn-p" style={{ marginTop: 16 }} disabled={draft.bank.length < 25} onClick={() => onSave(draft)}>
+        {draft.stages.map((s, i) => (<details key={i} style={{ borderTop: `1px solid ${T.ruleSoft}`, padding: "8px 0" }}>
+          <summary style={{ cursor: "pointer", fontWeight: 600 }}>{s.title}</summary><div style={{ marginTop: 8 }}><StageBody s={s} /></div>
+        </details>))}
+        <h3 style={{ marginTop: 14 }}>نموذج الامتحان ({draft.bank.length}/25)</h3>
+        <div style={{ marginBottom: 10 }}><Bar pct={Math.min(100, draft.bank.length / 25 * 100)} tone={draft.bank.length >= 25 ? T.green : T.gold} /></div>
+        {draft.bank.slice(0, 30).map((b, i) => (<div key={i} style={{ padding: "8px 0", borderTop: `1px solid ${T.ruleSoft}`, fontSize: 13 }}>
+          <div style={{ fontWeight: 600 }}>{i + 1}. {b.q} <Chip>{QTYPE[b.t]}</Chip></div>
+          <div style={{ color: T.green }}>الصواب: {correctText(b)}</div><div style={{ color: T.inkSoft }}>{b.e}</div>
+        </div>))}
+        {draft.bank.length < 25 && <button className="btn btn-o" disabled={busy} onClick={topUp} style={{ marginTop: 12 }}>
+          {busy ? "جارٍ الإكمال…" : `أكمل الأسئلة (${25 - draft.bank.length})`}
+        </button>}
+        <button className="btn btn-p" style={{ marginTop: 16, marginInlineStart: 8 }} disabled={draft.bank.length < 25} onClick={() => onSave(draft)}>
           {draft.bank.length >= 25 ? "احفظ مسودةً" : `أكمل 25 سؤالًا أولًا (${draft.bank.length}/25)`}
         </button>
       </div>)}
@@ -3948,7 +4159,6 @@ function PasteReorganizer({ teacherName, onSave, onCancel }) {
   );
 }
 
-/* ==================== تخصيص الكورس ==================== */
 function AssignPanel({ course, students, onSave, onClose }) {
   const [mode, setMode] = useState((course.students || []).length ? "students" : "blocks");
   const [blocks, setBlocks] = useState(course.blocks || []);
