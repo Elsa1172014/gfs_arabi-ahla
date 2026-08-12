@@ -138,6 +138,39 @@ const CSS = `
 
 .lh-ripple-btn{position:relative;overflow:hidden}
 
+/* ===== Landing page — exact approved GEMS reference ===== */
+.lh-wrap{background:#061334}
+.lh-bg{background:
+  radial-gradient(circle at 7% 9%,rgba(194,28,61,.58),transparent 31%),
+  radial-gradient(circle at 31% 50%,rgba(108,33,89,.38),transparent 35%),
+  radial-gradient(circle at 91% 42%,rgba(0,95,210,.17),transparent 31%),
+  linear-gradient(118deg,#49142e 0%,#23133f 34%,#071631 65%,#041532 100%);animation:none}
+.lh-orb{display:none}
+.lh-wrap>.lh-watermark,.lh-wrap>.lh-letters{display:none}
+.lh-wrap .wrap.lh-shell{max-width:1536px;width:100%;padding:24px 24px 12px;margin:0 auto}
+
+.lx{direction:ltr;position:relative;z-index:1;width:100%;height:100%;display:grid;grid-template-columns:minmax(0,1fr) 330px;grid-template-rows:minmax(0,1fr) 78px 22px;column-gap:28px;row-gap:8px;overflow:hidden}
+.lh-wrap:has(.lx){height:100vh;min-height:100vh;overflow:hidden;background:linear-gradient(112deg,#8c1735 0%,#4a1c48 29%,#071b4d 62%,#001b43 100%)}
+.lh-wrap:has(.lx) .lh-bg{background:radial-gradient(circle at 15% 20%,rgba(220,28,61,.35),transparent 30%),radial-gradient(circle at 42% 45%,rgba(103,40,112,.28),transparent 35%),linear-gradient(112deg,#7e1734 0%,#351d4d 34%,#071c4b 66%,#001a42 100%);animation:none}
+.lh-wrap:has(.lx) .lh-orb,.lh-wrap:has(.lx)>.lh-watermark,.lh-wrap:has(.lx)>.lh-letters{display:none!important}
+.lh-wrap .wrap.lh-shell:has(.lx){max-width:none!important;width:100%!important;height:100vh!important;padding:18px 22px 10px!important;margin:0!important;overflow:hidden}
+.lx-main{position:relative;min-width:0;min-height:0;direction:rtl;display:grid;grid-template-rows:90px 205px 300px minmax(150px,1fr);align-content:stretch}
+.lx-lion{position:absolute;z-index:0;left:-42px;top:-18px;width:min(610px,43vw);height:760px;object-fit:contain;opacity:.32;filter:grayscale(1) brightness(1.7);mix-blend-mode:soft-light;pointer-events:none;transform:rotate(-2deg)}
+.lx-crown{position:absolute;z-index:0;left:345px;top:-65px;font-size:178px;line-height:1;color:#fff;opacity:.10;transform:rotate(-2deg);pointer-events:none;font-family:serif}
+.lx-top{position:relative;z-index:2;direction:ltr;display:grid;grid-template-columns:315px 1fr auto;gap:18px;align-items:start}
+.lx-logo{width:315px;height:100px;border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;padding:10px 17px;box-shadow:0 15px 35px -24px #000}
+.lx-logo img{height:70px;max-width:100%;object-fit:contain;display:block}
+.lx-actions{direction:ltr;display:flex;align-items:center;gap:16px;padding-top:8px}.lx-lang{height:52px;display:flex;overflow:hidden;border:1px solid rgba(255,255,255,.28);border-radius:999px;background:rgba(6,18,56,.35)}
+.lx-lang button{min-width:98px;border:0;background:transparent;color:#e8e8ee;font-family:inherit;font-size:15px;font-weight:700;padding:0 18px}.lx-lang button.on{color:#fff;background:linear-gradient(110deg,#8c203c,#5c1e3d);box-shadow:inset 0 0 0 1px rgba(255,85,108,.5)}
+.lx-install{height:52px;border:1px solid #1c91ff;background:rgba(7,31,73,.76);color:#fff;border-radius:999px;padding:0 27px;font-family:inherit;font-size:16px;font-weight:900;cursor:pointer;white-space:nowrap}.lx-install:hover{background:rgba(13,57,119,.9)}
+.lx-hero{position:relative;z-index:2;text-align:center;width:min(760px,72vw);margin:3px auto 0;direction:rtl;align-self:center}.lx-hello{font-size:21px;font-weight:900;color:#f7f6fb}.lx-hero h1{font-family:inherit!important;font-size:52px!important;line-height:1.15!important;letter-spacing:-.02em;color:#fff!important;font-weight:950!important;margin:7px 0 7px!important;text-shadow:0 8px 30px rgba(0,0,0,.2)}.lx-dept{font-size:20px;color:#d8d8e1;margin-bottom:7px}.lx-vision{display:flex;justify-content:center;align-items:center;gap:18px;font-size:25px;font-weight:950}.lx-vision .grow{color:#158df3}.lx-vision .succeed{color:#d9d8df}.lx-vision .thrive{color:#ff4b55}.lx-vision i{width:12px;height:2px;background:#8c90a3;border-radius:2px}.lx-glow{width:154px;height:2px;margin:8px auto 0;background:linear-gradient(90deg,transparent,#ff2d4c,transparent);box-shadow:0 0 14px #ff2d4c}
+.lx-roles{position:relative;z-index:2;direction:ltr;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;width:min(850px,88%);margin:0 auto 16px;align-items:stretch}.lx-role{direction:rtl;height:280px;border-radius:20px;padding:17px 18px 14px;color:#fff;font-family:inherit;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(158deg,rgba(54,31,82,.76),rgba(6,37,82,.78));border:1px solid rgba(52,142,255,.72);backdrop-filter:blur(8px);position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease}.lx-role.parent{border-color:rgba(255,56,91,.78);background:linear-gradient(158deg,rgba(119,29,57,.71),rgba(39,27,68,.80))}.lx-role.student{border-color:rgba(123,74,255,.78)}.lx-role:hover{transform:translateY(-2px);box-shadow:0 18px 42px -25px rgba(35,128,255,.8)}.lx-role-icon{width:86px;height:86px;display:grid;place-items:center;margin-bottom:8px;filter:drop-shadow(0 10px 13px rgba(0,0,0,.28))}.lx-role-icon svg{width:82px;height:82px;display:block}.lx-role b{font-size:26px;line-height:1.2;margin-bottom:6px}.lx-role small{font-size:14px;line-height:1.75;color:#ecebf2;min-height:50px}.lx-arrow{margin-top:11px;width:43px;height:43px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.24);background:rgba(12,61,139,.56);font-size:22px}
+.lx-data{direction:ltr;position:relative;z-index:2;display:grid;grid-template-columns:195px minmax(0,1fr);gap:20px;width:min(1080px,96%);margin:0 auto;align-self:end}.lx-active{direction:rtl;height:194px;border:1px solid rgba(255,63,92,.52);border-radius:18px;background:linear-gradient(145deg,rgba(72,21,55,.55),rgba(8,31,70,.65));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px}.lx-active-icon{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;border:1px solid #f23759;background:rgba(108,26,60,.30)}.lx-active-icon svg{width:34px;height:34px}.lx-active strong{font-size:31px;line-height:1;margin:9px 0 5px}.lx-active span{font-size:14px;line-height:1.6;color:#e6e4ec}.lx-tiers{direction:ltr;height:194px;border:1px solid rgba(76,126,222,.44);border-radius:18px;background:linear-gradient(128deg,rgba(45,25,70,.57),rgba(5,35,77,.68));display:grid;grid-template-columns:repeat(3,1fr);overflow:hidden}.lx-tier{direction:rtl;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:7px 14px;text-align:center}.lx-tier+.lx-tier:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:1px;background:rgba(255,255,255,.13)}.lx-tier-title{font-size:18px;font-weight:950}.lx-tier-title.green{color:#55df4b}.lx-tier-title.gold{color:#ffc31c}.lx-tier-title.red{color:#ff4c54}.lx-tier-cut{font-size:11px;color:#e8e6ed;margin:1px 0 7px}.lx-ring{--p:0;--c:#55df4b;width:108px;height:108px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.12) 0);display:grid;place-items:center;position:relative}.lx-ring:after{content:"";position:absolute;width:76px;height:76px;border-radius:50%;background:#11193b}.lx-ring>div{position:relative;z-index:2}.lx-ring strong{display:block;font-size:26px;line-height:1}.lx-ring small{display:block;margin-top:4px;font-size:11px;color:#f0eff4}
+.lx-side{direction:rtl;display:grid;grid-template-rows:178px minmax(0,1fr);gap:18px;padding-top:94px;position:relative;z-index:2;min-height:0}.lx-appbox{justify-self:end;width:142px;height:174px;border:1px solid #1c91ff;border-radius:21px;background:rgba(5,31,72,.78);padding:14px 10px;text-align:center;color:#fff;box-shadow:0 15px 35px -27px #1c91ff;display:flex;flex-direction:column;justify-content:center}.lx-appbox b{display:block;font-size:15px}.lx-appstores{direction:ltr;display:flex;justify-content:center;gap:18px;border-top:1px solid rgba(255,255,255,.14);margin-top:9px;padding-top:9px}.lx-appstores span{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px}.lx-appstores i{font-style:normal;width:27px;height:27px;display:grid;place-items:center}.lx-appstores svg{width:25px;height:25px}.lx-live{border:1px solid rgba(34,151,255,.65);border-radius:20px;background:linear-gradient(154deg,rgba(5,31,72,.88),rgba(4,48,93,.70));padding:15px 13px 13px;min-height:0;overflow:hidden;box-shadow:0 20px 50px -34px #168cff}.lx-live-head{text-align:center;margin-bottom:10px}.lx-live-head strong{font-size:21px}.lx-live-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#54df4a;margin-right:7px;box-shadow:0 0 10px #54df4a}.lx-live-sub{font-size:12px;color:#b8c7dd;margin-top:1px}.lx-live-list{display:grid;gap:7px}.lx-live-item{border:1px solid rgba(66,130,219,.38);background:rgba(8,42,83,.63);border-radius:13px;padding:8px;display:grid;grid-template-columns:43px 1fr auto;gap:8px;align-items:center;min-height:69px}.lx-live-avatar{width:43px;height:43px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#195ab5,#7b2e65)}.lx-live-avatar svg{width:26px;height:26px}.lx-live-item b{font-size:13px}.lx-live-item p{margin:1px 0 0;font-size:10.5px;line-height:1.45;color:#e2e7f0}.lx-live-score{font-size:16px;font-weight:950;color:#76ef4c;white-space:nowrap}.lx-live-time{font-size:9px;color:#9eafc6;margin-top:1px}.lx-live-empty{text-align:center;color:#aebed4;padding:35px 10px}.lx-live-more{margin-top:8px;width:100%;height:34px;border:1px solid rgba(91,143,222,.46);border-radius:10px;background:rgba(8,43,84,.52);color:#fff;font-family:inherit;font-weight:800}
+.lx-trust{grid-column:1/-1;direction:ltr;height:78px;border:1px solid rgba(55,111,202,.42);border-radius:17px;background:linear-gradient(90deg,rgba(33,22,63,.67),rgba(5,47,93,.68));display:grid;grid-template-columns:repeat(3,1fr);overflow:hidden;align-items:center}.lx-trust-item{direction:rtl;display:flex;align-items:center;justify-content:center;gap:13px;padding:8px 18px;text-align:right}.lx-trust-item+.lx-trust-item{border-left:1px solid rgba(255,255,255,.14)}.lx-trust-icon{width:42px;height:42px;display:grid;place-items:center}.lx-trust-icon svg{width:38px;height:38px}.lx-trust-item b{display:block;font-size:17px}.lx-trust-item small{display:block;font-size:11px;color:#b7c4d7}.lx-copy{grid-column:1/-1;text-align:center;color:#c2c7d3;font-size:11px;line-height:22px}
+@media(max-width:1365px){.lh-wrap .wrap.lh-shell:has(.lx){padding:12px 14px 8px!important}.lx{grid-template-columns:minmax(0,1fr) 285px;column-gap:18px}.lx-main{grid-template-rows:78px 170px 250px minmax(145px,1fr)}.lx-top{grid-template-columns:250px 1fr auto}.lx-logo{width:250px;height:82px}.lx-logo img{height:58px}.lx-actions{gap:9px;padding-top:4px}.lx-lang,.lx-install{height:44px}.lx-lang button{min-width:78px;font-size:13px}.lx-install{padding:0 18px;font-size:14px}.lx-hero h1{font-size:42px!important}.lx-hello{font-size:18px}.lx-dept{font-size:17px}.lx-vision{font-size:21px}.lx-roles{width:min(760px,92%);gap:16px}.lx-role{height:235px}.lx-role-icon{width:70px;height:70px}.lx-role-icon svg{width:68px;height:68px}.lx-role b{font-size:23px}.lx-role small{font-size:12px}.lx-data{grid-template-columns:165px 1fr;gap:14px}.lx-active,.lx-tiers{height:158px}.lx-ring{width:86px;height:86px}.lx-ring:after{width:60px;height:60px}.lx-ring strong{font-size:21px}.lx-side{padding-top:76px;grid-template-rows:150px minmax(0,1fr);gap:12px}.lx-appbox{height:146px;width:130px}.lx-live-item:nth-child(n+4){display:none}.lx-trust{height:68px}}
+@media(max-width:900px){.lh-wrap:has(.lx){overflow:auto}.lh-wrap .wrap.lh-shell:has(.lx){height:auto!important;min-height:100vh;overflow:visible}.lx{height:auto;display:block}.lx-main{display:block}.lx-top{grid-template-columns:1fr;justify-items:center}.lx-logo{margin:auto}.lx-actions{justify-content:center;margin:10px 0}.lx-hero{margin:15px auto}.lx-roles{grid-template-columns:1fr}.lx-role{height:190px}.lx-data{grid-template-columns:1fr}.lx-side{padding:20px 0;display:grid;grid-template-columns:150px 1fr}.lx-trust{margin-top:10px}.lx-copy{margin-top:6px}.lx-lion{opacity:.18}.lx-crown{display:none}}
+
 /* ===== لوحة قيادة رئيس القسم — GEMS Command Center ===== */
 .adm-shell{max-width:none!important;padding:0!important;background:#f6f8fb;min-height:100vh}
 .adm-hero{position:relative;overflow:hidden;padding:18px 32px 14px;color:#fff;
@@ -2795,13 +2828,13 @@ function notifyEmail(to, subject, html) {
   }).catch(() => { });
 }
 
-async function sendEmailTracked(to, subject, html) {
+async function sendEmailTracked(to, subject, html, extra = {}) {
   const recipients = (Array.isArray(to) ? to : [to]).map(normEmail).filter(Boolean);
   if (!recipients.length) return { ok: false, status: 0, error: "لا يوجد بريد صالح للمستلم." };
   try {
     const r = await fetch("/api/send-email", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ to: recipients, subject, html }),
+      body: JSON.stringify({ to: recipients, subject, html, ...extra }),
     });
     let data = null;
     try { data = await r.json(); } catch { data = null; }
@@ -2816,6 +2849,22 @@ async function runEmailTasks(tasks, chunkSize = 8) {
     results.push(...r);
   }
   return results;
+}
+
+async function registerCertificateRecord(data) {
+  if (!data?.token) return { ok: false, status: 0, error: "رمز الشهادة غير موجود." };
+  try {
+    const r = await fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "register-certificate", certificateData: data }),
+    });
+    let out = null;
+    try { out = await r.json(); } catch { out = null; }
+    return { ok: r.ok, status: r.status, error: r.ok ? "" : JSON.stringify(out?.error || out || `HTTP ${r.status}`) };
+  } catch (e) {
+    return { ok: false, status: 0, error: String(e?.message || e || "تعذر تسجيل الشهادة") };
+  }
 }
 function nlEsc(v="") { return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]); }
 function newsletterEmailHtml(rec, studentName, parentCopy=false) {
@@ -3150,6 +3199,17 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
   const [rememberT, setRememberT] = useState(true); const [rememberA, setRememberA] = useState(true);
   const [teacherMem, setTeacherMem] = useState(null); const [adminMem, setAdminMem] = useState(null);
   const [welcomeName, setWelcomeName] = useState("");
+  const [installPrompt, setInstallPrompt] = useState(null);
+  useEffect(() => {
+    const h = (e) => { e.preventDefault(); setInstallPrompt(e); };
+    window.addEventListener("beforeinstallprompt", h);
+    return () => window.removeEventListener("beforeinstallprompt", h);
+  }, []);
+  const installApp = async () => {
+    if (installPrompt) { try { await installPrompt.prompt(); await installPrompt.userChoice; setInstallPrompt(null); } catch {} return; }
+    const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
+    alert(isiOS ? "على iPhone: افتح زر المشاركة في Safari ثم اختر «إضافة إلى الشاشة الرئيسية»." : "افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». إذا لم يظهر الخيار فالمتصفح لا يتيح التثبيت بعد.");
+  };
 
   // تخزين شخصي غير مشترك (shared:false) — يخصّ حساب هذا المستخدم وحده على
   // هذا الجهاز، لا يظهر لأي مستخدم آخر يفتح المنصة. هذا بديل window.storage
@@ -3236,6 +3296,21 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
     };
   })();
 
+  // واجهة البداية تقرأ البيانات الحالية فقط ولا تكتب أو تغيّر أي سجل.
+  const recentAttempts = (attempts || []).slice().sort((a,b)=>new Date(b.at||b.createdAt||0)-new Date(a.at||a.createdAt||0));
+  const activeCutoff = Date.now() - 15 * 60 * 1000;
+  const activeNowCount = new Set(recentAttempts.filter(a=>new Date(a.at||a.createdAt||0).getTime() >= activeCutoff).map(a=>a.student)).size;
+  const liveFeed = recentAttempts.slice(0,5).map((a) => {
+    const st=(students||[]).find(x=>x.key===a.student);
+    const cr=(courses||[]).find(x=>x.id===a.course);
+    const raw=(st?.name||"طالب").trim();
+    const p=raw.split(/\s+/);
+    const safeName=p.length>1?`${p[0]} ${p[1][0]}.`:p[0];
+    const when=a.at||a.createdAt;
+    const mins=when?Math.max(0,Math.round((Date.now()-new Date(when).getTime())/60000)):null;
+    return {name:safeName,title:cr?.title||"كورس اللغة العربية",pct:+a.pct||0,passed:!!a.passed,mins};
+  });
+
   return (
     <div className="gfs lh-wrap" style={{ "--accent": accent }}><style>{CSS}</style>
       <div className="lh-bg" />
@@ -3248,57 +3323,65 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
 
       <div className="wrap lh-shell">
         {stage === "welcome" && (
-          <div className="lh-fade">
-            <div className="lh-hero">
-              <div className="logo-chip lg" style={{ margin: "0 auto 18px" }}><img src={LOGO_URL} alt="GEMS Founders School" /></div>
-              <div className="brand-tagline" style={{ textAlign: "center" }}>قسم اللغة العربية — ننمو · ننجح · نزدهر</div>
-              <h1 style={{ color: "#fff", fontSize: 34, textAlign: "center", margin: "10px 0 8px" }}>مرحبًا بكم في منصة كورسات GFS بالعربي أحلى</h1>
-              <p style={{ color: "#E7DCE8", textAlign: "center", fontSize: 16, margin: "0 0 10px" }}>رحلة ذكية لإتقان اللغة العربية</p>
-              <p style={{ color: "#C6DAD8", textAlign: "center", fontSize: 13, margin: "0 0 30px", maxWidth: 480, marginInline: "auto" }}>منصة كاملة: تعلّم للطالب، لوحة تحكم للمعلم، وحدة إدارة للقسم، وبوابة تقرير لولي الأمر.</p>
-            </div>
+          <div className="lh-fade lx">
+            <main className="lx-main">
+              <img src={LION_MARK_URL} className="lx-lion" alt="" aria-hidden="true"/>
+              <div className="lx-crown" aria-hidden="true">♛</div>
 
-            <h2 style={{ color: "#fff", textAlign: "center", marginBottom: 20 }}>من أنت؟ اختر خانتك للدخول</h2>
-            <div className="lh-rolegrid">
-              {ROLES.filter((r) => r.k === "s" || r.k === "p").map((r) => (
-                <button key={r.k} className="lh-rolecard" style={{ "--card-accent": r.accent }}
-                  onClick={(e) => { ripple(e); setRole(r.k); setStage("form"); setStep(1); setErr(""); setWelcomeName(""); }}>
-                  <span className="lh-role-icon">{r.icon}</span>
-                  <span className="lh-role-title">{r.title}</span>
-                  <span className="lh-role-desc">{r.desc}</span>
+              <div className="lx-top">
+                <div className="lx-logo"><img src={LOGO_URL} alt="GEMS Founders School Dubai"/></div>
+                <div></div>
+                <div className="lx-actions">
+                  <div className="lx-lang"><button className="on" type="button">العربية</button><button type="button" title="English">English</button></div>
+                  <button className="lx-install" type="button" onClick={installApp}>⇩ تثبيت التطبيق</button>
+                </div>
+              </div>
+
+              <section className="lx-hero">
+                <div className="lx-hello">مرحبًا بكم في منصة</div>
+                <h1>كورسات GFS بالعربي أحلى</h1>
+                <div className="lx-dept">قسم اللغة العربية</div>
+                <div className="lx-vision"><span className="grow">ننمو</span><i/><span className="succeed">ننجح</span><i/><span className="thrive">نزدهر</span></div>
+                <div className="lx-glow"/>
+              </section>
+
+              <section className="lx-roles" aria-label="اختيار الدور">
+                <button className="lx-role parent" type="button" onClick={(e)=>{ripple(e);setRole("p");setStage("form");setStep(1);setErr("");setWelcomeName("");}}>
+                  <span className="lx-role-icon"><svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="fam" x1="0" x2="1"><stop stopColor="#2f8cff"/><stop offset="1" stopColor="#ffb14a"/></linearGradient></defs><circle cx="34" cy="29" r="13" fill="#ffd0a2"/><circle cx="62" cy="29" r="13" fill="#ffc58e"/><circle cx="48" cy="49" r="11" fill="#ffd2a4"/><path d="M13 67c2-15 10-23 21-23s19 8 21 23" fill="#2787ee"/><path d="M43 67c2-15 9-23 19-23 11 0 18 8 21 23" fill="#e9676d"/><path d="M28 78c2-14 9-21 20-21s18 7 20 21" fill="url(#fam)"/></svg></span><b>ولي أمر</b><small>تابع تقدم ابنك واطلع<br/>على تقاريره وإنجازاته</small><span className="lx-arrow">←</span>
                 </button>
-              ))}
-            </div>
-            <div style={{ textAlign: "center", marginTop: 16 }}>
-              <button className="btn btn-q" style={{ color: "#E7DCE8" }} onClick={(e) => { ripple(e); setStage("staff"); }}>الإدارة ←</button>
-            </div>
+                <button className="lx-role student" type="button" onClick={(e)=>{ripple(e);setRole("s");setStage("form");setStep(1);setErr("");setWelcomeName("");}}>
+                  <span className="lx-role-icon"><svg viewBox="0 0 96 96" aria-hidden="true"><defs><linearGradient id="cap" x1="0" x2="1"><stop stopColor="#0876e8"/><stop offset="1" stopColor="#1e3c9f"/></linearGradient></defs><path d="M9 35 48 17l39 18-39 18z" fill="url(#cap)"/><path d="M27 44v20c13 9 29 9 42 0V44L48 54z" fill="#1748a6"/><path d="M79 38v27" stroke="#f7b41f" strokeWidth="4"/><circle cx="79" cy="69" r="5" fill="#f7b41f"/></svg></span><b>طالب</b><small>ابدأ رحلتك التعليمية<br/>وتعلم العربية بمتعة</small><span className="lx-arrow">←</span>
+                </button>
+                <button className="lx-role" type="button" onClick={(e)=>{ripple(e);setStage("staff");setErr("");}}>
+                  <span className="lx-role-icon"><svg viewBox="0 0 96 96" aria-hidden="true"><rect x="50" y="18" width="38" height="36" rx="5" fill="#2476c9" opacity=".85"/><path d="M57 45V34M66 45V27M75 45V22" stroke="#b9d9ff" strokeWidth="5" strokeLinecap="round"/><circle cx="35" cy="34" r="14" fill="#ffc18d"/><path d="M21 31c2-14 27-18 31 0-5-3-10-6-16-6-5 0-10 2-15 6" fill="#12376d"/><path d="M13 80c2-21 11-31 22-31s20 10 22 31" fill="#e9f3ff"/><path d="m31 53 4 7 5-7 4 27H27z" fill="#174e9c"/><circle cx="30" cy="35" r="2" fill="#1b2748"/><circle cx="41" cy="35" r="2" fill="#1b2748"/><path d="M31 42c3 3 6 3 9 0" fill="none" stroke="#8b4b32" strokeWidth="2"/></svg></span><b>الإدارة</b><small>للمعلمين ورؤساء الأقسام<br/>إدارة المحتوى والتقارير</small><span className="lx-arrow">←</span>
+                </button>
+              </section>
 
-            <div className="lh-landing-gauges">
-              <h3 style={{ color: "#fff", textAlign: "center", marginBottom: 4 }}>الطلاب داخل المنصة</h3>
-              <p className="lh-gauge-note">نسبة إنجاز الطلاب لكورساتهم المُسنَدة ({completionStats.total} طالب لديهم كورسات)</p>
-              <div className="lh-gaugewrap lh-gaugewrap-lg">
-                {completionStats.tiers.map((t) => {
-                  const r = 34, c = 2 * Math.PI * r;
-                  const offset = c - (Math.min(t.pct, 100) / 100) * c;
-                  return (
-                    <div className="lh-gauge" key={t.label}>
-                      <svg viewBox="0 0 90 90">
-                        <circle cx="45" cy="45" r={r} className="lh-gauge-track" />
-                        <circle cx="45" cy="45" r={r} className="lh-gauge-fill" stroke={t.color}
-                          style={{ strokeDasharray: c, strokeDashoffset: ringsOn ? offset : c }} />
-                        <text x="45" y="41" className="lh-gauge-pct">{t.pct}%</text>
-                        <text x="45" y="56" className="lh-gauge-cnt">{t.count}</text>
-                      </svg>
-                      <span className="lh-gauge-label">{t.label}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="lh-stats" style={{ maxWidth: 360, margin: "18px auto 0" }}>
-                <div className="lh-stat"><b>{(students || []).length}</b><span>طالب</span></div>
-                <div className="lh-stat"><b>{(courses || []).length}</b><span>كورس</span></div>
-                <div className="lh-stat"><b>{certCount}</b><span>شهادة</span></div>
-              </div>
-            </div>
+              <section className="lx-data">
+                <div className="lx-active"><div className="lx-active-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="18" r="7" fill="#d8e4ff"/><circle cx="31" cy="19" r="6" fill="#9fb8ec"/><path d="M6 38c1-9 5-14 12-14s12 5 13 14" fill="#d8e4ff"/><path d="M25 38c1-7 4-12 9-12 6 0 9 5 10 12" fill="#9fb8ec"/></svg></div><strong>{activeNowCount}</strong><span>طلاب نشطون<br/>داخل المنصة الآن</span></div>
+                <div className="lx-tiers">
+                  {completionStats.tiers.map((t,i)=>{const names=["متقدم","في تقدم","يحتاج دعمًا"];const cls=["green","gold","red"];const cols=["#55df4b","#ffc31c","#ff4c54"];const cuts=["(90% فأعلى)","(70% – 89%)","(أقل من 70%)"];return <div className="lx-tier" key={t.label}><div className={`lx-tier-title ${cls[i]}`}>{names[i]}</div><div className="lx-tier-cut">{cuts[i]}</div><div className="lx-ring" style={{"--p":t.pct,"--c":cols[i]}}><div><strong>{t.pct}%</strong><small>{t.count} طالب</small></div></div></div>})}
+                </div>
+              </section>
+            </main>
+
+            <aside className="lx-side">
+              <div className="lx-appbox"><b>ثبّت منصتنا<br/>كتطبيق</b><div className="lx-appstores"><span><i><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M21 8c-1.5 1.8-3.8 3-5.8 2.8-.3-2.1.8-4.3 2.2-5.7C19 3.6 21.5 2.6 23.5 2.5c.2 2.1-1 4.2-2.5 5.5zM26 23c-1 2.3-2.2 4.4-3.9 4.5-1.6 0-2.1-1-4.2-1s-2.7 1-4.2 1c-1.7 0-3-2.2-4-4.5-2.7-5.6-3-12.2 2.1-15.1 1.8-1 4.2-.8 5.7.2 1.5-1 4-1.3 6-.2 1 .6 2.5 1.8 3.3 3.4-5.3 3.2-4.4 10.2-.8 11.7z" fill="#fff"/></svg></i>iOS</span><span><i><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M8 11h16v14H8z" fill="#fff"/><circle cx="12" cy="15" r="1.2" fill="#12305f"/><circle cx="20" cy="15" r="1.2" fill="#12305f"/><path d="m10 8-2-3m14 3 2-3M6 13v9m20-9v9M11 25v4m10-4v4" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/></svg></i>Android</span></div></div>
+              <section className="lx-live">
+                <div className="lx-live-head"><strong>المنصة الآن <span className="lx-live-dot"/></strong><div className="lx-live-sub">{activeNowCount} متعلمًا نشطًا الآن</div></div>
+                <div className="lx-live-list">
+                  {liveFeed.length?liveFeed.map((x,i)=><div className="lx-live-item" key={i}><div className="lx-live-avatar">{x.passed?<svg viewBox="0 0 32 32" aria-hidden="true"><path d="M9 5h14v7c0 6-3 10-7 10s-7-4-7-10z" fill="#f7b51f"/><path d="M9 8H5c0 6 2 9 7 9M23 8h4c0 6-2 9-7 9" fill="none" stroke="#f7b51f" strokeWidth="3"/><path d="M16 22v5M11 28h10" stroke="#f7b51f" strokeWidth="3"/></svg>:<svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="11" r="7" fill="#ffd0a0"/><path d="M5 30c1-8 5-12 11-12s10 4 11 12" fill="#2f83df"/></svg>}</div><div><b>{x.name}</b><p>{x.passed?"أكمل":"يتقدم الآن في"} كورس «{x.title}»</p>{x.mins!==null&&<div className="lx-live-time">منذ {x.mins<1?"أقل من دقيقة":`${x.mins} دقيقة`}</div>}</div><div className="lx-live-score">{x.pct}%</div></div>):<div className="lx-live-empty">لا توجد نشاطات حديثة بعد.</div>}
+                </div>
+                <button className="lx-live-more" type="button">عرض كل النشاطات ↗</button>
+              </section>
+            </aside>
+
+            <section className="lx-trust">
+              <div className="lx-trust-item"><span className="lx-trust-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4 39 10v12c0 10-6 17-15 22C15 39 9 32 9 22V10z" fill="none" stroke="#cfe3ff" strokeWidth="4"/><path d="m17 24 5 5 10-12" fill="none" stroke="#cfe3ff" strokeWidth="4"/></svg></span><div><b>آمن وموثوق</b><small>حماية بياناتك أولويتنا</small></div></div>
+              <div className="lx-trust-item"><span className="lx-trust-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M15 4h9l5 13H20zM33 4h-9l-5 13h9z" fill="#b8d2f7"/><circle cx="24" cy="27" r="11" fill="none" stroke="#cfe3ff" strokeWidth="4"/><path d="m24 21 2 4 5 .7-3.5 3.4.8 4.9-4.3-2.3-4.3 2.3.8-4.9-3.5-3.4 5-.7z" fill="#cfe3ff"/></svg></span><div><b>شهادات معتمدة</b><small>إنجازك معنا موثق</small></div></div>
+              <div className="lx-trust-item"><span className="lx-trust-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M18 40v-8c-5-2-8-7-8-13 0-8 6-14 14-14s14 6 14 14c0 4-2 8-5 11v10" fill="none" stroke="#cfe3ff" strokeWidth="4"/><path d="M19 14c0-3 5-4 6-1 1-4 7-3 7 1 4 0 5 6 1 8 2 4-3 7-6 4-3 4-8 0-6-4-5-1-4-8 0-8" fill="none" stroke="#cfe3ff" strokeWidth="2.5"/></svg></span><div><b>تعلم ذكي</b><small>تجربة تعليمية تفاعلية</small></div></div>
+            </section>
+            <div className="lx-copy">© 2026 GEMS Founders School Dubai — جميع الحقوق محفوظة</div>
           </div>
         )}
 
@@ -3707,7 +3790,7 @@ function Exam({ course, items, onSubmit, onCancel }) {
 function weakestSkill(studentKey, attempts) {
   const at = attempts.filter((a) => a.student === studentKey);
   const m = {};
-  at.forEach((a) => a.detail.forEach((d) => { m[d.sn] = m[d.sn] || { c: 0, t: 0 }; m[d.sn].t++; if (d.ok) m[d.sn].c++; }));
+  at.forEach((a) => (a.detail || []).forEach((d) => { const skill = d?.sn || "مهارة عامة"; m[skill] = m[skill] || { c: 0, t: 0 }; m[skill].t++; if (d.ok) m[skill].c++; }));
   let worst = null, worstPct = 101;
   Object.entries(m).forEach(([k, v]) => { const pct = v.c / v.t * 100; if (pct < worstPct) { worstPct = pct; worst = k; } });
   return worst ? { skill: worst, pct: Math.round(worstPct) } : null;
@@ -3717,7 +3800,7 @@ function weakestSkill(studentKey, attempts) {
 function skillBreakdown(studentKey, attempts) {
   const at = attempts.filter((a) => a.student === studentKey);
   const m = {};
-  at.forEach((a) => a.detail.forEach((d) => { m[d.sn] = m[d.sn] || { c: 0, t: 0 }; m[d.sn].t++; if (d.ok) m[d.sn].c++; }));
+  at.forEach((a) => (a.detail || []).forEach((d) => { const skill = d?.sn || "مهارة عامة"; m[skill] = m[skill] || { c: 0, t: 0 }; m[skill].t++; if (d.ok) m[skill].c++; }));
   return Object.entries(m).map(([skill, v]) => ({ skill, pct: Math.round(v.c / v.t * 100), t: v.t })).sort((a, b) => a.pct - b.pct);
 }
 function strongestSkill(studentKey, attempts) {
@@ -3830,7 +3913,8 @@ function StudentDetailCard({ student, courses, progress, attempts }) {
 }
 function Result({ attempt, course, onBack, onCert, onRetry, canRetry }) {
   const bySkill = {}, byType = {};
-  attempt.detail.forEach((d) => { bySkill[d.sn] = bySkill[d.sn] || { c: 0, t: 0 }; bySkill[d.sn].t++; if (d.ok) bySkill[d.sn].c++;
+  const attemptDetail = Array.isArray(attempt?.detail) ? attempt.detail : [];
+  attemptDetail.forEach((d) => { bySkill[d.sn] = bySkill[d.sn] || { c: 0, t: 0 }; bySkill[d.sn].t++; if (d.ok) bySkill[d.sn].c++;
     byType[d.type] = byType[d.type] || { c: 0, t: 0 }; byType[d.type].t++; if (d.ok) byType[d.type].c++; });
   return (
     <div className="wrap" style={{ paddingBottom: 60, maxWidth: 780 }}>
@@ -3839,7 +3923,7 @@ function Result({ attempt, course, onBack, onCert, onRetry, canRetry }) {
         <div style={{ display: "flex", justifyContent: "center" }}>
           <CircleProgress pct={attempt.pct} size={140} stroke={13} tone={attempt.passed ? T.green : T.brick} />
         </div>
-        <div style={{ margin: "14px 0 16px" }}>{attempt.raw} من {attempt.detail.length} — النجاح {attempt.pass}%</div>
+        <div style={{ margin: "14px 0 16px" }}>{attempt.raw ?? attemptDetail.filter((d) => d.ok).length} من {attemptDetail.length} — النجاح {attempt.pass}%</div>
         {attempt.passed ? <button className="btn btn-g" onClick={() => onCert(attempt.id)}>احصل على شهادتك</button>
           : canRetry ? <button className="btn btn-p" onClick={onRetry}>أعد المحاولة بأسئلة جديدة</button> : <div style={{ color: T.brick, fontWeight: 600 }}>استنفدت محاولات هذه الدورة.</div>}
       </div>
@@ -3854,10 +3938,10 @@ function Result({ attempt, course, onBack, onCert, onRetry, canRetry }) {
             <Bar pct={v.c / v.t * 100} tone={v.c / v.t >= .7 ? T.green : T.gold} /></div>))}</div>
       </div>
       <div className="card" style={{ padding: 22, marginTop: 18 }}><h3 style={{ marginBottom: 12 }}>مراجعة الإجابات</h3>
-        {attempt.detail.map((d, i) => (<div key={i} style={{ padding: "12px 0", borderBottom: `1px solid ${T.ruleSoft}` }}>
+        {attemptDetail.length ? attemptDetail.map((d, i) => (<div key={i} style={{ padding: "12px 0", borderBottom: `1px solid ${T.ruleSoft}` }}>
           <div style={{ fontWeight: 600 }}>{i + 1}. {d.q} <Chip>{QTYPE[d.type]}</Chip></div>
           <div style={{ fontSize: 14, color: d.ok ? T.green : T.brick }}>{d.ok ? "إجابتك صحيحة" : `إجابتك: ${d.picked} — الصواب: ${d.correct}`}</div>
-          <div style={{ fontSize: 14, color: T.inkSoft }}>{d.e}</div></div>))}
+          <div style={{ fontSize: 14, color: T.inkSoft }}>{d.e}</div></div>)) : <div style={{ color: T.inkSoft, fontSize: 13, padding: "12px 0" }}>تفاصيل هذه المحاولة غير متاحة لأنها من سجل قديم، لكن النتيجة النهائية محفوظة.</div>}
         <button className="btn btn-o" style={{ marginTop: 16 }} onClick={onBack}>عودة إلى الكورس</button></div>
     </div>
   );
@@ -4623,7 +4707,7 @@ function buildReport(student, courses, progress, attempts) {
 }
 function skillMastery(at) {
   const m = {};
-  at.forEach((a) => a.detail.forEach((d) => { m[d.sn] = m[d.sn] || { c: 0, t: 0 }; m[d.sn].t++; if (d.ok) m[d.sn].c++; }));
+  at.forEach((a) => (a.detail || []).forEach((d) => { const skill = d?.sn || "مهارة عامة"; m[skill] = m[skill] || { c: 0, t: 0 }; m[skill].t++; if (d.ok) m[skill].c++; }));
   return Object.entries(m).map(([k, v]) => [k, v.c / v.t]);
 }
 function SendReportModal({ student, courses, progress, attempts, onSend, onClose }) {
@@ -4933,7 +5017,7 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
       avg: at.length ? Math.round(at.reduce((x, a) => x + a.pct, 0) / at.length) : null };
   });
   const gm = {}, tm = {};
-  attempts2.forEach((a) => a.detail.forEach((d) => { gm[d.sn] = gm[d.sn] || { c: 0, t: 0 }; gm[d.sn].t++; if (d.ok) gm[d.sn].c++;
+  attempts2.forEach((a) => (a.detail || []).forEach((d) => { gm[d.sn] = gm[d.sn] || { c: 0, t: 0 }; gm[d.sn].t++; if (d.ok) gm[d.sn].c++;
     tm[d.type] = tm[d.type] || { c: 0, t: 0 }; tm[d.type].t++; if (d.ok) tm[d.type].c++; }));
   const gaps = Object.entries(gm).map(([k, v]) => ({ k, pct: Math.round(v.c / v.t * 100) })).sort((a, b) => a.pct - b.pct);
   const notStarted = rows.filter((r) => r.started === 0 && r.assigned > 0);
@@ -5324,7 +5408,7 @@ function InterventionModal({ target, courses, actor, onClose, onSave }) {
   );
 }
 
-function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmin, blockGroups, audit, codes, onUpdateCodes, orgEmail, onUpdateOrgEmail, onSetTeacherEmail, onToggleTeacher, onAddTeacher, onDeleteTeacher, onSetTeacherCode, onAddBlock, onRemoveBlock, onSaveBlockGroup, onDeleteBlockGroup,
+function AdminHome({ courses, students, attempts, progress, teachers, newsletters = [], blocksAdmin, blockGroups, audit, codes, onUpdateCodes, orgEmail, onUpdateOrgEmail, onSetTeacherEmail, onToggleTeacher, onAddTeacher, onDeleteTeacher, onSetTeacherCode, onAddBlock, onRemoveBlock, onSaveBlockGroup, onDeleteBlockGroup,
   onGenerateCourse, onAIEditCourse, onPublishAny, onPublishWithDetails, onArchiveAny, onDeleteCourse, onExportStudents, onExportAudit, onImportStudents,
   interventions, onAddIntervention, onUpdateIntervention, onReopenAttempt, currentActor }) {
   const [adminPublishOpen, setAdminPublishOpen] = useState(null);
@@ -6117,7 +6201,7 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
               const withAvg = rows.filter((r) => r.avg !== null);
               const classAvg = withAvg.length ? Math.round(withAvg.reduce((x, r) => x + r.avg, 0) / withAvg.length) : null;
               const gm = {};
-              classAttempts.forEach((a) => a.detail.forEach((d) => { gm[d.sn] = gm[d.sn] || { c: 0, t: 0 }; gm[d.sn].t++; if (d.ok) gm[d.sn].c++; }));
+              classAttempts.forEach((a) => (a.detail || []).forEach((d) => { gm[d.sn] = gm[d.sn] || { c: 0, t: 0 }; gm[d.sn].t++; if (d.ok) gm[d.sn].c++; }));
               const gaps = Object.entries(gm).map(([k, v]) => ({ k, pct: Math.round(v.c / v.t * 100) })).sort((a, b) => a.pct - b.pct);
               return (<>
                 <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", marginBottom: 16 }}>
@@ -6703,31 +6787,43 @@ export default function App() {
       putRecord(REC.parentTok, reportToken, { __key: reportToken, __val: reportRec });
       const reportUrl = `${window.location.origin}/?parent=${encodeURIComponent(reportToken)}`;
 
-      notifyEmail([orgEmail, teacherEmail],
+      const certificateUrl = `${window.location.origin}/api/send-email?certificate=${encodeURIComponent(a.token)}`;
+      const certificateData = { student: user.name, course: c.title, score: a.pct, date: dateAr(a.at), serial: a.serial, token: a.token };
+      registerCertificateRecord(certificateData).then((r) => {
+        if (!r?.ok) log(user.name, "تعذر تسجيل الشهادة", `${c.title} — ${r?.status || 0} — ${r?.error || "خطأ غير معروف"}`);
+      }).catch((e) => log(user.name, "تعذر تسجيل الشهادة", `${c.title} — ${String(e?.message || e)}`));
+      const completionTasks = [];
+      const staffRecipients = [orgEmail, teacherEmail].map(normEmail).filter(Boolean);
+      if (staffRecipients.length) completionTasks.push(async()=>({kind:"staff",to:staffRecipients.join(","),result:await sendEmailTracked(staffRecipients,
         `إتمام كورس: ${user.name} — ${c.title}`,
-        `<p>أنهى الطالب <strong>${user.name}</strong> (الصف ${user.grade} — ${user.block}) كورس <strong>${c.title}</strong> بنجاح.</p><p>الدرجة: ${a.pct}% — المحاولة ${a.no} من الدورة ${a.cycle}.</p>`);
+        `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9"><p>أنهى الطالب <strong>${user.name}</strong> (الصف ${user.grade} — ${user.block}) كورس <strong>${c.title}</strong> بنجاح.</p><p>الدرجة: ${a.pct}% — المحاولة ${a.no} من الدورة ${a.cycle}.</p><p><a href="${certificateUrl}" target="_blank">فتح الشهادة</a></p></div>`)}));
 
       const parentTo = normEmail(studentRec.parentEmail || user.parentEmail);
-      if (parentTo) {
-        notifyEmail(parentTo, `شهادة إتقان — ${c.title}`,
+      if (!parentTo) log(user.name, "تنبيه بريد ولي الأمر", `${c.title} — بريد ولي الأمر غير مسجل للطالب ${user.name}`);
+      if (parentTo) completionTasks.push(async()=>({kind:"parent",to:parentTo,result:await sendEmailTracked(parentTo, `شهادة إتقان — ${c.title}`,
           `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
              <p>عزيزي ولي الأمر،</p>
              <p>يسعدنا أن نهنئكم بأن ابنكم/ابنتكم <strong>${user.name}</strong> قد اجتاز كورس <strong>«${c.title}»</strong> بنجاح، وحصل على درجة <strong>${a.pct}%</strong> بتاريخ ${dateAr(a.at)}.</p>
              <p>رقم الشهادة: <strong>${a.serial}</strong> — رمز التحقق: <strong>${a.token}</strong></p>
-             <p><a href="${reportUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">📊 متابعة تقدم الطالب</a></p>
-             <p style="font-size:12px;color:#667085">ستجدون أيضًا زر فتح شهادة الإتمام في هذه الرسالة.</p>
-           </div>`);
-      }
+             <p><a href="${certificateUrl}" target="_blank" style="display:inline-block;background:#12329B;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700;margin-left:8px">🏆 فتح شهادة الإتمام</a><a href="${reportUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">📊 متابعة تقدم الطالب</a></p>
+           </div>`, { certificateData })}));
 
       const studentTo = normEmail(studentRec.email || user.email);
-      if (studentTo) {
-        notifyEmail(studentTo, `تهانينا — أتممت «${c.title}» بنجاح`,
+      if (!studentTo) log(user.name, "تنبيه بريد الطالب", `${c.title} — بريد الطالب غير مسجل للطالب ${user.name}`);
+      if (studentTo) completionTasks.push(async()=>({kind:"student",to:studentTo,result:await sendEmailTracked(studentTo, `تهانينا — أتممت «${c.title}» بنجاح`,
           `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
              <p>مرحبًا <strong>${user.name}</strong>،</p>
              <p>تهانينا! أتممت كورس <strong>«${c.title}»</strong> بنجاح وحصلت على درجة <strong>${a.pct}%</strong> بتاريخ ${dateAr(a.at)}.</p>
              <p>رقم الشهادة: <strong>${a.serial}</strong> — رمز التحقق: <strong>${a.token}</strong></p>
-             <p>ستجد زر <strong>🏆 فتح شهادة الإتمام</strong> في هذه الرسالة لعرض الشهادة مباشرة وطباعتها أو حفظها PDF.</p>
-           </div>`);
+             <p><a href="${certificateUrl}" target="_blank" style="display:inline-block;background:#12329B;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">🏆 فتح شهادة الإتمام</a></p>
+           </div>`, { certificateData })}));
+
+      if (completionTasks.length) {
+        runEmailTasks(completionTasks, 3).then((mailResults) => {
+          const ok = mailResults.filter((x)=>x.result?.ok).length;
+          const bad = mailResults.filter((x)=>!x.result?.ok);
+          log(user.name, "إرسال إشعارات إتمام الكورس", `${c.title} — نجح ${ok}/${mailResults.length}${bad.length ? ` — فشل: ${bad.map(x=>`${x.kind}:${x.result?.status||0}`).join("، ")}` : ""}`);
+        }).catch((e)=>log(user.name,"فشل إرسال إشعارات إتمام الكورس",String(e?.message||e)));
       }
     }
     setExam(null); nav({ n: "result", id: a.id });
@@ -6982,9 +7078,14 @@ export default function App() {
     const errors = [];
     const tasks = [];
     targets.forEach((st) => {
-      if (normEmail(st.email)) tasks.push(async()=>({kind:"student",student:st.name,to:normEmail(st.email),result:await sendEmailTracked(st.email, `النشرة الأسبوعية — ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, false))}));
-      if (normEmail(st.parentEmail)) tasks.push(async()=>({kind:"parent",student:st.name,to:normEmail(st.parentEmail),result:await sendEmailTracked(st.parentEmail, `النشرة الأسبوعية لابنكم ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, true))}));
+      const studentTo = normEmail(st.email);
+      const parentTo = normEmail(st.parentEmail);
+      if (studentTo) tasks.push(async()=>({kind:"student",student:st.name,to:studentTo,result:await sendEmailTracked(studentTo, `النشرة الأسبوعية — ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, false))}));
+      else errors.push({kind:"student",student:st.name,to:"",status:0,error:"بريد الطالب غير مسجل"});
+      if (parentTo) tasks.push(async()=>({kind:"parent",student:st.name,to:parentTo,result:await sendEmailTracked(parentTo, `النشرة الأسبوعية لابنكم ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, true))}));
+      else errors.push({kind:"parent",student:st.name,to:"",status:0,error:"بريد ولي الأمر غير مسجل"});
     });
+    failed += errors.length;
     const sendResults = await runEmailTasks(tasks, 6);
     sendResults.forEach(({kind,student,to,result})=>{
       if(result?.ok){ if(kind==="student") studentSent++; else parentSent++; }
@@ -6992,9 +7093,11 @@ export default function App() {
     });
     next = { ...next, sendStats: {
       targetStudents: targets.length,
-      studentTotal: targets.filter(s=>normEmail(s.email)).length, studentSent,
-      parentTotal: targets.filter(s=>normEmail(s.parentEmail)).length, parentSent,
-      failed, errors: errors.slice(0,20), at: new Date().toISOString()
+      studentTotal: targets.length, studentSent,
+      parentTotal: targets.length, parentSent,
+      missingStudentEmail: targets.filter(s=>!normEmail(s.email)).length,
+      missingParentEmail: targets.filter(s=>!normEmail(s.parentEmail)).length,
+      failed, errors: errors.slice(0,40), at: new Date().toISOString()
     }};
     const savedStats = await putRecord(REC.newsletter, next.id, next);
     if (!savedStats) throw new Error("تم النشر لكن تعذر حفظ حالة الإرسال في قاعدة البيانات.");
