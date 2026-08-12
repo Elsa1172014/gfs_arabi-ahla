@@ -268,13 +268,13 @@ const CSS = `
 
 
 /* ===== Teacher primary navigation — GEMS hero strip ===== */
-.teacher-nav-spacer{height:72px;background:#fff}
+.teacher-nav-spacer{height:56px;background:#fff}
 .teacher-nav-full{margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);background:linear-gradient(110deg,#8E2333 0%,#642849 30%,#2A2D68 62%,#12329B 100%);box-shadow:0 12px 28px -22px rgba(8,20,62,.5);min-height:40px}
 .teacher-nav-inner{max-width:1160px;margin:0 auto;padding:5px 20px;display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap}
 .teacher-nav-inner .tabbtn{margin:0;background:transparent!important;color:#fff!important;border:0;border-radius:9px;padding:7px 15px;font-size:15px;font-weight:800;min-height:34px}
 .teacher-nav-inner .tabbtn:hover{background:rgba(255,255,255,.12)!important}
 .teacher-nav-inner .tabbtn.on{background:rgba(255,255,255,.18)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}
-@media(max-width:760px){.teacher-nav-spacer{height:42px}.teacher-nav-inner{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}.teacher-nav-inner .tabbtn{white-space:nowrap;font-size:14px}}
+@media(max-width:760px){.teacher-nav-spacer{height:34px}.teacher-nav-inner{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}.teacher-nav-inner .tabbtn{white-space:nowrap;font-size:14px}}
 
 /* ===== Weekly Newsletter — التصميم المعتمد ===== */
 .nl-shell{border-radius:26px;overflow:hidden;background:#f8fafc;box-shadow:0 22px 60px -32px rgba(15,32,80,.45);border:1px solid #dce3ee}
@@ -2720,6 +2720,7 @@ const uid = () => Math.random().toString(36).slice(2, 10);
 const shuffle = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 const pKey = (s, c) => `${s}|${c}`;
 const normEmail = (s) => String(s || "").trim().toLowerCase();
+const normBlock = (s) => String(s || "").trim().toUpperCase();
 const dateAr = (i) => { try { return new Date(i).toLocaleDateString("ar-AE", { year: "numeric", month: "long", day: "numeric" }); } catch { return ""; } };
 const norm = (s) => (s || "").replace(/[\u064B-\u0652\u0640]/g, "").replace(/[«»؟.،]/g, "").replace(/\s+/g, "").trim();
 
@@ -2795,15 +2796,17 @@ function notifyEmail(to, subject, html) {
 }
 
 async function sendEmailTracked(to, subject, html) {
-  const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
-  if (!recipients.length) return { ok: false, status: 0 };
+  const recipients = (Array.isArray(to) ? to : [to]).map(normEmail).filter(Boolean);
+  if (!recipients.length) return { ok: false, status: 0, error: "لا يوجد بريد صالح للمستلم." };
   try {
     const r = await fetch("/api/send-email", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ to: recipients, subject, html }),
     });
-    return { ok: r.ok, status: r.status };
-  } catch { return { ok: false, status: 0 }; }
+    let data = null;
+    try { data = await r.json(); } catch { data = null; }
+    return { ok: r.ok, status: r.status, error: r.ok ? "" : JSON.stringify(data?.error || data || `HTTP ${r.status}`) };
+  } catch (e) { return { ok: false, status: 0, error: String(e?.message || e || "تعذر الاتصال بخدمة البريد") }; }
 }
 async function runEmailTasks(tasks, chunkSize = 8) {
   const results = [];
@@ -3374,6 +3377,7 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
                   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr("أدخل بريدك الإلكتروني المدرسي بصورة صحيحة.");
                   const name = tname.trim() || "معلم اللغة العربية";
                   const knownTeacher = (teachers || []).find((t) => t.name === name || normEmail(t.email) === email);
+                  if (knownTeacher && knownTeacher.active === false) return setErr("هذا الحساب معطّل. راجع رئيس القسم.");
                   const expectedCode = knownTeacher?.code || codes.teacher;
                   if (code !== expectedCode) return setErr("الرمز غير صحيح. راجع رئيس القسم للحصول عليه.");
                   ripple(e);
@@ -3500,7 +3504,25 @@ function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, on
   const improve=async()=>{setBusy(true);setMsg("");const prompt=`أنت محرر تربوي عربي. حسّن صياغة عناوين الدروس وأهداف التعلم الآتية دون تغيير المعنى أو إضافة محتوى غير موجود. اجعل الأهداف قصيرة وقابلة للملاحظة ومناسبة للصف ${grade}. لكل درس حد أقصى أربعة أهداف تعلم فقط. أعد JSON فقط بهذا الشكل: {"currentLessons":[{"title":"","objectives":["","","",""]}],"nextLessons":[{"title":"","objectives":["","","",""]}]}.
 هذا الأسبوع: ${JSON.stringify(clean(currentLessons))}
 الأسبوع القادم: ${JSON.stringify(clean(nextLessons))}`;const out=await ask(prompt,"auto");if(out?.currentLessons) setCurrentLessons(normalizeLessons(out.currentLessons));if(out?.nextLessons) setNextLessons(normalizeLessons(out.nextLessons));setMsg(out?"✅ تم تحسين الصياغة. راجعها ثم قرر النشر.":"تعذّر التحسين الآن؛ يمكنك النشر بصياغتك الحالية.");setBusy(false)};
-  const submit=async(status)=>{const c=clean(currentLessons),n=clean(nextLessons);if(!blocks.length)return setMsg("اختر بلوكًا واحدًا على الأقل.");if(!c.length||!n.length)return setMsg("أدخل درسًا واحدًا على الأقل لكل أسبوع.");setBusy(true);const rec={id:uid(),teacherName,teacherEmail:normEmail(teacherEmail),grade:+grade,blocks,weekStart,weekEnd,currentLessons:c,nextLessons:n,status,createdAt:new Date().toISOString()};const r=await onSave(rec);setMsg(status==="published"?`✅ تم نشر النشرة وإرسالها. ${r?.sendStats?`الطلاب: ${r.sendStats.studentSent}/${r.sendStats.studentTotal} · أولياء الأمور: ${r.sendStats.parentSent}/${r.sendStats.parentTotal}`:""}`:"✅ تم حفظ المسودة.");setBusy(false)};
+  const submit=async(status)=>{
+    const c=clean(currentLessons),n=clean(nextLessons);
+    if(!c.length||!n.length)return setMsg("أدخل درسًا واحدًا على الأقل لكل أسبوع.");
+    const existingBlocks=[...new Set((mineStudents||[]).filter(s=>+s.grade===+grade).map(s=>normBlock(s.block)).filter(Boolean))].sort();
+    const effectiveBlocks=(blocks.length?blocks:existingBlocks).map(normBlock).filter(Boolean);
+    if(!effectiveBlocks.length)return setMsg("لا توجد بلوكات مسجلة لهذا الصف. اختر بلوكًا أو أضف طلاب الصف أولًا.");
+    setBusy(true);setMsg("");
+    try{
+      const rec={id:uid(),teacherName,teacherEmail:normEmail(teacherEmail),grade:+grade,blocks:effectiveBlocks,weekStart,weekEnd,currentLessons:c,nextLessons:n,status,createdAt:new Date().toISOString()};
+      const r=await onSave(rec);
+      if(status==="published"){
+        const st=r?.sendStats;
+        const automatic=!blocks.length?` · تم اعتماد البلوكات الموجودة تلقائيًا: ${effectiveBlocks.join("، ")}`:"";
+        const warn=st?.failed?` ⚠️ فشل ${st.failed} إرسال. ${st.errors?.length?"راجع تفاصيل الإرسال في سجل النشرة.":""}`:"";
+        setMsg(`✅ تم نشر النشرة وحفظها.${automatic} ${st?`الطلاب: ${st.studentSent}/${st.studentTotal} · أولياء الأمور: ${st.parentSent}/${st.parentTotal}`:""}${warn}`);
+      }else setMsg("✅ تم حفظ المسودة.");
+    }catch(e){setMsg(`❌ تعذر حفظ/نشر النشرة: ${String(e?.message||e||"خطأ غير معروف")}`);}
+    finally{setBusy(false);}
+  };
   const myNews=(newsletters||[]).filter(n=>n.teacherName===teacherName).sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
   const side=(which,list,tone,title,icon)=><section className={`nl-editor-card ${tone}`}><img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/><div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>{list.map((l,i)=><div className="nl-editor-item" key={i}><input className="inp" placeholder="اسم الدرس" value={l.title} onChange={e=>updateLesson(which,i,"title",e.target.value)}/><div style={{marginTop:10,fontWeight:900,fontSize:15,color:"#17346E"}}>في نهاية الدرس سيكون الطالب قادرًا على أن:</div><div className="grid" style={{gap:8,marginTop:8}}>{[0,1,2,3].map(j=><input key={j} className="inp" placeholder={`هدف التعلم ${j+1}`} value={normalizeObjectives(l.objectives)[j]} onChange={e=>updateObjective(which,i,j,e.target.value)}/>)}</div></div>)}<button className="btn nl-editor-add" onClick={()=>addLesson(which)}>+ إضافة درس</button></section>;
   const toggleBlock=(b)=>setBlocks(v=>v.includes(b)?v.filter(x=>x!==b):[...v,b]);
@@ -3509,7 +3531,7 @@ function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, on
     <div className="card" style={{padding:20}}><div className="nl-editor-actions"><div><h2>📰 إعداد النشرة الأسبوعية</h2><p style={{margin:"3px 0",fontSize:12,color:T.inkSoft}}>المعلم يكتب المحتوى، والذكاء الاصطناعي يحسّن الصياغة فقط. لا تظهر أي إعدادات للطالب أو ولي الأمر.</p></div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button className="btn btn-o" disabled={busy} onClick={improve}>✨ تحسين بالذكاء الاصطناعي</button><button className="btn btn-p" disabled={busy} onClick={()=>submit("published")}>📢 اعتماد ونشر وإرسال</button></div></div>
       <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",marginTop:15}}>
         <div><label className="lbl">الصف</label><select className="inp" value={grade} onChange={e=>{setGrade(+e.target.value);setBlocks([])}}>{allGrades.map(g=><option key={g} value={g}>الصف {g}</option>)}</select></div>
-        <div className="nl-block-picker" style={{gridColumn:"span 2"}}><label className="lbl">البلوكات</label><button type="button" className="nl-block-trigger" onClick={()=>setBlockPickerOpen(v=>!v)}><span>{blocks.length?`تم اختيار ${blocks.length}: ${blocks.join("، ")}`:"اضغط لاختيار البلوكات A–Z"}</span><span>{blockPickerOpen?"▲":"▼"}</span></button>{blockPickerOpen&&<div className="nl-block-panel"><div className="nl-block-actions"><button type="button" className="btn btn-o" onClick={()=>setBlocks(allBlocks)}>تحديد الكل</button><button type="button" className="btn btn-q" onClick={()=>setBlocks([])}>مسح الاختيار</button><button type="button" className="btn btn-p" onClick={()=>setBlockPickerOpen(false)}>تم</button></div><div className="nl-block-grid">{allBlocks.map(b=><button type="button" key={b} className={`nl-block-letter ${blocks.includes(b)?"on":""}`} onClick={()=>toggleBlock(b)}>{b}</button>)}</div></div>}</div>
+        <div className="nl-block-picker" style={{gridColumn:"span 2"}}><label className="lbl">البلوكات</label><button type="button" className="nl-block-trigger" onClick={()=>setBlockPickerOpen(v=>!v)}><span>{blocks.length?`تم اختيار ${blocks.length}: ${blocks.join("، ")}`:"اختياري: اتركه فارغًا للنشر إلى البلوكات الموجودة في الصف"}</span><span>{blockPickerOpen?"▲":"▼"}</span></button>{blockPickerOpen&&<div className="nl-block-panel"><div className="nl-block-actions"><button type="button" className="btn btn-o" onClick={()=>setBlocks(allBlocks)}>تحديد الكل</button><button type="button" className="btn btn-q" onClick={()=>setBlocks([])}>مسح الاختيار</button><button type="button" className="btn btn-p" onClick={()=>setBlockPickerOpen(false)}>تم</button></div><div className="nl-block-grid">{allBlocks.map(b=><button type="button" key={b} className={`nl-block-letter ${blocks.includes(b)?"on":""}`} onClick={()=>toggleBlock(b)}>{b}</button>)}</div></div>}</div>
         <div><label className="lbl">من</label><input type="date" className="inp" value={weekStart} onChange={e=>setWeekStart(e.target.value)}/></div>
         <div><label className="lbl">إلى</label><input type="date" className="inp" value={weekEnd} onChange={e=>setWeekEnd(e.target.value)}/></div>
       </div>
@@ -3523,7 +3545,7 @@ function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, on
 function StudentHome({ user, courses, progress, attempts, newsletters = [], onOpen, onCert }) {
   const mine = courses.filter((c) => assignedTo(c, user));
   const ph = phaseFor(user.grade);
-  const publishedNews = newsletters.filter(n => n.status === "published" && +n.grade === +user.grade && (n.blocks || []).includes(user.block)).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
+  const publishedNews = newsletters.filter(n => n.status === "published" && +n.grade === +user.grade && (n.blocks || []).map(normBlock).includes(normBlock(user.block))).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
   const [newsId,setNewsId]=useState(publishedNews[0]?.id||null);
   const [page,setPage]=useState("home");
   const activeNews = publishedNews.find(n=>n.id===newsId) || publishedNews[0] || null;
@@ -6321,7 +6343,7 @@ function ParentPortal({ report, newsletters = [], onBack, orgEmail = "" }) {
   const status = avg == null ? { label: "بانتظار بيانات", color: T.inkSoft, bg: T.paper } : avg >= 80 ? { label: "مستقر ومتقدم", color: T.green, bg: T.greenSoft } : avg >= 60 ? { label: "يحتاج متابعة", color: T.gold, bg: T.goldSoft } : { label: "يحتاج تدخل", color: T.brick, bg: T.brickSoft };
   const trendPoints = allHistory.slice(-8).map((h) => ({ v: h.pct, label: new Date(h.at).toLocaleDateString("ar-AE", { day: "numeric", month: "numeric" }) }));
   const teacherEmail = normEmail(student.teacherEmail || "");
-  const parentNews = newsletters.filter(n=>n.status==="published" && +n.grade===+student.grade && (n.blocks||[]).includes(student.block)).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
+  const parentNews = newsletters.filter(n=>n.status==="published" && +n.grade===+student.grade && (n.blocks||[]).map(normBlock).includes(normBlock(student.block))).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
   const [parentNewsId,setParentNewsId]=useState(parentNews[0]?.id||null);
   const activeParentNews=parentNews.find(n=>n.id===parentNewsId)||parentNews[0]||null;
 
@@ -6521,6 +6543,24 @@ export default function App() {
     setNewsletters(newsletterList);
     setReady(true);
   })(); }, []);
+
+  // مزامنة خفيفة للنشرات فقط: إذا نشر المعلم نشرة بينما صفحة الطالب أو
+  // ولي الأمر مفتوحة، تظهر دون الحاجة إلى تسجيل خروج/دخول. لا نُحمّل بقية
+  // بيانات المنصة دوريًا حتى لا نزيد طلبات Redis بلا داعٍ.
+  useEffect(() => {
+    if (!ready) return;
+    let cancelled = false;
+    const refreshNewsletters = async () => {
+      const list = await listRecords(REC.newsletter);
+      if (cancelled) return;
+      list.sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
+      setNewsletters(list);
+    };
+    const onFocus = () => { refreshNewsletters(); };
+    const timer = setInterval(refreshNewsletters, 20000);
+    window.addEventListener("focus", onFocus);
+    return () => { cancelled = true; clearInterval(timer); window.removeEventListener("focus", onFocus); };
+  }, [ready]);
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("parent");
@@ -6924,29 +6964,48 @@ export default function App() {
     log(actor, "حذف طالب من القائمة", s ? `${s.name} — ${key}` : key);
   };
   const saveNewsletter = async (rec) => {
+    const gradeStudents = students.filter(s => +s.grade === +rec.grade);
+    const existingBlocks = [...new Set(gradeStudents.map(s => normBlock(s.block)).filter(Boolean))].sort();
+    const effectiveBlocks = ((rec.blocks || []).length ? rec.blocks : existingBlocks).map(normBlock).filter(Boolean);
+    if (!effectiveBlocks.length) throw new Error("لا توجد بلوكات مسجلة لهذا الصف.");
     const publishedAt = rec.status === "published" ? new Date().toISOString() : null;
-    let next = { ...rec, publishedAt };
-    await putRecord(REC.newsletter, next.id, next);
+    let next = { ...rec, blocks: effectiveBlocks, publishedAt };
+    const saved = await putRecord(REC.newsletter, next.id, next);
+    if (!saved) throw new Error("تعذر حفظ النشرة في قاعدة البيانات.");
     setNewsletters(prev => [next, ...prev.filter(x=>x.id!==next.id)]);
     if (rec.status !== "published") { log(user?.name||"معلم", "حفظ مسودة نشرة أسبوعية", `الصف ${rec.grade}`); return next; }
-    const targets = students.filter(s => +s.grade===+rec.grade && (rec.blocks||[]).includes(s.block) && (!rec.teacherEmail || !s.teacherEmail || normEmail(s.teacherEmail)===normEmail(rec.teacherEmail)));
+
+    // اختيار الصف والبلوك هو المرجع النهائي للنشر. بريد المعلم لا يمنع وصول النشرة
+    // إذا كانت بيانات ربط المعلم في سجل طالب قديمة أو ناقصة.
+    const targets = gradeStudents.filter(s => effectiveBlocks.includes(normBlock(s.block)));
     let studentSent=0,parentSent=0,failed=0;
+    const errors = [];
     const tasks = [];
     targets.forEach((st) => {
-      if (normEmail(st.email)) tasks.push(async()=>({kind:"student",result:await sendEmailTracked(st.email, `النشرة الأسبوعية — ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, false))}));
-      if (normEmail(st.parentEmail)) tasks.push(async()=>({kind:"parent",result:await sendEmailTracked(st.parentEmail, `النشرة الأسبوعية لابنكم ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, true))}));
+      if (normEmail(st.email)) tasks.push(async()=>({kind:"student",student:st.name,to:normEmail(st.email),result:await sendEmailTracked(st.email, `النشرة الأسبوعية — ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, false))}));
+      if (normEmail(st.parentEmail)) tasks.push(async()=>({kind:"parent",student:st.name,to:normEmail(st.parentEmail),result:await sendEmailTracked(st.parentEmail, `النشرة الأسبوعية لابنكم ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, true))}));
     });
-    const sendResults = await runEmailTasks(tasks, 8);
-    sendResults.forEach(({kind,result})=>{ if(result?.ok){ if(kind==="student") studentSent++; else parentSent++; } else failed++; });
-    next = { ...next, sendStats: { studentTotal: targets.filter(s=>normEmail(s.email)).length, studentSent, parentTotal: targets.filter(s=>normEmail(s.parentEmail)).length, parentSent, failed, at: new Date().toISOString() } };
-    await putRecord(REC.newsletter, next.id, next);
+    const sendResults = await runEmailTasks(tasks, 6);
+    sendResults.forEach(({kind,student,to,result})=>{
+      if(result?.ok){ if(kind==="student") studentSent++; else parentSent++; }
+      else { failed++; errors.push({kind,student,to,status:result?.status||0,error:result?.error||"فشل الإرسال"}); }
+    });
+    next = { ...next, sendStats: {
+      targetStudents: targets.length,
+      studentTotal: targets.filter(s=>normEmail(s.email)).length, studentSent,
+      parentTotal: targets.filter(s=>normEmail(s.parentEmail)).length, parentSent,
+      failed, errors: errors.slice(0,20), at: new Date().toISOString()
+    }};
+    const savedStats = await putRecord(REC.newsletter, next.id, next);
+    if (!savedStats) throw new Error("تم النشر لكن تعذر حفظ حالة الإرسال في قاعدة البيانات.");
     setNewsletters(prev => [next, ...prev.filter(x=>x.id!==next.id)]);
-    log(rec.teacherName||user?.name||"معلم", "نشر النشرة الأسبوعية", `الصف ${rec.grade} — ${(rec.blocks||[]).join("، ")} — الطلاب ${studentSent} — أولياء الأمور ${parentSent}`);
+    log(rec.teacherName||user?.name||"معلم", "نشر النشرة الأسبوعية", `الصف ${rec.grade} — ${effectiveBlocks.join("، ")} — الطلاب ${studentSent}/${next.sendStats.studentTotal} — أولياء الأمور ${parentSent}/${next.sendStats.parentTotal} — فشل ${failed}`);
     return next;
   };
 
   const deleteNewsletter = async (id, rec = null) => {
-    await deleteRecord(REC.newsletter, id);
+    const deleted = await deleteRecord(REC.newsletter, id);
+    if (!deleted) throw new Error("تعذر حذف النشرة من قاعدة البيانات.");
     setNewsletters(prev => prev.filter(x => x.id !== id));
     log(rec?.teacherName || user?.name || "معلم", "حذف نشرة أسبوعية", rec ? `الصف ${rec.grade} — ${(rec.blocks||[]).join("، ")}` : id);
     return { ok: true };
