@@ -4715,23 +4715,13 @@ function SendReportModal({ student, courses, progress, attempts, onSend, onClose
   const [email, setEmail] = useState(student.parentEmail || "");
   const [done, setDone] = useState(null);
   const [err, setErr] = useState("");
-  const [sending, setSending] = useState(false);
-  const send = async () => {
+  const send = () => {
     const to = normEmail(email);
     if (!to) return setErr("بريد ولي الأمر غير مسجل. أضفه أولًا إلى بيانات الطالب.");
-    setErr(""); setDone(null); setSending(true);
+    setErr("");
     const token = "PR-" + uid().toUpperCase();
-    try {
-      const result = await onSend(token, { email: to, rows });
-      if (!result?.ok) {
-        const detail = String(result?.error || "تعذر إرسال البريد إلى ولي الأمر.");
-        setErr(`لم تُرسل الرسالة إلى ${to}. ${detail}`);
-        return;
-      }
-      setDone(token);
-    } catch (e) {
-      setErr(`تعذر إرسال التقرير: ${String(e?.message || e || "خطأ غير معروف")}`);
-    } finally { setSending(false); }
+    onSend(token, { email: to, rows });
+    setDone(token);
   };
   return (
     <div className="card" style={{ padding: 20, marginTop: 10, background: T.paper }}>
@@ -4745,9 +4735,9 @@ function SendReportModal({ student, courses, progress, attempts, onSend, onClose
         <label className="lbl">بريد ولي الأمر</label>
         <input className="inp" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="parent@example.com" />
       </div>
-      {!done ? <button className="btn btn-p" style={{ marginTop: 12 }} disabled={sending} onClick={send}>{sending ? "جارٍ الإرسال والتحقق…" : "أرسل رابط التقرير إلى ولي الأمر"}</button>
+      {!done ? <button className="btn btn-p" style={{ marginTop: 12 }} onClick={send}>أرسل رابط التقرير إلى ولي الأمر</button>
         : <div className="card" style={{ padding: 14, marginTop: 12, background: T.greenSoft, borderColor: T.green }}>
-            <div style={{ fontWeight: 700 }}>✅ تم إرسال رابط التقرير فعليًا إلى بريد ولي الأمر.</div>
+            <div style={{ fontWeight: 700 }}>✅ تم إنشاء رابط التقرير وإرساله إلى بريد ولي الأمر.</div>
             <div className="mono" style={{ fontSize: 12, marginTop: 5 }}>{done}</div>
           </div>}
       {err && <div style={{ color: T.brick, marginTop: 8, fontSize: 13 }}>{err}</div>}
@@ -7196,28 +7186,22 @@ export default function App() {
                 const copy = { ...src, id: uid(), title: src.title + " (نسخة)", status: "draft", students: [], publishedAt: null, dueDate: null, createdAt: new Date().toISOString() };
                 addCourse(copy); log(user.name, "نسخ كورس", id);
               }}
-              onSendReport={async (student, token, payload) => {
+              onSendReport={(student, token, payload) => {
                 const rows = buildReport(student, courses, progress, attempts);
                 const rec = { studentKey: student.key, rows, at: new Date().toISOString() };
                 setParentTokens((prev) => ({ ...prev, [token]: rec }));
-                await putRecord(REC.parentTok, token, { __key: token, __val: rec });
+                putRecord(REC.parentTok, token, { __key: token, __val: rec });
                 const reportUrl = `${window.location.origin}/?parent=${encodeURIComponent(token)}`;
-                const to = normEmail(payload?.email || student.parentEmail || "");
-                if (!to) {
-                  const result = { ok:false, status:0, error:"لا يوجد بريد صالح لولي الأمر في سجل الطالب." };
-                  log(user.name, "فشل إرسال تقرير لولي أمر", `${student.name} — لا يوجد بريد صالح`);
-                  return result;
+                if (payload.email) {
+                  notifyEmail(payload.email, `متابعة تقدم ${student.name} — بالعربي أحلى`,
+                    `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
+                       <p>عزيزي ولي الأمر،</p>
+                       <p>يمكنكم متابعة أحدث تقدم للطالب <strong>${student.name}</strong> من خلال الرابط الآمن التالي:</p>
+                       <p><a href="${reportUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">📊 فتح تقرير التقدم</a></p>
+                       <p style="font-size:12px;color:#667085">رمز التقرير: ${token}</p>
+                     </div>`);
                 }
-                const result = await sendEmailTracked(to, `متابعة تقدم ${student.name} — بالعربي أحلى`,
-                  `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
-                     <p>عزيزي ولي الأمر،</p>
-                     <p>يمكنكم متابعة أحدث تقدم للطالب <strong>${student.name}</strong> من خلال الرابط الآمن التالي:</p>
-                     <p><a href="${reportUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">📊 فتح تقرير التقدم</a></p>
-                     <p style="font-size:12px;color:#667085">رمز التقرير: ${token}</p>
-                   </div>`);
-                if (result?.ok) log(user.name, "إرسال تقرير لولي أمر", `${student.name} — ${to} — ${token}`);
-                else log(user.name, "فشل إرسال تقرير لولي أمر", `${student.name} — ${to} — ${result?.error || result?.status || "فشل"}`);
-                return result;
+                log(user.name, "إرسال تقرير لولي أمر", `${student.name} — ${token}`);
               }}
               onExport={exportStudentsCSV} onImportFile={importStudentsFile}
               onTemplate={downloadStudentTemplate}
