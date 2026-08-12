@@ -138,58 +138,68 @@ const CSS = `
 
 .lh-ripple-btn{position:relative;overflow:hidden}
 
-/* ===== GFS Modern Landing — visual layer only ===== */
-.lh-wrap{background:#061333}
+/* ===== Landing page — exact approved GEMS reference ===== */
+.lh-wrap{background:#061334}
 .lh-bg{background:
- radial-gradient(circle at 10% 12%,rgba(196,27,64,.56),transparent 32%),
- radial-gradient(circle at 34% 55%,rgba(107,36,91,.34),transparent 36%),
- radial-gradient(circle at 88% 40%,rgba(0,93,204,.20),transparent 32%),
- linear-gradient(116deg,#47152d 0%,#18133c 37%,#061633 67%,#041632 100%);animation:none}
+  radial-gradient(circle at 7% 9%,rgba(194,28,61,.58),transparent 31%),
+  radial-gradient(circle at 31% 50%,rgba(108,33,89,.38),transparent 35%),
+  radial-gradient(circle at 91% 42%,rgba(0,95,210,.17),transparent 31%),
+  linear-gradient(118deg,#49142e 0%,#23133f 34%,#071631 65%,#041532 100%);animation:none}
 .lh-orb{display:none}
-.lh-wrap .wrap.lh-shell{max-width:1540px;padding:22px 26px 14px}
-.lh-modern{position:relative;min-height:calc(100vh - 40px);display:grid;grid-template-columns:minmax(0,1fr) 350px;gap:28px;align-items:start}
-.lh-modern-main{min-width:0;position:relative}
-.lh-modern-top{display:grid;grid-template-columns:320px 1fr 320px;align-items:start;gap:20px;direction:ltr}
-.lh-logo-box{width:315px;min-height:98px;background:#fff;border-radius:22px;display:flex;align-items:center;justify-content:center;padding:12px 18px;box-shadow:0 18px 40px -22px rgba(0,0,0,.65)}
-.lh-logo-box img{max-width:100%;height:68px;object-fit:contain}
-.lh-top-actions{direction:rtl;display:flex;align-items:center;justify-content:flex-start;gap:12px;padding-top:7px}
-.lh-language{display:flex;border:1px solid rgba(255,255,255,.28);border-radius:999px;overflow:hidden;background:rgba(7,16,50,.36);height:48px}
-.lh-language button{border:0;background:transparent;color:#d9ddec;font-family:inherit;padding:0 24px;font-weight:700;cursor:default}
-.lh-language button.on{background:linear-gradient(110deg,#8e203d,#55203e);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,70,94,.45)}
-.lh-install{border:1px solid #168cff;background:rgba(4,25,65,.72);color:#fff;border-radius:999px;padding:11px 24px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer;white-space:nowrap;box-shadow:0 10px 30px -20px #168cff}
-.lh-install:hover{background:rgba(12,55,116,.8)}
-.lh-modern-hero{text-align:center;margin:-18px auto 14px;max-width:780px;position:relative;z-index:2}
-.lh-modern-hero .welcome{font-weight:800;font-size:20px;color:#f5f4f8}
-.lh-modern-hero h1{font-family:inherit!important;color:#fff!important;font-size:50px!important;line-height:1.25!important;margin:8px 0 9px!important;font-weight:900!important;letter-spacing:-.015em}
-.lh-modern-hero .dept{font-size:20px;color:#d8d8e3;margin-bottom:8px}
-.lh-vision{display:flex;justify-content:center;align-items:center;gap:18px;font-size:25px;font-weight:900;direction:rtl}
-.lh-vision .grow{color:#1f8cff}.lh-vision .succeed{color:#dbdae2}.lh-vision .thrive{color:#ff4a52}.lh-vision i{width:10px;height:2px;background:#8c8fa6;display:inline-block}
-.lh-glowline{width:155px;height:2px;background:linear-gradient(90deg,transparent,#ff2848,transparent);margin:10px auto 0;box-shadow:0 0 14px #ff2848}
-.lh-lion-modern{position:fixed;left:4%;top:5%;width:min(600px,43vw);height:min(720px,78vh);opacity:.30;filter:grayscale(1) brightness(2.4);mix-blend-mode:soft-light;pointer-events:none;z-index:0}
-.lh-rolegrid-modern{direction:rtl;display:grid;grid-template-columns:repeat(3,minmax(220px,1fr));gap:18px;max-width:840px;margin:0 auto 16px}
-.lh-role-modern{min-height:278px;border-radius:22px;background:linear-gradient(160deg,rgba(72,32,78,.72),rgba(8,35,82,.76));border:1px solid rgba(73,146,255,.62);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px 18px;cursor:pointer;font-family:inherit;position:relative;overflow:hidden;transition:.2s ease;backdrop-filter:blur(9px)}
-.lh-role-modern:nth-child(3){border-color:rgba(255,62,99,.75);background:linear-gradient(160deg,rgba(113,30,60,.68),rgba(34,28,66,.74))}
-.lh-role-modern:nth-child(2){border-color:rgba(116,80,255,.75)}
-.lh-role-modern:hover{transform:translateY(-4px);box-shadow:0 18px 40px -24px rgba(20,119,255,.85)}
-.lh-role-modern .ri{font-size:70px;line-height:1;margin-bottom:12px;filter:drop-shadow(0 12px 14px rgba(0,0,0,.3))}
-.lh-role-modern b{font-size:25px;margin-bottom:4px}.lh-role-modern small{font-size:14px;color:#e8e8ef;line-height:1.8;max-width:190px}
-.lh-role-arrow{width:42px;height:42px;border-radius:50%;margin-top:14px;border:1px solid rgba(255,255,255,.24);display:grid;place-items:center;background:rgba(17,66,148,.48);font-size:22px}
-.lh-data-row{display:grid;grid-template-columns:200px minmax(0,1fr);gap:18px;max-width:1080px;margin:0 auto;direction:ltr;align-items:stretch}
-.lh-active-card{direction:rtl;border:1px solid rgba(255,74,104,.48);border-radius:18px;min-height:194px;background:linear-gradient(145deg,rgba(74,23,57,.55),rgba(10,29,67,.64));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px}
-.lh-active-icon{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;border:1px solid #ff405e;background:rgba(117,26,62,.3);font-size:29px}.lh-active-card strong{font-size:31px;line-height:1.1;margin-top:7px}.lh-active-card span{font-size:14px;color:#e3e3eb}
-.lh-tier-panel{direction:ltr;border:1px solid rgba(93,137,232,.4);border-radius:18px;background:linear-gradient(130deg,rgba(46,25,72,.50),rgba(8,34,76,.62));display:grid;grid-template-columns:repeat(3,1fr);gap:0;min-height:194px;overflow:hidden}
-.lh-tier{direction:rtl;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:10px 18px;position:relative}.lh-tier+.lh-tier:before{content:"";position:absolute;right:0;top:16px;bottom:16px;width:1px;background:rgba(255,255,255,.13)}
-.lh-tier-name{font-size:18px;font-weight:900;margin-bottom:2px}.lh-tier-name.green{color:#55db4c}.lh-tier-name.gold{color:#ffc21a}.lh-tier-name.red{color:#ff4f55}.lh-tier-threshold{font-size:11px;color:#e9e8ef;margin-bottom:6px}
-.lh-donut-sm{--p:0;--c:#55db4c;width:106px;height:106px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.12) 0);display:grid;place-items:center;position:relative}.lh-donut-sm:after{content:"";position:absolute;width:74px;height:74px;border-radius:50%;background:#11193b}.lh-donut-sm>div{position:relative;z-index:2}.lh-donut-sm strong{display:block;font-size:25px;line-height:1.1}.lh-donut-sm small{font-size:11px;color:#efeff4}
-.lh-live{position:sticky;top:18px;border:1px solid rgba(31,150,255,.62);border-radius:20px;background:linear-gradient(155deg,rgba(4,31,72,.85),rgba(5,42,83,.67));padding:16px;min-height:625px;box-shadow:0 20px 50px -32px #168cff;direction:rtl}
-.lh-live-head{text-align:center;margin-bottom:11px}.lh-live-head strong{font-size:23px}.lh-live-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#53d94f;margin-right:7px;box-shadow:0 0 10px #53d94f}.lh-live-sub{font-size:12px;color:#b9c8df}
-.lh-live-list{display:grid;gap:8px}.lh-live-item{border:1px solid rgba(72,132,221,.38);background:rgba(8,42,84,.58);border-radius:13px;padding:10px;display:grid;grid-template-columns:44px 1fr auto;gap:9px;align-items:center;min-height:82px}.lh-live-avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#195ab3,#7a2e64);font-size:23px}.lh-live-item b{font-size:13px}.lh-live-item p{margin:2px 0 0;font-size:11px;line-height:1.6;color:#e0e6f1}.lh-live-score{font-weight:900;color:#75ef4c;font-size:17px;white-space:nowrap}.lh-live-time{font-size:9px;color:#9aacc5;margin-top:2px}.lh-live-empty{text-align:center;color:#aebed4;padding:40px 10px}
-.lh-trustbar{max-width:1490px;margin:14px auto 0;border:1px solid rgba(56,114,204,.4);border-radius:18px;background:linear-gradient(90deg,rgba(34,22,64,.65),rgba(6,46,93,.66));min-height:76px;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;overflow:hidden}.lh-trust{display:flex;align-items:center;justify-content:center;gap:13px;text-align:right;padding:10px 18px}.lh-trust+.lh-trust{border-right:1px solid rgba(255,255,255,.14)}.lh-trust .ti{font-size:37px}.lh-trust b{display:block;font-size:17px}.lh-trust small{display:block;color:#b8c5d9;font-size:11px}
-.lh-copy{text-align:center;color:#c0c6d2;font-size:11px;margin-top:8px}
-.lh-install-mini{position:absolute;left:14px;top:96px;width:138px;border:1px solid #168cff;border-radius:20px;padding:13px 10px;text-align:center;background:rgba(5,28,68,.72);font-size:12px}.lh-install-mini b{display:block;font-size:15px}.lh-store-icons{display:flex;justify-content:center;gap:16px;border-top:1px solid rgba(255,255,255,.14);margin-top:8px;padding-top:8px;font-size:20px}
-@media(max-width:1180px){.lh-modern{grid-template-columns:1fr}.lh-live{position:relative;top:auto;min-height:0;max-width:1080px;margin:0 auto;width:100%}.lh-modern-top{grid-template-columns:230px 1fr 300px}.lh-logo-box{width:230px}.lh-modern-hero{margin-top:6px}.lh-install-mini{display:none}}
-@media(max-width:820px){.lh-wrap .wrap.lh-shell{padding:14px}.lh-modern-top{grid-template-columns:1fr;gap:10px;justify-items:center}.lh-logo-box{width:250px;min-height:80px}.lh-logo-box img{height:55px}.lh-top-actions{justify-content:center}.lh-modern-hero{margin:10px auto}.lh-modern-hero h1{font-size:34px!important}.lh-rolegrid-modern{grid-template-columns:1fr}.lh-role-modern{min-height:180px}.lh-data-row{grid-template-columns:1fr}.lh-tier-panel{min-height:0}.lh-active-card{min-height:135px}.lh-lion-modern{width:82vw;opacity:.18}.lh-trustbar{grid-template-columns:1fr}.lh-trust+.lh-trust{border-right:0;border-top:1px solid rgba(255,255,255,.12)}}
-@media(max-width:560px){.lh-top-actions{flex-direction:column}.lh-tier-panel{grid-template-columns:1fr}.lh-tier+.lh-tier:before{right:12px;left:12px;top:0;bottom:auto;width:auto;height:1px}.lh-donut-sm{width:94px;height:94px}.lh-donut-sm:after{width:65px;height:65px}.lh-live-item{grid-template-columns:40px 1fr}.lh-live-score{grid-column:2;text-align:left}}
+.lh-wrap>.lh-watermark,.lh-wrap>.lh-letters{display:none}
+.lh-wrap .wrap.lh-shell{max-width:1536px;width:100%;padding:24px 24px 12px;margin:0 auto}
+
+.lx{direction:ltr;position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,1fr) 350px;column-gap:32px;row-gap:14px;min-height:calc(100vh - 36px);align-content:start}
+.lx-main{position:relative;min-width:0;direction:rtl}
+.lx-lion{position:absolute;z-index:0;left:-18px;top:-10px;width:min(610px,48vw);height:720px;opacity:.30;filter:grayscale(1) brightness(2.05);mix-blend-mode:soft-light;pointer-events:none;transform:rotate(-2deg)}
+.lx-crown{position:absolute;z-index:0;left:355px;top:-32px;font-size:154px;line-height:1;color:#fff;opacity:.09;transform:rotate(-2deg);pointer-events:none;font-family:serif}
+
+.lx-top{position:relative;z-index:2;direction:ltr;display:grid;grid-template-columns:315px 1fr auto;gap:18px;align-items:start}
+.lx-logo{width:315px;height:100px;border-radius:21px;background:#fff;display:flex;align-items:center;justify-content:center;padding:11px 16px;box-shadow:0 16px 38px -24px rgba(0,0,0,.72)}
+.lx-logo img{height:68px;max-width:100%;object-fit:contain;display:block}
+.lx-actions{direction:ltr;display:flex;align-items:center;gap:15px;padding-top:8px}
+.lx-lang{height:52px;display:flex;overflow:hidden;border:1px solid rgba(255,255,255,.27);border-radius:999px;background:rgba(6,18,56,.35)}
+.lx-lang button{min-width:96px;border:0;background:transparent;color:#e8e8ee;font-family:inherit;font-size:15px;font-weight:700;padding:0 19px}
+.lx-lang button.on{color:#fff;background:linear-gradient(110deg,#8c203c,#5c1e3d);box-shadow:inset 0 0 0 1px rgba(255,85,108,.5)}
+.lx-install{height:52px;border:1px solid #1c91ff;background:rgba(7,31,73,.76);color:#fff;border-radius:999px;padding:0 28px;font-family:inherit;font-size:16px;font-weight:900;cursor:pointer;white-space:nowrap}
+.lx-install:hover{background:rgba(13,57,119,.9)}
+
+.lx-hero{position:relative;z-index:2;text-align:center;max-width:790px;margin:-16px auto 12px;direction:rtl}
+.lx-hello{font-size:21px;font-weight:900;color:#f7f6fb}
+.lx-hero h1{font-family:inherit!important;font-size:52px!important;line-height:1.2!important;letter-spacing:-.02em;color:#fff!important;font-weight:950!important;margin:8px 0 8px!important;text-shadow:0 8px 30px rgba(0,0,0,.2)}
+.lx-dept{font-size:20px;color:#d8d8e1;margin-bottom:8px}
+.lx-vision{display:flex;justify-content:center;align-items:center;gap:18px;font-size:25px;font-weight:950}
+.lx-vision .grow{color:#158df3}.lx-vision .succeed{color:#d9d8df}.lx-vision .thrive{color:#ff4b55}.lx-vision i{width:12px;height:2px;background:#8c90a3;border-radius:2px}
+.lx-glow{width:154px;height:2px;margin:10px auto 0;background:linear-gradient(90deg,transparent,#ff2d4c,transparent);box-shadow:0 0 14px #ff2d4c}
+
+.lx-roles{position:relative;z-index:2;direction:ltr;display:grid;grid-template-columns:repeat(3,minmax(215px,1fr));gap:22px;max-width:850px;margin:0 auto 17px}
+.lx-role{direction:rtl;min-height:280px;border-radius:20px;padding:18px 18px 15px;color:#fff;font-family:inherit;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(158deg,rgba(54,31,82,.76),rgba(6,37,82,.78));border:1px solid rgba(52,142,255,.72);backdrop-filter:blur(8px);position:relative;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease}
+.lx-role.parent{border-color:rgba(255,56,91,.78);background:linear-gradient(158deg,rgba(119,29,57,.71),rgba(39,27,68,.80))}.lx-role.student{border-color:rgba(123,74,255,.78)}
+.lx-role:hover{transform:translateY(-3px);box-shadow:0 18px 42px -25px rgba(35,128,255,.8)}
+.lx-role-icon{font-size:69px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 10px 13px rgba(0,0,0,.28))}
+.lx-role b{font-size:26px;line-height:1.2;margin-bottom:6px}.lx-role small{font-size:14px;line-height:1.75;color:#ecebf2;min-height:50px}
+.lx-arrow{margin-top:12px;width:43px;height:43px;border-radius:50%;display:grid;place-items:center;border:1px solid rgba(255,255,255,.24);background:rgba(12,61,139,.56);font-size:22px}
+
+.lx-data{direction:ltr;position:relative;z-index:2;display:grid;grid-template-columns:195px minmax(0,1fr);gap:20px;max-width:1080px;margin:0 auto}
+.lx-active{direction:rtl;min-height:194px;border:1px solid rgba(255,63,92,.52);border-radius:18px;background:linear-gradient(145deg,rgba(72,21,55,.55),rgba(8,31,70,.65));display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:14px}
+.lx-active-icon{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;border:1px solid #f23759;background:rgba(108,26,60,.30);font-size:29px}.lx-active strong{font-size:31px;line-height:1;margin:9px 0 5px}.lx-active span{font-size:14px;line-height:1.6;color:#e6e4ec}
+.lx-tiers{direction:ltr;min-height:194px;border:1px solid rgba(76,126,222,.44);border-radius:18px;background:linear-gradient(128deg,rgba(45,25,70,.57),rgba(5,35,77,.68));display:grid;grid-template-columns:repeat(3,1fr);overflow:hidden}
+.lx-tier{direction:rtl;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:9px 14px;text-align:center}.lx-tier+.lx-tier:before{content:"";position:absolute;left:0;top:18px;bottom:18px;width:1px;background:rgba(255,255,255,.13)}
+.lx-tier-title{font-size:18px;font-weight:950}.lx-tier-title.green{color:#55df4b}.lx-tier-title.gold{color:#ffc31c}.lx-tier-title.red{color:#ff4c54}.lx-tier-cut{font-size:11px;color:#e8e6ed;margin:1px 0 8px}
+.lx-ring{--p:0;--c:#55df4b;width:108px;height:108px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p)*1%),rgba(255,255,255,.12) 0);display:grid;place-items:center;position:relative}.lx-ring:after{content:"";position:absolute;width:76px;height:76px;border-radius:50%;background:#11193b}.lx-ring>div{position:relative;z-index:2}.lx-ring strong{display:block;font-size:26px;line-height:1}.lx-ring small{display:block;margin-top:4px;font-size:11px;color:#f0eff4}
+
+.lx-side{direction:rtl;display:flex;flex-direction:column;gap:24px;padding-top:92px;position:relative;z-index:2}
+.lx-appbox{align-self:flex-end;width:142px;border:1px solid #1c91ff;border-radius:21px;background:rgba(5,31,72,.78);padding:13px 10px;text-align:center;color:#fff;box-shadow:0 15px 35px -27px #1c91ff}.lx-appbox b{display:block;font-size:15px}.lx-appstores{direction:ltr;display:flex;justify-content:center;gap:18px;border-top:1px solid rgba(255,255,255,.14);margin-top:9px;padding-top:9px}.lx-appstores span{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px}.lx-appstores i{font-style:normal;font-size:25px}
+.lx-live{border:1px solid rgba(34,151,255,.65);border-radius:20px;background:linear-gradient(154deg,rgba(5,31,72,.88),rgba(4,48,93,.70));padding:16px 14px 14px;min-height:590px;box-shadow:0 20px 50px -34px #168cff}
+.lx-live-head{text-align:center;margin-bottom:12px}.lx-live-head strong{font-size:22px}.lx-live-dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:#54df4a;margin-right:7px;box-shadow:0 0 10px #54df4a}.lx-live-sub{font-size:12px;color:#b8c7dd;margin-top:2px}
+.lx-live-list{display:grid;gap:8px}.lx-live-item{border:1px solid rgba(66,130,219,.38);background:rgba(8,42,83,.63);border-radius:13px;padding:9px;display:grid;grid-template-columns:45px 1fr auto;gap:9px;align-items:center;min-height:78px}.lx-live-avatar{width:45px;height:45px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#195ab5,#7b2e65);font-size:23px}.lx-live-item b{font-size:13px}.lx-live-item p{margin:1px 0 0;font-size:11px;line-height:1.55;color:#e2e7f0}.lx-live-score{font-size:17px;font-weight:950;color:#76ef4c;white-space:nowrap}.lx-live-time{font-size:9px;color:#9eafc6;margin-top:2px}.lx-live-empty{text-align:center;color:#aebed4;padding:48px 10px}.lx-live-more{margin-top:10px;width:100%;height:40px;border:1px solid rgba(91,143,222,.46);border-radius:10px;background:rgba(8,43,84,.52);color:#fff;font-family:inherit;font-weight:800}
+
+.lx-trust{grid-column:1/-1;direction:ltr;min-height:76px;border:1px solid rgba(55,111,202,.42);border-radius:17px;background:linear-gradient(90deg,rgba(33,22,63,.67),rgba(5,47,93,.68));display:grid;grid-template-columns:repeat(3,1fr);overflow:hidden;align-items:center;margin-top:0}.lx-trust-item{direction:rtl;display:flex;align-items:center;justify-content:center;gap:13px;padding:10px 18px;text-align:right}.lx-trust-item+.lx-trust-item{border-left:1px solid rgba(255,255,255,.14)}.lx-trust-icon{font-size:37px}.lx-trust-item b{display:block;font-size:17px}.lx-trust-item small{display:block;font-size:11px;color:#b7c4d7}
+.lx-copy{grid-column:1/-1;text-align:center;color:#c2c7d3;font-size:11px;margin-top:-6px}
+
+@media(max-width:1220px){.lx{grid-template-columns:1fr}.lx-side{padding-top:0;display:grid;grid-template-columns:150px 1fr;max-width:1080px;width:100%;margin:0 auto}.lx-appbox{align-self:start}.lx-live{min-height:0}.lx-top{grid-template-columns:240px 1fr auto}.lx-logo{width:240px}.lx-hero{margin-top:10px}}
+@media(max-width:850px){.lh-wrap .wrap.lh-shell{padding:14px}.lx-top{grid-template-columns:1fr;justify-items:center}.lx-logo{width:260px;height:82px}.lx-logo img{height:56px}.lx-actions{justify-content:center}.lx-hero{margin:12px auto}.lx-hero h1{font-size:35px!important}.lx-roles{grid-template-columns:1fr}.lx-role{min-height:185px}.lx-data{grid-template-columns:1fr}.lx-active{min-height:130px}.lx-side{grid-template-columns:1fr}.lx-appbox{justify-self:center}.lx-tiers{min-height:0}.lx-lion{width:80vw;opacity:.18}.lx-crown{display:none}.lx-trust{grid-template-columns:1fr}.lx-trust-item+.lx-trust-item{border-left:0;border-top:1px solid rgba(255,255,255,.13)}}
+@media(max-width:560px){.lx-actions{flex-direction:column}.lx-lang{height:46px}.lx-install{height:46px}.lx-tiers{grid-template-columns:1fr}.lx-tier+.lx-tier:before{left:14px;right:14px;top:0;bottom:auto;width:auto;height:1px}.lx-ring{width:96px;height:96px}.lx-ring:after{width:67px;height:67px}.lx-live-item{grid-template-columns:42px 1fr}.lx-live-score{grid-column:2;text-align:left}}
 
 /* ===== لوحة قيادة رئيس القسم — GEMS Command Center ===== */
 .adm-shell{max-width:none!important;padding:0!important;background:#f6f8fb;min-height:100vh}
@@ -3212,7 +3222,7 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
   const installApp = async () => {
     if (installPrompt) { try { await installPrompt.prompt(); await installPrompt.userChoice; setInstallPrompt(null); } catch {} return; }
     const isiOS = /iphone|ipad|ipod/i.test(navigator.userAgent || "");
-    alert(isiOS ? "على iPhone: افتح زر المشاركة في Safari ثم اختر «إضافة إلى الشاشة الرئيسية»." : "إذا لم يظهر خيار التثبيت، افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».");
+    alert(isiOS ? "على iPhone: افتح زر المشاركة في Safari ثم اختر «إضافة إلى الشاشة الرئيسية»." : "افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». إذا لم يظهر الخيار فالمتصفح لا يتيح التثبيت بعد.");
   };
 
   // تخزين شخصي غير مشترك (shared:false) — يخصّ حساب هذا المستخدم وحده على
@@ -3300,19 +3310,19 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
     };
   })();
 
-  // بيانات واجهة البداية — مشتقة من السجلات الموجودة فقط، بلا أرقام وهمية.
+  // واجهة البداية تقرأ البيانات الحالية فقط ولا تكتب أو تغيّر أي سجل.
   const recentAttempts = (attempts || []).slice().sort((a,b)=>new Date(b.at||b.createdAt||0)-new Date(a.at||a.createdAt||0));
   const activeCutoff = Date.now() - 15 * 60 * 1000;
   const activeNowCount = new Set(recentAttempts.filter(a=>new Date(a.at||a.createdAt||0).getTime() >= activeCutoff).map(a=>a.student)).size;
   const liveFeed = recentAttempts.slice(0,5).map((a) => {
-    const st = (students || []).find(x=>x.key===a.student);
-    const cr = (courses || []).find(x=>x.id===a.course);
-    const rawName = st?.name || "طالب";
-    const parts = rawName.trim().split(/\s+/);
-    const safeName = parts.length>1 ? `${parts[0]} ${parts[1][0]}.` : parts[0];
-    const when = a.at || a.createdAt;
-    const mins = when ? Math.max(0,Math.round((Date.now()-new Date(when).getTime())/60000)) : null;
-    return { name:safeName, title:cr?.title||"كورس اللغة العربية", pct:+a.pct||0, passed:!!a.passed, mins };
+    const st=(students||[]).find(x=>x.key===a.student);
+    const cr=(courses||[]).find(x=>x.id===a.course);
+    const raw=(st?.name||"طالب").trim();
+    const p=raw.split(/\s+/);
+    const safeName=p.length>1?`${p[0]} ${p[1][0]}.`:p[0];
+    const when=a.at||a.createdAt;
+    const mins=when?Math.max(0,Math.round((Date.now()-new Date(when).getTime())/60000)):null;
+    return {name:safeName,title:cr?.title||"كورس اللغة العربية",pct:+a.pct||0,passed:!!a.passed,mins};
   });
 
   return (
@@ -3327,61 +3337,65 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
 
       <div className="wrap lh-shell">
         {stage === "welcome" && (
-          <div className="lh-fade lh-modern">
-            <main className="lh-modern-main">
-              <img src={LION_MARK_URL} className="lh-lion-modern" alt="" aria-hidden="true"/>
-              <div className="lh-modern-top">
-                <div className="lh-logo-box"><img src={LOGO_URL} alt="GEMS Founders School Dubai"/></div>
+          <div className="lh-fade lx">
+            <main className="lx-main">
+              <img src={LION_MARK_URL} className="lx-lion" alt="" aria-hidden="true"/>
+              <div className="lx-crown" aria-hidden="true">♛</div>
+
+              <div className="lx-top">
+                <div className="lx-logo"><img src={LOGO_URL} alt="GEMS Founders School Dubai"/></div>
                 <div></div>
-                <div className="lh-top-actions">
-                  <div className="lh-language" aria-label="اللغة"><button className="on">العربية</button><button title="English interface — coming soon">English</button></div>
-                  <button className="lh-install" onClick={installApp}>⇩ تثبيت التطبيق</button>
+                <div className="lx-actions">
+                  <div className="lx-lang"><button className="on" type="button">العربية</button><button type="button" title="English">English</button></div>
+                  <button className="lx-install" type="button" onClick={installApp}>⇩ تثبيت التطبيق</button>
                 </div>
               </div>
 
-              <section className="lh-modern-hero">
-                <div className="welcome">مرحبًا بكم في منصة</div>
+              <section className="lx-hero">
+                <div className="lx-hello">مرحبًا بكم في منصة</div>
                 <h1>كورسات GFS بالعربي أحلى</h1>
-                <div className="dept">قسم اللغة العربية</div>
-                <div className="lh-vision"><span className="grow">ننمو</span><i/><span className="succeed">ننجح</span><i/><span className="thrive">نزدهر</span></div>
-                <div className="lh-glowline"/>
+                <div className="lx-dept">قسم اللغة العربية</div>
+                <div className="lx-vision"><span className="grow">ننمو</span><i/><span className="succeed">ننجح</span><i/><span className="thrive">نزدهر</span></div>
+                <div className="lx-glow"/>
               </section>
 
-              <section className="lh-rolegrid-modern" aria-label="اختيار الدور">
-                <button className="lh-role-modern" onClick={(e)=>{ripple(e);setStage("staff");setErr("");}}>
-                  <span className="ri">👨‍🏫</span><b>الإدارة</b><small>للمعلمين ورؤساء الأقسام<br/>إدارة المحتوى والتقارير</small><span className="lh-role-arrow">←</span>
+              <section className="lx-roles" aria-label="اختيار الدور">
+                <button className="lx-role parent" type="button" onClick={(e)=>{ripple(e);setRole("p");setStage("form");setStep(1);setErr("");setWelcomeName("");}}>
+                  <span className="lx-role-icon">👨‍👩‍👧</span><b>ولي أمر</b><small>تابع تقدم ابنك واطلع<br/>على تقاريره وإنجازاته</small><span className="lx-arrow">←</span>
                 </button>
-                <button className="lh-role-modern" onClick={(e)=>{ripple(e);setRole("s");setStage("form");setStep(1);setErr("");setWelcomeName("");}}>
-                  <span className="ri">🎓</span><b>طالب</b><small>ابدأ رحلتك التعليمية<br/>وتعلم العربية بمتعة</small><span className="lh-role-arrow">←</span>
+                <button className="lx-role student" type="button" onClick={(e)=>{ripple(e);setRole("s");setStage("form");setStep(1);setErr("");setWelcomeName("");}}>
+                  <span className="lx-role-icon">🎓</span><b>طالب</b><small>ابدأ رحلتك التعليمية<br/>وتعلم العربية بمتعة</small><span className="lx-arrow">←</span>
                 </button>
-                <button className="lh-role-modern" onClick={(e)=>{ripple(e);setRole("p");setStage("form");setStep(1);setErr("");setWelcomeName("");}}>
-                  <span className="ri">👨‍👩‍👧</span><b>ولي أمر</b><small>تابع تقدم ابنك واطلع<br/>على تقاريره وإنجازاته</small><span className="lh-role-arrow">←</span>
+                <button className="lx-role" type="button" onClick={(e)=>{ripple(e);setStage("staff");setErr("");}}>
+                  <span className="lx-role-icon">👨‍🏫</span><b>الإدارة</b><small>للمعلمين ورؤساء الأقسام<br/>إدارة المحتوى والتقارير</small><span className="lx-arrow">←</span>
                 </button>
               </section>
 
-              <section className="lh-data-row">
-                <div className="lh-active-card"><div className="lh-active-icon">👥</div><strong>{activeNowCount}</strong><span>طلاب نشطون<br/>داخل المنصة الآن</span></div>
-                <div className="lh-tier-panel">
-                  {completionStats.tiers.map((t,i)=>{const names=["متقدم","في تقدم","يحتاج دعمًا"];const cls=["green","gold","red"];const col=["#55db4c","#ffc21a","#ff4f55"];const thresholds=["(90% فأعلى)","(70% – 89%)","(أقل من 70%)"];return <div className="lh-tier" key={t.label}><div className={`lh-tier-name ${cls[i]}`}>{names[i]}</div><div className="lh-tier-threshold">{thresholds[i]}</div><div className="lh-donut-sm" style={{"--p":t.pct,"--c":col[i]}}><div><strong>{t.pct}%</strong><small>{t.count} طالب</small></div></div></div>})}
+              <section className="lx-data">
+                <div className="lx-active"><div className="lx-active-icon">👥</div><strong>{activeNowCount}</strong><span>طلاب نشطون<br/>داخل المنصة الآن</span></div>
+                <div className="lx-tiers">
+                  {completionStats.tiers.map((t,i)=>{const names=["متقدم","في تقدم","يحتاج دعمًا"];const cls=["green","gold","red"];const cols=["#55df4b","#ffc31c","#ff4c54"];const cuts=["(90% فأعلى)","(70% – 89%)","(أقل من 70%)"];return <div className="lx-tier" key={t.label}><div className={`lx-tier-title ${cls[i]}`}>{names[i]}</div><div className="lx-tier-cut">{cuts[i]}</div><div className="lx-ring" style={{"--p":t.pct,"--c":cols[i]}}><div><strong>{t.pct}%</strong><small>{t.count} طالب</small></div></div></div>})}
                 </div>
               </section>
             </main>
 
-            <aside className="lh-live">
-              <div className="lh-install-mini"><b>ثبّت منصتنا كتطبيق</b><div className="lh-store-icons"><span>● iOS</span><span>● Android</span></div></div>
-              <div style={{height:132}}></div>
-              <div className="lh-live-head"><strong>المنصة الآن <span className="lh-live-dot"/></strong><div className="lh-live-sub">{activeNowCount} متعلمًا نشطًا خلال آخر 15 دقيقة</div></div>
-              <div className="lh-live-list">
-                {liveFeed.length ? liveFeed.map((x,i)=><div className="lh-live-item" key={i}><div className="lh-live-avatar">{x.passed?"🏆":"👤"}</div><div><b>{x.name}</b><p>{x.passed?"أكمل":"يتقدم في"} كورس «{x.title}»</p>{x.mins!==null&&<div className="lh-live-time">منذ {x.mins<1?"أقل من دقيقة":`${x.mins} دقيقة`}</div>}</div><div className="lh-live-score">{x.pct}%</div></div>) : <div className="lh-live-empty">لا توجد نشاطات حديثة بعد.</div>}
-              </div>
+            <aside className="lx-side">
+              <div className="lx-appbox"><b>ثبّت منصتنا<br/>كتطبيق</b><div className="lx-appstores"><span><i>●</i>iOS</span><span><i>●</i>Android</span></div></div>
+              <section className="lx-live">
+                <div className="lx-live-head"><strong>المنصة الآن <span className="lx-live-dot"/></strong><div className="lx-live-sub">{activeNowCount} متعلمًا نشطًا الآن</div></div>
+                <div className="lx-live-list">
+                  {liveFeed.length?liveFeed.map((x,i)=><div className="lx-live-item" key={i}><div className="lx-live-avatar">{x.passed?"🏆":"👤"}</div><div><b>{x.name}</b><p>{x.passed?"أكمل":"يتقدم الآن في"} كورس «{x.title}»</p>{x.mins!==null&&<div className="lx-live-time">منذ {x.mins<1?"أقل من دقيقة":`${x.mins} دقيقة`}</div>}</div><div className="lx-live-score">{x.pct}%</div></div>):<div className="lx-live-empty">لا توجد نشاطات حديثة بعد.</div>}
+                </div>
+                <button className="lx-live-more" type="button">عرض كل النشاطات ↗</button>
+              </section>
             </aside>
 
-            <section className="lh-trustbar" style={{gridColumn:"1/-1"}}>
-              <div className="lh-trust"><span className="ti">🛡️</span><div><b>آمن وموثوق</b><small>حماية بياناتك أولويتنا</small></div></div>
-              <div className="lh-trust"><span className="ti">🏅</span><div><b>شهادات معتمدة</b><small>إنجازك معنا موثق</small></div></div>
-              <div className="lh-trust"><span className="ti">🧠</span><div><b>تعلم ذكي</b><small>تجربة تعليمية تفاعلية</small></div></div>
+            <section className="lx-trust">
+              <div className="lx-trust-item"><span className="lx-trust-icon">🛡️</span><div><b>آمن وموثوق</b><small>حماية بياناتك أولويتنا</small></div></div>
+              <div className="lx-trust-item"><span className="lx-trust-icon">🏅</span><div><b>شهادات معتمدة</b><small>إنجازك معنا موثق</small></div></div>
+              <div className="lx-trust-item"><span className="lx-trust-icon">🧠</span><div><b>تعلم ذكي</b><small>تجربة تعليمية تفاعلية</small></div></div>
             </section>
-            <div className="lh-copy" style={{gridColumn:"1/-1"}}>© 2026 GEMS Founders School Dubai — جميع الحقوق محفوظة</div>
+            <div className="lx-copy">© 2026 GEMS Founders School Dubai — جميع الحقوق محفوظة</div>
           </div>
         )}
 
