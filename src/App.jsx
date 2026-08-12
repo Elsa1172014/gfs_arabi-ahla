@@ -135,11 +135,167 @@ const CSS = `
 .lh-welcome{text-align:center;padding:20px 0}
 .lh-ripple-el{position:absolute;border-radius:50%;background:rgba(255,255,255,.55);transform:scale(0);animation:lhRipple .6s linear;pointer-events:none}
 @keyframes lhRipple{to{transform:scale(2.4);opacity:0}}
+
 .lh-ripple-btn{position:relative;overflow:hidden}
+
+/* ===== لوحة قيادة رئيس القسم — GEMS Command Center ===== */
+.adm-shell{max-width:none!important;padding:0!important;background:#f6f8fb;min-height:100vh}
+.adm-hero{position:relative;overflow:hidden;padding:18px 32px 14px;color:#fff;
+  background:linear-gradient(110deg,#12329B 0%,#203BA4 30%,#40245C 58%,#7B1F3E 78%,#B4163E 100%);
+  isolation:isolate}
+.adm-hero::before{content:"";position:absolute;inset:-25% 28% -45% auto;width:460px;
+  background:radial-gradient(circle,rgba(255,255,255,.12),transparent 65%);pointer-events:none}
+.adm-lion{position:absolute;left:30%;top:-95px;width:360px;opacity:.055;filter:grayscale(1) brightness(4);
+  pointer-events:none;transform:rotate(-3deg)}
+.adm-hero-row{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.adm-brand{display:flex;align-items:center;gap:14px}
+.adm-brand .logo-chip img{height:48px}
+.adm-hero-title{font-family:Amiri,"Traditional Arabic",serif;font-size:27px;font-weight:700}
+.adm-hero-sub{font-size:12px;color:rgba(255,255,255,.7)}
+.adm-actor{display:flex;align-items:center;gap:10px;background:rgba(7,18,58,.58);border:1px solid rgba(255,255,255,.14);
+  padding:8px 12px;border-radius:14px;backdrop-filter:blur(8px)}
+.adm-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6E3A86,#B4163E);
+  display:grid;place-items:center;font-weight:800}
+.adm-mainnav{position:relative;z-index:3;margin-top:14px;display:flex;gap:4px;align-items:center;
+  padding:7px;background:#08112F;border-radius:15px;overflow-x:auto;scrollbar-width:thin}
+.adm-mainbtn,.adm-subbtn{border:0;font-family:inherit;cursor:pointer;white-space:nowrap}
+.adm-mainbtn{padding:9px 15px;border-radius:10px;background:transparent;color:#cbd3eb;font-weight:700}
+.adm-mainbtn.on{color:#fff;background:linear-gradient(105deg,#C01F4D,#2439A8)}
+.adm-subnav{display:flex;gap:6px;align-items:center;overflow-x:auto;padding:8px 28px;background:#fff;
+  border-bottom:1px solid #e2e7ef;box-shadow:0 3px 12px rgba(13,31,71,.04)}
+.adm-subbtn{padding:7px 12px;border-radius:9px;background:#f4f6fa;color:#526076;font-size:12px;font-weight:700}
+.adm-subbtn.on{background:#e8ecff;color:#18389b;box-shadow:inset 0 0 0 1px #cfd7ff}
+.adm-content{padding:20px 28px 28px}
+.adm-filterbar{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.adm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:12px}
+.adm-kpi{background:#fff;border:1px solid #e0e6ee;border-radius:15px;padding:13px;min-height:116px}
+.adm-kpi-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.adm-kpi-icon{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;background:#f2f5fb}
+.adm-kpi-label{font-size:12px;color:#59677d;font-weight:700}
+.adm-kpi-value{font:800 27px/1.1 ui-sans-serif,system-ui;margin-top:8px;color:#0c2340}
+.adm-kpi-foot{font-size:10px;color:#8490a4;margin-top:7px}
+.adm-grid3{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:12px;margin-bottom:12px}
+.adm-grid4{display:grid;grid-template-columns:1.05fr 1.05fr 1.05fr .9fr;gap:12px}
+.adm-panel{background:#fff;border:1px solid #e0e6ee;border-radius:16px;padding:15px;min-width:0}
+.adm-panel h3{font-size:16px!important;color:#14294a;margin-bottom:10px!important}
+.adm-muted{font-size:11px;color:#7e8999}
+.adm-donut{width:180px;height:180px;border-radius:50%;margin:auto;display:grid;place-items:center;position:relative}
+.adm-donut::after{content:"";position:absolute;width:104px;height:104px;border-radius:50%;background:#fff}
+.adm-donut-center{position:relative;z-index:2;text-align:center;font-weight:800;color:#17304e}
+.adm-legend{display:grid;gap:7px;margin-top:10px;font-size:11px}
+.adm-legend-row{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.adm-dot{width:10px;height:10px;border-radius:3px;display:inline-block;margin-left:5px}
+.adm-bars{display:grid;gap:8px;margin-top:12px}
+.adm-bar-row{display:grid;grid-template-columns:54px 1fr 42px;gap:8px;align-items:center;font-size:11px}
+.adm-track{height:11px;border-radius:999px;background:#edf0f4;overflow:hidden}
+.adm-fill{height:100%;border-radius:999px}
+.adm-heat{display:grid;gap:5px}
+.adm-heat-row{display:grid;grid-template-columns:minmax(105px,1.2fr) repeat(3,1fr);gap:5px;align-items:center;font-size:10px}
+.adm-heat-cell{padding:8px 5px;border-radius:7px;text-align:center;color:#fff;font-weight:800}
+.adm-funnel{display:grid;gap:4px;justify-items:center;margin-top:7px}
+.adm-funnel-step{height:34px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:11px;
+  clip-path:polygon(7% 0,93% 0,84% 100%,16% 100%)}
+.adm-priority{display:grid;gap:8px}
+.adm-priority-item{padding:10px;border-radius:11px;background:#fafbfc;border:1px solid #edf0f4;font-size:11px}
+.adm-ai{background:linear-gradient(145deg,#0c2d69,#112657)!important;color:#fff!important;border-color:#183e82!important}
+.adm-ai h3{color:#fff!important}
+.adm-ai ul{padding-inline-start:18px;margin:8px 0;font-size:11px;line-height:1.9}
+.adm-footer{position:relative;overflow:hidden;margin-top:18px;padding:18px 30px;color:#fff;
+  background:linear-gradient(105deg,#12329B 0%,#26358e 35%,#5c255c 67%,#B4163E 100%);
+  display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+.adm-footer::before{content:"";position:absolute;left:16%;bottom:-115px;width:330px;height:260px;
+  background:radial-gradient(ellipse,rgba(255,255,255,.1),transparent 66%);transform:rotate(-8deg)}
+.adm-footer-main{position:relative;z-index:1;text-align:center;flex:1;font-size:12px}
+.adm-footer-tag{font-family:Amiri,serif;font-size:17px;font-weight:700}
+@media(max-width:1200px){.adm-kpis{grid-template-columns:repeat(3,1fr)}.adm-grid3,.adm-grid4{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.adm-hero{padding:14px}.adm-content{padding:14px}.adm-kpis,.adm-grid3,.adm-grid4{grid-template-columns:1fr}
+.adm-mainnav{border-radius:12px}.adm-subnav{padding:8px 14px}.adm-donut{width:155px;height:155px}}
+
+/* ===== النشرة الأسبوعية — GEMS ===== */
+.nl-shell{border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 18px 50px -28px rgba(15,32,80,.38);border:1px solid ${T.rule}}
+.nl-head{position:relative;overflow:hidden;background:linear-gradient(110deg,#8E2333 0%,#642849 30%,#2A2D68 62%,#12329B 100%);color:#fff;padding:28px 30px;text-align:center}
+.nl-watermark{position:absolute;width:360px;max-width:50vw;opacity:.40;left:5%;top:-105px;filter:grayscale(1) brightness(2.4);mix-blend-mode:soft-light;pointer-events:none}
+.nl-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px}
+.nl-weekcard{position:relative;overflow:hidden;border-radius:22px;color:#fff;padding:22px;min-height:330px;box-shadow:0 14px 30px -22px rgba(5,20,60,.55)}
+.nl-weekcard.red{background:linear-gradient(145deg,#8D2132,#A82A42 58%,#6C2033)}
+.nl-weekcard.blue{background:linear-gradient(145deg,#12329B,#164CC5 58%,#10265F)}
+.nl-weekcard .nl-watermark{width:300px;left:auto;right:-45px;top:10px;opacity:.40}
+.nl-lesson{position:relative;z-index:2;background:rgba(255,255,255,.94);color:#13233f;border-radius:14px;padding:13px 15px;margin-top:12px}
+.nl-objectives{margin:7px 0 0;padding-right:18px;font-size:13px}
+.nl-timeline{display:flex;gap:8px;align-items:center;overflow-x:auto;padding:14px 20px 22px}
+.nl-timebtn{border:1px solid ${T.rule};background:#fff;border-radius:999px;padding:8px 13px;white-space:nowrap;cursor:pointer;font-family:inherit;color:${T.inkSoft}}
+.nl-timebtn.on{background:${T.navy};color:#fff;border-color:${T.navy}}
+@media(max-width:800px){.nl-grid{grid-template-columns:1fr}.nl-head{padding:22px 16px}.nl-weekcard{min-height:0}}
+
+/* ===== Student Learning Hub — المرجع المعتمد ===== */
+.stu-shell{padding-bottom:60px}
+.stu-nav{margin:0 0 22px;background:#0d173d;border-radius:0 0 18px 18px;padding:11px 18px;display:flex;justify-content:center;gap:8px;flex-wrap:wrap;box-shadow:0 12px 28px -20px rgba(5,16,60,.5)}
+.stu-nav button{border:0;background:transparent;color:#d9e2ff;font-family:inherit;font-weight:700;padding:9px 14px;border-radius:10px;cursor:pointer}
+.stu-nav button:hover,.stu-nav button.on{background:linear-gradient(110deg,#b21f47,#283bb0);color:#fff}
+.stu-kpis{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:14px;margin-bottom:24px}
+.stu-kpi{background:#fff;border:1px solid #e3e8f1;border-radius:16px;padding:17px;box-shadow:0 9px 24px -20px rgba(16,34,80,.35)}
+.stu-kpi-label{font-size:12px;color:#667085;font-weight:700}.stu-kpi-value{font-size:32px;font-weight:900;color:#102d6d;margin-top:5px}.stu-kpi-note{font-size:11px;color:#7a8498;margin-top:2px}
+.stu-section-head{display:flex;align-items:end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:26px 0 13px}.stu-section-head h2{font-size:29px}.stu-section-head p{margin:0;color:#667085;font-size:12px}
+.stu-course-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.stu-course{position:relative;overflow:hidden;border-radius:20px;background:#fff;border:1px solid #e1e6ef;box-shadow:0 15px 34px -24px rgba(15,35,95,.38);min-height:310px;display:flex;flex-direction:column}
+.stu-course-top{padding:18px;color:#fff;min-height:110px;position:relative;overflow:hidden}.stu-course-top:after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 18% 22%,rgba(255,255,255,.24),transparent 34%)}
+.stu-course.green .stu-course-top{background:linear-gradient(145deg,#0f6d5d,#1d8d77)}.stu-course.blue .stu-course-top{background:linear-gradient(145deg,#174bc0,#213fb1)}.stu-course.purple .stu-course-top{background:linear-gradient(145deg,#643bb4,#8a4cca)}.stu-course.red .stu-course-top{background:linear-gradient(145deg,#a5223f,#dc3551)}
+.stu-course-body{padding:18px;display:flex;flex-direction:column;gap:12px;flex:1}.stu-ring{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;margin:0 auto;background:conic-gradient(var(--ring) calc(var(--pct)*1%),#e9edf4 0);position:relative}.stu-ring:before{content:"";position:absolute;width:68px;height:68px;border-radius:50%;background:#fff}.stu-ring b{position:relative;z-index:1;font-size:20px;color:#102d6d}.stu-course-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;text-align:center;font-size:12px;color:#667085}.stu-course-meta b{display:block;color:#17346e;font-size:16px}.stu-course-btn{margin-top:auto;border:0;border-radius:10px;padding:11px 14px;color:#fff;font-family:inherit;font-weight:800;cursor:pointer}.stu-course.green .stu-course-btn{background:#16816d}.stu-course.blue .stu-course-btn{background:#2154c7}.stu-course.purple .stu-course-btn{background:#7650ba}.stu-course.red .stu-course-btn{background:#d62d49}
+.stu-lower{display:grid;grid-template-columns:1.25fr .95fr;gap:18px;margin-top:24px}.stu-panel{background:#fff;border:1px solid #e3e8f1;border-radius:18px;padding:18px}.stu-activity{display:grid;gap:8px}.stu-act{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #eef1f5;font-size:12px}.stu-achievements{display:flex;gap:10px;flex-wrap:wrap}.stu-ach{background:linear-gradient(110deg,#fff7e3,#fff);border:1px solid #f0d798;border-radius:14px;padding:12px 14px;min-width:150px}.stu-ach b{display:block;color:#9b6811}
+@media(max-width:900px){.stu-kpis{grid-template-columns:repeat(2,1fr)}.stu-lower{grid-template-columns:1fr}}
+@media(max-width:560px){.stu-kpis{grid-template-columns:1fr 1fr}.stu-course-grid{grid-template-columns:1fr}.stu-nav{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}.stu-nav button{white-space:nowrap}}
+
+/* ===== Student internal pages + teacher multi-block picker ===== */
+.stu-nav{padding:14px 18px;gap:14px}
+.stu-nav button{font-size:17px;padding:12px 22px;min-width:150px}
+.stu-nav button.on{box-shadow:0 9px 22px -14px rgba(48,68,190,.7)}
+.stu-home-actions{display:grid;grid-template-columns:repeat(4,minmax(170px,1fr));gap:0;margin:22px 0 28px;border-radius:18px;overflow:hidden;background:linear-gradient(110deg,#8E2333 0%,#642849 30%,#2A2D68 62%,#12329B 100%);box-shadow:0 16px 38px -26px rgba(15,35,95,.6)}
+.stu-home-card{border:0;border-left:1px solid rgba(255,255,255,.18);background:transparent;border-radius:0;padding:10px 16px;min-height:62px;cursor:pointer;font-family:inherit;text-align:center;color:#fff;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:none;transition:background .18s ease,transform .18s ease}
+.stu-home-card:last-child{border-left:0}.stu-home-card:hover{background:rgba(255,255,255,.12);transform:none}
+.stu-home-card .ico{font-size:24px;display:inline-block;margin:0}.stu-home-card b{display:inline-block;font-size:19px;color:#fff;white-space:nowrap}.stu-home-card small{display:none}
+.stu-page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:8px 0 20px}
+.stu-page-back{border:1px solid #cad4e6;background:#fff;color:#17346e;border-radius:12px;padding:10px 16px;font-family:inherit;font-weight:800;cursor:pointer}
+.stu-kpi{cursor:pointer;transition:transform .15s ease}.stu-kpi:hover{transform:translateY(-2px)}
+.nl-block-picker{position:relative}
+.nl-block-trigger{width:100%;min-height:44px;border:1px solid ${T.rule};border-radius:10px;background:#fff;color:${T.ink};font-family:inherit;font-weight:800;padding:9px 12px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.nl-block-panel{position:absolute;z-index:30;top:calc(100% + 7px);right:0;left:0;background:#fff;border:1px solid #dce3ed;border-radius:15px;padding:12px;box-shadow:0 18px 42px -20px rgba(15,35,95,.45)}
+.nl-block-actions{display:flex;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+.nl-block-grid{display:grid;grid-template-columns:repeat(9,1fr);gap:7px}
+.nl-block-letter{border:1px solid #d9e0eb;background:#f8fafc;color:#17346e;border-radius:9px;padding:7px 4px;font-family:inherit;font-weight:900;cursor:pointer}
+.nl-block-letter.on{background:${T.green};color:#fff;border-color:${T.green}}
+@media(max-width:900px){.stu-home-actions{grid-template-columns:1fr 1fr}.nl-block-grid{grid-template-columns:repeat(6,1fr)}}
+@media(max-width:560px){.stu-home-actions{grid-template-columns:1fr}.stu-nav button{font-size:15px;min-width:132px;padding:11px 15px}.nl-block-grid{grid-template-columns:repeat(5,1fr)}}
+
+
+/* ===== Teacher primary navigation — GEMS hero strip ===== */
+.teacher-nav-spacer{height:56px;background:#fff}
+.teacher-nav-full{margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);background:linear-gradient(110deg,#8E2333 0%,#642849 30%,#2A2D68 62%,#12329B 100%);box-shadow:0 12px 28px -22px rgba(8,20,62,.5);min-height:40px}
+.teacher-nav-inner{max-width:1160px;margin:0 auto;padding:5px 20px;display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap}
+.teacher-nav-inner .tabbtn{margin:0;background:transparent!important;color:#fff!important;border:0;border-radius:9px;padding:7px 15px;font-size:15px;font-weight:800;min-height:34px}
+.teacher-nav-inner .tabbtn:hover{background:rgba(255,255,255,.12)!important}
+.teacher-nav-inner .tabbtn.on{background:rgba(255,255,255,.18)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.24)}
+@media(max-width:760px){.teacher-nav-spacer{height:34px}.teacher-nav-inner{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap}.teacher-nav-inner .tabbtn{white-space:nowrap;font-size:14px}}
+
+/* ===== Weekly Newsletter — التصميم المعتمد ===== */
+.nl-shell{border-radius:26px;overflow:hidden;background:#f8fafc;box-shadow:0 22px 60px -32px rgba(15,32,80,.45);border:1px solid #dce3ee}
+.nl-head{position:relative;overflow:hidden;background:linear-gradient(112deg,#7d1f31 0%,#622446 30%,#282966 60%,#102f8f 100%);color:#fff;padding:30px 34px 28px;text-align:center;min-height:158px;display:flex;align-items:center;justify-content:center}
+.nl-head-logo{position:absolute;left:28px;top:24px;background:#fff;border-radius:15px;padding:8px 12px;box-shadow:0 8px 28px -16px rgba(0,0,0,.45)}.nl-head-logo img{height:46px;display:block}
+.nl-watermark{position:absolute;width:420px;max-width:48vw;opacity:.40;left:9%;top:-128px;filter:none;mix-blend-mode:soft-light;pointer-events:none}
+.nl-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:14px 22px;background:#fff;border-bottom:1px solid #e6eaf1}.nl-meta>div{background:#f7f9fc;border:1px solid #e4e8ef;border-radius:999px;padding:9px 12px;text-align:center;font-size:12px;color:#33476c}.nl-meta b{color:#102d6d}
+.nl-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;padding:20px}
+.nl-weekcard{position:relative;overflow:hidden;border-radius:24px;color:#fff;padding:24px;min-height:450px;box-shadow:0 18px 36px -24px rgba(5,20,60,.65);border:1px solid rgba(255,255,255,.2)}
+.nl-weekcard.red{background:linear-gradient(145deg,#8D2132 0%,#AE2D43 56%,#6f1c31 100%)}.nl-weekcard.blue{background:linear-gradient(145deg,#12329B 0%,#1851C8 58%,#10265F 100%)}
+.nl-weekcard .nl-watermark{width:390px;left:auto;right:-70px;top:15px;opacity:.40;mix-blend-mode:soft-light}
+.nl-week-title{position:relative;z-index:2;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}.nl-week-title h2{color:#fff;font-size:27px}.nl-week-title span{font-size:42px}
+.nl-lesson-feature{position:relative;z-index:2;display:grid;grid-template-columns:170px 1fr;gap:18px;align-items:start;margin-top:10px}.nl-lesson-orb{width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.96);color:#17346e;display:grid;place-items:center;text-align:center;padding:18px;box-shadow:0 12px 30px -20px rgba(0,0,0,.45)}.nl-lesson-orb small{display:block;color:#6d7890}.nl-lesson-orb b{display:block;font-size:22px;margin-top:5px}.nl-objective-list{display:grid;gap:10px}.nl-objective{display:grid;grid-template-columns:38px 1fr;align-items:center;gap:10px;background:rgba(255,255,255,.95);color:#263958;border-radius:13px;padding:10px 12px;min-height:54px}.nl-objective-num{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:900}.red .nl-objective-num{background:#8D2132}.blue .nl-objective-num{background:#12329B}.nl-extra-lessons{position:relative;z-index:2;margin-top:14px;display:grid;gap:10px}.nl-extra{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.25);border-radius:13px;padding:11px 13px}.nl-extra b{display:block}.nl-extra ul{margin:5px 0 0;padding-right:18px;font-size:12px}
+.nl-timeline-wrap{padding:16px 24px 22px;background:#fff;border-top:1px solid #e6eaf1}.nl-timeline-title{text-align:center;font-weight:900;color:#102d6d;margin-bottom:13px}.nl-timeline{display:flex;gap:8px;align-items:center;overflow-x:auto;padding:2px 0}.nl-timebtn{border:1px solid #dfe5ef;background:#fff;border-radius:999px;padding:9px 14px;white-space:nowrap;cursor:pointer;font-family:inherit;color:#51617e}.nl-timebtn.on{background:linear-gradient(110deg,#8D2132,#12329B);color:#fff;border-color:transparent}.nl-publish-note{padding:0 22px 14px;text-align:center;font-size:11px;color:#667085}
+.nl-editor-shell{display:grid;gap:16px}.nl-editor-actions{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}.nl-editor-cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}.nl-editor-card{position:relative;overflow:hidden;border-radius:24px;padding:22px;color:#fff;min-height:390px}.nl-editor-card.red{background:linear-gradient(145deg,#8D2132,#AE2D43 56%,#6f1c31)}.nl-editor-card.blue{background:linear-gradient(145deg,#12329B,#1851C8 58%,#10265F)}.nl-editor-card .nl-watermark{width:360px;right:-75px;left:auto;top:0;opacity:.40}.nl-editor-card h2{position:relative;z-index:2;color:#fff}.nl-editor-item{position:relative;z-index:2;background:rgba(255,255,255,.96);border-radius:14px;padding:12px;margin-top:12px}.nl-editor-item .inp,.nl-editor-item .tarea{background:#fff}.nl-editor-add{position:relative;z-index:2;margin-top:10px;background:#fff!important;font-weight:800}.nl-editor-card.red .nl-editor-add{color:#8D2132}.nl-editor-card.blue .nl-editor-add{color:#12329B}
+@media(max-width:850px){.nl-grid,.nl-editor-cards{grid-template-columns:1fr}.nl-meta{grid-template-columns:1fr 1fr}.nl-lesson-feature{grid-template-columns:1fr}.nl-lesson-orb{margin:auto}.nl-head-logo{position:static;margin-bottom:12px}.nl-head{flex-direction:column}.nl-watermark{max-width:none}}
 `;
 
 // شعار GEMS Founders School — مضمَّن مباشرة (بلا رابط خارجي قد ينكسر)، بخلفية شفافة
 const LOGO_URL = "data:image/png;base64,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";
+const LION_MARK_URL = `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600"><g fill="none" stroke="white" stroke-width="18" opacity=".88" stroke-linecap="round" stroke-linejoin="round"><path d="M300 88c-67 0-117 47-128 111-43 23-71 69-71 120 0 67 45 123 107 140 25 44 61 69 92 69s67-25 92-69c62-17 107-73 107-140 0-51-28-97-71-120C417 135 367 88 300 88Z"/><path d="M212 225c24-44 56-66 88-66s64 22 88 66M221 305c22-19 47-28 79-28s57 9 79 28M250 361c17 21 33 31 50 31s33-10 50-31M300 277v91M184 246l-44-35M416 246l44-35M172 345l-51 17M428 345l51 17"/><circle cx="248" cy="278" r="9" fill="white" stroke="none"/><circle cx="352" cy="278" r="9" fill="white" stroke="none"/></g></svg>`)}`;
 
 const PHASES = [
   { code: "KS1", name: "الحلقة الأولى", min: 1, max: 3, q: 25, pass: 60, tries: 10 },
@@ -2536,7 +2692,7 @@ const SEED_COURSES = [C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12, C13, C1
 /* ============================ تخزين وأدوات ============================ */
 const K = {
   courses: "gfs:courses:v5", students: "gfs:students:v5", attempts: "gfs:attempts:v5", progress: "gfs:progress:v5",
-  teachers: "gfs:teachers:v5", blocksAdmin: "gfs:blocksadmin:v5", audit: "gfs:audit:v5", parentTok: "gfs:parenttok:v5",
+  teachers: "gfs:teachers:v5", blocksAdmin: "gfs:blocksadmin:v5", blockGroups: "gfs:blockgroups:v1", audit: "gfs:audit:v5", parentTok: "gfs:parenttok:v5",
   codes: "gfs:codes:v1", orgEmail: "gfs:orgemail:v1",
 };
 const readKey = async (k, f) => { try { const r = await window.storage.get(k, true); return r && r.value ? JSON.parse(r.value) : f; } catch { return f; } };
@@ -2546,7 +2702,7 @@ const writeKey = async (k, v) => { try { await window.storage.set(k, JSON.string
 // له مفتاحه الخاص، فكتابة عنصر واحد لا تُعيد كتابة البقية ولا تصطدم بكتابة
 // متزامنة من متصفّح آخر يعمل على عنصر مختلف — وهو ما يمنع فقدان بيانات
 // المشاركين الآخرين عند الاستخدام الجماعي المتزامن للمنصة.
-const REC = { student: "gfs:rec:student:", attempt: "gfs:rec:attempt:", progress: "gfs:rec:progress:", course: "gfs:rec:course:", audit: "gfs:rec:audit:", parentTok: "gfs:rec:ptok:", intervention: "gfs:rec:intervention:" };
+const REC = { student: "gfs:rec:student:", attempt: "gfs:rec:attempt:", progress: "gfs:rec:progress:", course: "gfs:rec:course:", audit: "gfs:rec:audit:", parentTok: "gfs:rec:ptok:", intervention: "gfs:rec:intervention:", newsletter: "gfs:rec:newsletter:" };
 const safeId = (s) => String(s).replace(/[\s\/\\'"]+/g, "_");
 async function listRecords(prefix) {
   try {
@@ -2558,11 +2714,13 @@ async function listRecords(prefix) {
   } catch { return []; }
 }
 async function putRecord(prefix, id, obj) { try { await window.storage.set(prefix + safeId(id), JSON.stringify(obj), true); return true; } catch { return false; } }
+async function readRecord(prefix, id) { try { const r = await window.storage.get(prefix + safeId(id), true); return r && r.value ? JSON.parse(r.value) : null; } catch { return null; } }
 async function deleteRecord(prefix, id) { try { await window.storage.delete(prefix + safeId(id), true); return true; } catch { return false; } }
 const uid = () => Math.random().toString(36).slice(2, 10);
 const shuffle = (a) => { const b = [...a]; for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; };
 const pKey = (s, c) => `${s}|${c}`;
 const normEmail = (s) => String(s || "").trim().toLowerCase();
+const normBlock = (s) => String(s || "").trim().toUpperCase();
 const dateAr = (i) => { try { return new Date(i).toLocaleDateString("ar-AE", { year: "numeric", month: "long", day: "numeric" }); } catch { return ""; } };
 const norm = (s) => (s || "").replace(/[\u064B-\u0652\u0640]/g, "").replace(/[«»؟.،]/g, "").replace(/\s+/g, "").trim();
 
@@ -2588,15 +2746,42 @@ function dedupeBank(bank) {
     seen.add(k); return true;
   });
 }
+function collectLessonStrings(value, out = []) {
+  if (value == null) return out;
+  if (typeof value === "string") { out.push(value); return out; }
+  if (Array.isArray(value)) { value.forEach((v) => collectLessonStrings(v, out)); return out; }
+  if (typeof value === "object") Object.entries(value).forEach(([k, v]) => { if (k !== "bank") collectLessonStrings(v, out); });
+  return out;
+}
 function cleanBank(course) {
   const inLesson = new Set();
-  (course.stages || []).forEach((s) => (s.checks || []).forEach((c) => inLesson.add(norm(c.q))));
+  (course.stages || []).forEach((st) => (st.checks || []).forEach((c) => inLesson.add(norm(c.q))));
+  const lessonText = norm(collectLessonStrings(course.stages || []).join(" "));
   const seen = new Set();
   return (course.bank || []).filter((b) => {
-    const k = norm(b.q) + "|" + norm(correctText(b));
-    if (seen.has(k) || inLesson.has(norm(b.q))) return false;
+    if (!b || !b.t || !b.q || !QTYPE[b.t]) return false;
+    const nq = norm(b.q);
+    const k = nq + "|" + norm(correctText(b));
+    const repeatedInLesson = nq.length >= 18 && lessonText.includes(nq);
+    if (seen.has(k) || inLesson.has(nq) || repeatedInLesson) return false;
     seen.add(k); return true;
   });
+}
+function courseQuality(course) {
+  const original = Array.isArray(course?.bank) ? course.bank : [];
+  const clean = cleanBank(course || {});
+  const duplicateCount = Math.max(0, original.length - clean.length);
+  const stageCount = (course?.stages || []).length;
+  const types = new Set(clean.map((q) => q.t)).size;
+  const objectiveOk = String(course?.objective || "").trim().length >= 12;
+  const explanationChars = collectLessonStrings(course?.stages || []).join(" ").trim().length;
+  const questionScore = Math.min(30, Math.round(clean.length / 25 * 30));
+  const varietyScore = Math.min(20, types * 5);
+  const structureScore = Math.min(20, stageCount * 4);
+  const clarityScore = (objectiveOk ? 10 : 4) + (explanationChars >= 350 ? 10 : explanationChars >= 150 ? 7 : 3);
+  const duplicateScore = duplicateCount === 0 ? 10 : Math.max(0, 10 - duplicateCount * 3);
+  return { score: Math.max(0, Math.min(100, questionScore + varietyScore + structureScore + clarityScore + duplicateScore)),
+    cleanCount: clean.length, duplicateCount, stageCount, types, objectiveOk, explanationChars };
 }
 
 // إرسال بريد حقيقي عبر /api/send-email — "أطلق ولا تنتظر": فشل الإرسال لا
@@ -2608,6 +2793,34 @@ function notifyEmail(to, subject, html) {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ to: recipients, subject, html }),
   }).catch(() => { });
+}
+
+async function sendEmailTracked(to, subject, html) {
+  const recipients = (Array.isArray(to) ? to : [to]).map(normEmail).filter(Boolean);
+  if (!recipients.length) return { ok: false, status: 0, error: "لا يوجد بريد صالح للمستلم." };
+  try {
+    const r = await fetch("/api/send-email", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ to: recipients, subject, html }),
+    });
+    let data = null;
+    try { data = await r.json(); } catch { data = null; }
+    return { ok: r.ok, status: r.status, error: r.ok ? "" : JSON.stringify(data?.error || data || `HTTP ${r.status}`) };
+  } catch (e) { return { ok: false, status: 0, error: String(e?.message || e || "تعذر الاتصال بخدمة البريد") }; }
+}
+async function runEmailTasks(tasks, chunkSize = 8) {
+  const results = [];
+  for (let i = 0; i < tasks.length; i += chunkSize) {
+    const chunk = tasks.slice(i, i + chunkSize);
+    const r = await Promise.all(chunk.map((fn) => fn()));
+    results.push(...r);
+  }
+  return results;
+}
+function nlEsc(v="") { return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]); }
+function newsletterEmailHtml(rec, studentName, parentCopy=false) {
+  const side=(arr,tone,title)=>{const first=(arr||[])[0]||{title:"",objectives:[]};return `<div style="background:${tone==='red'?'linear-gradient(145deg,#8D2132,#AE2D43)':'linear-gradient(145deg,#12329B,#1851C8)'};color:#fff;border-radius:20px;padding:18px;min-height:310px"><h3 style="font-size:22px;margin:0 0 14px">${title}</h3><div style="background:#fff;color:#17233d;border-radius:999px;padding:16px;text-align:center;font-weight:700;font-size:18px;margin-bottom:12px">${nlEsc(first.title||'الدرس')}</div>${(first.objectives||[]).map((o,i)=>`<div style="background:#fff;color:#253858;border-radius:12px;padding:11px;margin:8px 0"><strong>${i+1}</strong> · ${nlEsc(o)}</div>`).join('')}${(arr||[]).slice(1).map(l=>`<div style="border:1px solid rgba(255,255,255,.3);border-radius:12px;padding:10px;margin-top:10px"><strong>${nlEsc(l.title||'درس إضافي')}</strong><ul>${(l.objectives||[]).map(o=>`<li>${nlEsc(o)}</li>`).join('')}</ul></div>`).join('')}</div>`};
+  return `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;background:#eef2f8;padding:22px;line-height:1.8"><div style="max-width:900px;margin:auto;background:#fff;border-radius:24px;overflow:hidden"><div style="background:linear-gradient(112deg,#7d1f31,#282966,#102f8f);color:#fff;padding:28px;text-align:center"><div style="font-size:30px;font-weight:800">النشرة الأسبوعية</div><div>اللغة العربية · الأسبوع من ${nlEsc(rec.weekStart||'')} إلى ${nlEsc(rec.weekEnd||'')}</div></div><div style="padding:20px"><p>${parentCopy?'عزيزي ولي الأمر':'مرحبًا'} ${nlEsc(studentName||'')},</p><p>${parentCopy?'إليكم ما تعلمه الطالب هذا الأسبوع وما سيبدأه الأسبوع القادم.':'هذه نشرتك الأسبوعية في اللغة العربية.'}</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">${side(rec.currentLessons,'red','✅ ماذا تعلمنا هذا الأسبوع؟')}${side(rec.nextLessons,'blue','🚀 ماذا سنتعلم الأسبوع القادم؟')}</div><p style="margin-top:18px;text-align:center"><a href="${typeof window!=="undefined"?window.location.origin:""}" style="display:inline-block;background:#12329b;color:#fff;text-decoration:none;padding:12px 20px;border-radius:10px;font-weight:700">فتح منصة بالعربي أحلى</a></p><p style="font-size:12px;color:#667085;text-align:center">نُشرت بواسطة ${nlEsc(rec.teacherName||'معلم اللغة العربية')} — ${rec.publishedAt?new Date(rec.publishedAt).toLocaleString('ar-AE'):''}</p></div></div></div>`;
 }
 function toCSV(rows, headers) {
   const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -2927,7 +3140,7 @@ function StageBody({ s }) {
 }
 
 /* ============================ الدخول ============================ */
-function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, courses = [], attempts = [] }) {
+function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teachers = [], courses = [], attempts = [] }) {
   const [stage, setStage] = useState("welcome"); // welcome | pick | form
   const [role, setRole] = useState(null); // s | p | t | a
   const [step, setStep] = useState(1); // خطوة معالج الطالب
@@ -3160,11 +3373,14 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
                 {teacherMem && <button className="btn btn-q" style={{ alignSelf: "start", padding: "2px 0", color: T.brick }} onClick={() => forget("teacher")}>نسيان البيانات المحفوظة</button>}
                 {err && <div style={{ color: T.brick }}>{err}</div>}
                 <button className="btn btn-p lh-ripple-btn" onClick={async (e) => {
-                  if (code !== codes.teacher) return setErr("الرمز غير صحيح. راجع رئيس القسم للحصول عليه.");
                   const email = normEmail(temail);
                   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return setErr("أدخل بريدك الإلكتروني المدرسي بصورة صحيحة.");
-                  ripple(e);
                   const name = tname.trim() || "معلم اللغة العربية";
+                  const knownTeacher = (teachers || []).find((t) => t.name === name || normEmail(t.email) === email);
+                  if (knownTeacher && knownTeacher.active === false) return setErr("هذا الحساب معطّل. راجع رئيس القسم.");
+                  const expectedCode = knownTeacher?.code || codes.teacher;
+                  if (code !== expectedCode) return setErr("الرمز غير صحيح. راجع رئيس القسم للحصول عليه.");
+                  ripple(e);
                   if (rememberT) { try { await window.storage.set("gfs:mem:teacher", JSON.stringify({ name, email, code }), false); } catch { } }
                   else { try { await window.storage.delete("gfs:mem:teacher", false); } catch { } }
                   onTeacher(name, email);
@@ -3234,52 +3450,177 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, cours
 }
 
 /* ============================ الطالب ============================ */
-function StudentHome({ user, courses, progress, attempts, onOpen }) {
+
+function NewsletterViewer({ newsletter, archive = [], onSelect }) {
+  if (!newsletter) return <div className="card" style={{padding:28,textAlign:"center",color:T.inkSoft}}>لم تُنشر نشرة أسبوعية لهذا الصف بعد.</div>;
+  const firstCurrent=(newsletter.currentLessons||[])[0]||{title:"",objectives:[]};
+  const firstNext=(newsletter.nextLessons||[])[0]||{title:"",objectives:[]};
+  const extras=(arr)=>Math.max(0,(arr||[]).length-1);
+  const objectiveList=(objectives,tone)=>{const items=(objectives||[]).map(o=>String(o||"").trim()).filter(Boolean);return items.length?<div className="nl-objective-list">{items.map((o,i)=><div className="nl-objective" key={i}><span className="nl-objective-num">{i+1}</span><span>{o}</span></div>)}</div>:null;};
+  const renderSide=(tone,title,icon,lesson,allLessons)=> <section className={`nl-weekcard ${tone}`}>
+    <img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/>
+    <div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>
+    <div className="nl-lesson-feature">
+      <div className="nl-lesson-orb"><div><small>الدرس</small><b>{lesson.title||"—"}</b></div></div>
+      {objectiveList(lesson.objectives,tone)}
+    </div>
+    {extras(allLessons)>0 && <div className="nl-extra-lessons">{allLessons.slice(1).map((l,i)=><div className="nl-extra" key={i}><b>{l.title||`درس إضافي ${i+2}`}</b><ul>{(l.objectives||[]).map(o=>String(o||"").trim()).filter(Boolean).map((o,j)=><li key={j}>{o}</li>)}</ul></div>)}</div>}
+  </section>;
+  return <div className="nl-shell">
+    <header className="nl-head">
+      <img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/>
+      <div className="nl-head-logo"><img src={LOGO_URL} alt="GEMS Founders School"/></div>
+      <div style={{position:"relative",zIndex:2}}><div style={{fontSize:37,fontWeight:900}}>النشرة الأسبوعية</div><div style={{fontSize:20,opacity:.94}}>اللغة العربية</div><div style={{marginTop:9,fontSize:13,border:"1px solid rgba(255,255,255,.5)",borderRadius:999,padding:"5px 16px"}}>الأسبوع من {newsletter.weekStart} إلى {newsletter.weekEnd}</div></div>
+    </header>
+    <div className="nl-meta"><div>🎓 الصف <b>{newsletter.grade}</b></div><div>👥 البلوكات <b>{(newsletter.blocks||[]).join("، ")}</b></div><div>👨‍🏫 المعلم <b>{newsletter.teacherName||"معلم اللغة العربية"}</b></div><div>📅 تاريخ النشر <b>{newsletter.publishedAt?dateAr(newsletter.publishedAt):"—"}</b></div></div>
+    <div className="nl-grid">
+      {renderSide("red","ماذا تعلمنا هذا الأسبوع؟","✅",firstCurrent,newsletter.currentLessons||[])}
+      {renderSide("blue","ماذا سنتعلم الأسبوع القادم؟","🚀",firstNext,newsletter.nextLessons||[])}
+    </div>
+    <div className="nl-publish-note">معًا نستمر كل أسبوع لبناء مهاراتنا وتحقيق أهدافنا · نُشرت بواسطة {newsletter.teacherName||"معلم اللغة العربية"}</div>
+    {archive.length>0 && <div className="nl-timeline-wrap"><div className="nl-timeline-title">🏁 رحلتنا التعليمية — أرشيف النشرات</div><div className="nl-timeline">{archive.map((x,i)=><button className={`nl-timebtn ${x.id===newsletter.id?"on":""}`} key={x.id} onClick={()=>onSelect&&onSelect(x.id)}>الأسبوع {archive.length-i} · {dateAr(x.publishedAt||x.createdAt)}</button>)}</div></div>}
+  </div>;
+}
+
+function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, onSave, onDelete }) {
+  const mineStudents = students.filter(s=>!teacherEmail || !s.teacherEmail || normEmail(s.teacherEmail)===normEmail(teacherEmail));
+  const allGrades = Array.from({length:13},(_,i)=>i+1);
+  const allBlocks = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+  const emptyObjectives=()=>["","","",""];
+  const normalizeObjectives=(arr)=>[...(arr||[])].map(x=>String(x||"")).slice(0,4).concat(["","","",""]).slice(0,4);
+  const normalizeLessons=(arr)=>(arr||[]).map(l=>({...l,objectives:normalizeObjectives(l.objectives)}));
+  const [grade,setGrade]=useState(7);
+  const [blocks,setBlocks]=useState([]);
+  const [blockPickerOpen,setBlockPickerOpen]=useState(false);
+  const [weekStart,setWeekStart]=useState(()=>new Date().toISOString().slice(0,10));
+  const [weekEnd,setWeekEnd]=useState(()=>{const d=new Date();d.setDate(d.getDate()+6);return d.toISOString().slice(0,10)});
+  const [currentLessons,setCurrentLessons]=useState([{title:"",objectives:emptyObjectives()}]);
+  const [nextLessons,setNextLessons]=useState([{title:"",objectives:emptyObjectives()}]);
+  const [busy,setBusy]=useState(false),[msg,setMsg]=useState("");
+  const addLesson=(which)=>which==="current"?setCurrentLessons(v=>[...v,{title:"",objectives:emptyObjectives()}]):setNextLessons(v=>[...v,{title:"",objectives:emptyObjectives()}]);
+  const updateLesson=(which,idx,field,val)=>{const setter=which==="current"?setCurrentLessons:setNextLessons;setter(prev=>prev.map((l,i)=>i===idx?{...l,[field]:val}:l));};
+  const updateObjective=(which,lessonIdx,objIdx,val)=>{const setter=which==="current"?setCurrentLessons:setNextLessons;setter(prev=>prev.map((l,i)=>{if(i!==lessonIdx)return l;const objectives=normalizeObjectives(l.objectives);objectives[objIdx]=val;return {...l,objectives};}));};
+  const clean=(arr)=>arr.map(l=>({title:l.title.trim(),objectives:(l.objectives||[]).map(o=>String(o||"").trim()).filter(Boolean).slice(0,4)})).filter(l=>l.title||l.objectives.length);
+  const improve=async()=>{setBusy(true);setMsg("");const prompt=`أنت محرر تربوي عربي. حسّن صياغة عناوين الدروس وأهداف التعلم الآتية دون تغيير المعنى أو إضافة محتوى غير موجود. اجعل الأهداف قصيرة وقابلة للملاحظة ومناسبة للصف ${grade}. لكل درس حد أقصى أربعة أهداف تعلم فقط. أعد JSON فقط بهذا الشكل: {"currentLessons":[{"title":"","objectives":["","","",""]}],"nextLessons":[{"title":"","objectives":["","","",""]}]}.
+هذا الأسبوع: ${JSON.stringify(clean(currentLessons))}
+الأسبوع القادم: ${JSON.stringify(clean(nextLessons))}`;const out=await ask(prompt,"auto");if(out?.currentLessons) setCurrentLessons(normalizeLessons(out.currentLessons));if(out?.nextLessons) setNextLessons(normalizeLessons(out.nextLessons));setMsg(out?"✅ تم تحسين الصياغة. راجعها ثم قرر النشر.":"تعذّر التحسين الآن؛ يمكنك النشر بصياغتك الحالية.");setBusy(false)};
+  const submit=async(status)=>{
+    const c=clean(currentLessons),n=clean(nextLessons);
+    if(!c.length||!n.length)return setMsg("أدخل درسًا واحدًا على الأقل لكل أسبوع.");
+    const existingBlocks=[...new Set((mineStudents||[]).filter(s=>+s.grade===+grade).map(s=>normBlock(s.block)).filter(Boolean))].sort();
+    const effectiveBlocks=(blocks.length?blocks:existingBlocks).map(normBlock).filter(Boolean);
+    if(!effectiveBlocks.length)return setMsg("لا توجد بلوكات مسجلة لهذا الصف. اختر بلوكًا أو أضف طلاب الصف أولًا.");
+    setBusy(true);setMsg("");
+    try{
+      const rec={id:uid(),teacherName,teacherEmail:normEmail(teacherEmail),grade:+grade,blocks:effectiveBlocks,weekStart,weekEnd,currentLessons:c,nextLessons:n,status,createdAt:new Date().toISOString()};
+      const r=await onSave(rec);
+      if(status==="published"){
+        const st=r?.sendStats;
+        const automatic=!blocks.length?` · تم اعتماد البلوكات الموجودة تلقائيًا: ${effectiveBlocks.join("، ")}`:"";
+        const warn=st?.failed?` ⚠️ فشل ${st.failed} إرسال. ${st.errors?.length?"راجع تفاصيل الإرسال في سجل النشرة.":""}`:"";
+        setMsg(`✅ تم نشر النشرة وحفظها.${automatic} ${st?`الطلاب: ${st.studentSent}/${st.studentTotal} · أولياء الأمور: ${st.parentSent}/${st.parentTotal}`:""}${warn}`);
+      }else setMsg("✅ تم حفظ المسودة.");
+    }catch(e){setMsg(`❌ تعذر حفظ/نشر النشرة: ${String(e?.message||e||"خطأ غير معروف")}`);}
+    finally{setBusy(false);}
+  };
+  const myNews=(newsletters||[]).filter(n=>n.teacherName===teacherName).sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
+  const side=(which,list,tone,title,icon)=><section className={`nl-editor-card ${tone}`}><img src={LION_MARK_URL} className="nl-watermark" alt="" aria-hidden="true"/><div className="nl-week-title"><h2>{title}</h2><span>{icon}</span></div>{list.map((l,i)=><div className="nl-editor-item" key={i}><input className="inp" placeholder="اسم الدرس" value={l.title} onChange={e=>updateLesson(which,i,"title",e.target.value)}/><div style={{marginTop:10,fontWeight:900,fontSize:15,color:"#17346E"}}>في نهاية الدرس سيكون الطالب قادرًا على أن:</div><div className="grid" style={{gap:8,marginTop:8}}>{[0,1,2,3].map(j=><input key={j} className="inp" placeholder={`هدف التعلم ${j+1}`} value={normalizeObjectives(l.objectives)[j]} onChange={e=>updateObjective(which,i,j,e.target.value)}/>)}</div></div>)}<button className="btn nl-editor-add" onClick={()=>addLesson(which)}>+ إضافة درس</button></section>;
+  const toggleBlock=(b)=>setBlocks(v=>v.includes(b)?v.filter(x=>x!==b):[...v,b]);
+  const removeNewsletter=async(n)=>{if(!onDelete)return;const ok=window.confirm(`هل تريد حذف نشرة الصف ${n.grade} — ${(n.blocks||[]).join("، ")}؟ ستختفي أيضًا من صفحة الطالب وولي الأمر.`);if(!ok)return;setBusy(true);await onDelete(n.id,n);setMsg("🗑️ تم حذف النشرة من المنصة ومن صفحات الطلاب وأولياء الأمور.");setBusy(false);};
+  return <div className="nl-editor-shell">
+    <div className="card" style={{padding:20}}><div className="nl-editor-actions"><div><h2>📰 إعداد النشرة الأسبوعية</h2><p style={{margin:"3px 0",fontSize:12,color:T.inkSoft}}>المعلم يكتب المحتوى، والذكاء الاصطناعي يحسّن الصياغة فقط. لا تظهر أي إعدادات للطالب أو ولي الأمر.</p></div><div style={{display:"flex",gap:8,flexWrap:"wrap"}}><button className="btn btn-o" disabled={busy} onClick={improve}>✨ تحسين بالذكاء الاصطناعي</button><button className="btn btn-p" disabled={busy} onClick={()=>submit("published")}>📢 اعتماد ونشر وإرسال</button></div></div>
+      <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(190px,1fr))",marginTop:15}}>
+        <div><label className="lbl">الصف</label><select className="inp" value={grade} onChange={e=>{setGrade(+e.target.value);setBlocks([])}}>{allGrades.map(g=><option key={g} value={g}>الصف {g}</option>)}</select></div>
+        <div className="nl-block-picker" style={{gridColumn:"span 2"}}><label className="lbl">البلوكات</label><button type="button" className="nl-block-trigger" onClick={()=>setBlockPickerOpen(v=>!v)}><span>{blocks.length?`تم اختيار ${blocks.length}: ${blocks.join("، ")}`:"اختياري: اتركه فارغًا للنشر إلى البلوكات الموجودة في الصف"}</span><span>{blockPickerOpen?"▲":"▼"}</span></button>{blockPickerOpen&&<div className="nl-block-panel"><div className="nl-block-actions"><button type="button" className="btn btn-o" onClick={()=>setBlocks(allBlocks)}>تحديد الكل</button><button type="button" className="btn btn-q" onClick={()=>setBlocks([])}>مسح الاختيار</button><button type="button" className="btn btn-p" onClick={()=>setBlockPickerOpen(false)}>تم</button></div><div className="nl-block-grid">{allBlocks.map(b=><button type="button" key={b} className={`nl-block-letter ${blocks.includes(b)?"on":""}`} onClick={()=>toggleBlock(b)}>{b}</button>)}</div></div>}</div>
+        <div><label className="lbl">من</label><input type="date" className="inp" value={weekStart} onChange={e=>setWeekStart(e.target.value)}/></div>
+        <div><label className="lbl">إلى</label><input type="date" className="inp" value={weekEnd} onChange={e=>setWeekEnd(e.target.value)}/></div>
+      </div>
+    </div>
+    <div className="nl-editor-cards">{side("current",currentLessons,"red","ماذا تعلمنا هذا الأسبوع؟","✅")}{side("next",nextLessons,"blue","ماذا سنتعلم الأسبوع القادم؟","🚀")}</div>
+    {msg&&<div className="card" style={{padding:13,background:T.greenSoft}}>{msg}</div>}
+    <div className="card" style={{padding:18}}><h3>النشرات المنشورة</h3>{myNews.length===0?<p style={{color:T.inkSoft}}>لا توجد نشرات منشورة بعد.</p>:<table className="tbl"><thead><tr><th>تاريخ النشر</th><th>الصف</th><th>البلوكات</th><th>الحالة</th><th>الإرسال</th><th>إجراء</th></tr></thead><tbody>{myNews.slice(0,20).map(n=><tr key={n.id}><td>{n.publishedAt?new Date(n.publishedAt).toLocaleString("ar-AE"):"مسودة"}</td><td>{n.grade}</td><td>{(n.blocks||[]).join("، ")}</td><td>{n.status==="published"?<Chip tone="g">منشورة</Chip>:<Chip>مسودة</Chip>}</td><td>{n.sendStats?`${n.sendStats.studentSent}/${n.sendStats.studentTotal} طلاب · ${n.sendStats.parentSent}/${n.sendStats.parentTotal} أولياء أمور`:"—"}</td><td><button className="btn btn-d" disabled={busy} onClick={()=>removeNewsletter(n)}>حذف</button></td></tr>)}</tbody></table>}</div>
+  </div>;
+}
+
+function StudentHome({ user, courses, progress, attempts, newsletters = [], onOpen, onCert }) {
   const mine = courses.filter((c) => assignedTo(c, user));
   const ph = phaseFor(user.grade);
-  const passedCourseIds = new Set(attempts.filter((a) => a.student === user.key && a.passed).map((a) => a.course));
-  const stateOf = (c) => {
-    const p = progress[pKey(user.key, c.id)] || { done: [], cycle: 1 };
-    const at = attempts.filter((a) => a.student === user.key && a.course === c.id);
-    if (at.some((a) => a.passed)) return { label: "مكتمل", tone: "g", pct: 100 };
-    if (at.filter((a) => a.cycle === (p.cycle || 1)).length >= (c.tries || ph.tries)) return { label: "إعادة تعلّم", tone: "r", pct: 60 };
-    if (p.done.length) return { label: "قيد التعلّم", tone: "a", pct: Math.round((p.done.length / c.stages.length) * 90) };
-    return { label: "لم يبدأ", tone: "n", pct: 0 };
-  };
-  const lockOf = (c) => {
-    if (!c.prereqId) return null;
-    if (passedCourseIds.has(c.prereqId)) return null;
-    const prereq = courses.find((x) => x.id === c.prereqId);
-    return prereq ? prereq.title : "كورس سابق";
-  };
-  return (
-    <div className="wrap" style={{ paddingBottom: 60 }}>
-      <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", marginBottom: 22 }}>
-        <Stat label="الكورسات المسندة إليك" value={mine.length} />
-        <Stat label="أتقنتها" value={mine.filter((c) => stateOf(c).label === "مكتمل").length} tone={T.green} />
-        <Stat label="طورك" value={ph.name} note={`النجاح ${ph.pass}% — ${ph.tries} محاولات`} />
-      </div>
-      <h2 style={{ marginBottom: 12 }}>كورساتي</h2>
-      {mine.length === 0 ? <div className="card" style={{ padding: 28, textAlign: "center", color: T.inkSoft }}>لا كورسات مسندة إلى الصف {user.grade} — {user.block}.</div> : (
-        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))" }}>
-          {mine.map((c) => { const st = stateOf(c); const lock = lockOf(c);
-            const overdue = c.dueDate && !passedCourseIds.has(c.id) && new Date(c.dueDate) < new Date();
-            return (
-            <button key={c.id} onClick={() => !lock && onOpen(c.id)} disabled={!!lock} className="card ruled"
-              style={{ padding: 18, textAlign: "right", cursor: lock ? "not-allowed" : "pointer", fontFamily: "inherit", borderRight: `4px solid ${lock ? T.rule : T.green}`, opacity: lock ? .6 : 1 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}><h3>{c.title}</h3>{lock ? <Chip>مقفل</Chip> : <Chip tone={st.tone}>{st.label}</Chip>}</div>
-              <div style={{ fontSize: 13, color: T.inkSoft, margin: "6px 0 10px" }}>{DOMAINS[c.domain]} · {c.stages.length} وحدات · {c.q || ph.q} سؤالًا</div>
-              {lock && <div style={{ fontSize: 12, color: T.brick, marginBottom: 10 }}>يتطلب إتمام «{lock}» أولًا</div>}
-              {!lock && (c.publishedAt || c.dueDate) && <div style={{ fontSize: 11, color: overdue ? T.brick : T.inkSoft, marginBottom: 10 }}>
-                {c.publishedAt && <span>نُشر: {dateAr(c.publishedAt)}</span>}
-                {c.dueDate && <span>{c.publishedAt ? " · " : ""}الموعد النهائي: {dateAr(c.dueDate)}{overdue ? " (تجاوزته)" : ""}</span>}
-              </div>}
-              {!lock && <Bar pct={st.pct} tone={st.tone === "r" ? T.brick : st.tone === "a" ? T.gold : T.green} />}
-            </button>); })}
-        </div>)}
+  const publishedNews = newsletters.filter(n => n.status === "published" && +n.grade === +user.grade && (n.blocks || []).map(normBlock).includes(normBlock(user.block))).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
+  const [newsId,setNewsId]=useState(publishedNews[0]?.id||null);
+  const [page,setPage]=useState("home");
+  const activeNews = publishedNews.find(n=>n.id===newsId) || publishedNews[0] || null;
+  const mineAttempts=(attempts||[]).filter(a=>a.student===user.key).sort((a,b)=>(b.at||b.createdAt||"").localeCompare(a.at||a.createdAt||""));
+  const passedAttempts=mineAttempts.filter(a=>a.passed);
+  const passedCourseIds = new Set(passedAttempts.map((a) => a.course));
+  const avg=mineAttempts.length?Math.round(mineAttempts.reduce((s,a)=>s+(+a.pct||0),0)/mineAttempts.length):0;
+  const stateOf = (c) => { const p = progress[pKey(user.key, c.id)] || { done: [], cycle: 1 }; const at = mineAttempts.filter((a) => a.course === c.id); if (at.some((a) => a.passed)) return { label: "مكتمل", tone: "g", pct: 100 }; if (at.filter((a) => a.cycle === (p.cycle || 1)).length >= (c.tries || ph.tries)) return { label: "إعادة تعلّم", tone: "r", pct: 60 }; if (p.done.length) return { label: "قيد التعلّم", tone: "a", pct: Math.round((p.done.length / Math.max(1,c.stages.length)) * 90) }; return { label: "جديد", tone: "n", pct: 0 }; };
+  const lockOf = (c) => { if (!c.prereqId || passedCourseIds.has(c.prereqId)) return null; const prereq = courses.find((x) => x.id === c.prereqId); return prereq ? prereq.title : "كورس سابق"; };
+  const bestOf=(c)=>{const at=mineAttempts.filter(a=>a.course===c.id);return at.length?Math.max(...at.map(a=>+a.pct||0)):0};
+  const trend=mineAttempts.slice(0,6).reverse().map(a=>+a.pct||0); while(trend.length<6) trend.unshift(0);
+  const points=trend.map((v,i)=>`${i*18+5},${100-(v*.75+12)}`).join(" ");
+  const colors=["green","blue","purple","red"];
+  const completed=mine.filter(c=>stateOf(c).label==="مكتمل").length;
+  const bestScore=mineAttempts.length?Math.max(...mineAttempts.map(a=>+a.pct||0)):0;
+
+  const CourseCards=()=>mine.length===0?<div className="card" style={{padding:28,textAlign:"center",color:T.inkSoft}}>لا توجد كورسات مسندة إليك حاليًا.</div>:<div className="stu-course-grid">{mine.map((c,idx)=>{const st=stateOf(c),lock=lockOf(c),best=bestOf(c),at=mineAttempts.filter(a=>a.course===c.id);const passed=at.find(a=>a.passed);const color=colors[idx%colors.length];return <div className={`stu-course ${color}`} key={c.id}><div className="stu-course-top"><div style={{position:"relative",zIndex:2}}><div style={{fontSize:11,opacity:.9}}>{DOMAINS[c.domain]} · الصف {c.grade}</div><h3 style={{color:"#fff",fontSize:22,marginTop:8}}>{c.title}</h3><div style={{marginTop:8}}><Chip tone={st.tone}>{lock?"مقفل":st.label}</Chip></div></div></div><div className="stu-course-body"><div className="stu-ring" style={{"--pct":st.pct,"--ring":color==="green"?"#16816d":color==="blue"?"#2154c7":color==="purple"?"#7650ba":"#d62d49"}}><b>{st.pct}%</b></div><div className="stu-course-meta"><div>أفضل نتيجة<b>{best||"—"}{best?"%":""}</b></div><div>المحاولات<b>{at.length}/{c.tries||ph.tries}</b></div></div>{lock&&<div style={{fontSize:11,color:T.brick,textAlign:"center"}}>أكمل «{lock}» أولًا</div>}{passed?<button className="stu-course-btn" onClick={()=>onCert&&onCert(passed.id)}>🏆 عرض الشهادة</button>:<button className="stu-course-btn" disabled={!!lock} onClick={()=>!lock&&onOpen(c.id)}>{st.label==="جديد"?"ابدأ الآن":"متابعة الكورس"} ←</button>}</div></div>})}</div>;
+
+  const Back=()=> <button className="stu-page-back" onClick={()=>setPage("home")}>← رجوع للصفحة الرئيسية</button>;
+
+  return <div className="stu-shell">
+    <div className="stu-nav">
+      <button className={page==="courses"?"on":""} onClick={()=>setPage("courses")}>🧠 كورساتي</button>
+      <button className={page==="newsletter"?"on":""} onClick={()=>setPage("newsletter")}>📰 النشرة الأسبوعية</button>
+      <button className={page==="journey"?"on":""} onClick={()=>setPage("journey")}>🏅 إنجازاتي ورحلتي التعليمية</button>
+      <button className={page==="certificates"?"on":""} onClick={()=>setPage("certificates")}>📜 الشهادات</button>
     </div>
-  );
+
+    <div className="wrap">
+      {page==="home" && <>
+        <div className="stu-kpis">
+          <div className="stu-kpi" onClick={()=>setPage("courses")}><div className="stu-kpi-label">الكورسات المسندة إليك</div><div className="stu-kpi-value">{mine.length}</div><div className="stu-kpi-note">اضغط لفتح كورساتي</div></div>
+          <div className="stu-kpi" onClick={()=>setPage("journey")}><div className="stu-kpi-label">المكتمل</div><div className="stu-kpi-value">{completed}</div><div className="stu-kpi-note">اضغط لفتح إنجازاتي</div></div>
+          <div className="stu-kpi" onClick={()=>setPage("journey")}><div className="stu-kpi-label">متوسط أدائك</div><div className="stu-kpi-value">{avg}%</div><div className="stu-kpi-note">اضغط لمشاهدة رحلتي</div></div>
+          <div className="stu-kpi" onClick={()=>setPage("certificates")}><div className="stu-kpi-label">شهاداتك</div><div className="stu-kpi-value">{passedAttempts.length}</div><div className="stu-kpi-note">اضغط لفتح الشهادات</div></div>
+        </div>
+
+        <div className="stu-section-head"><div><h2>🧠 كورساتي</h2><p>أهم ما تحتاج إليه الآن — تابع كورساتك من هنا.</p></div><button className="btn btn-o" onClick={()=>setPage("courses")}>عرض جميع الكورسات</button></div>
+        <CourseCards/>
+      </>}
+
+      {page==="courses" && <section>
+        <div className="stu-page-head"><div><h1>🧠 كورساتي</h1><p style={{margin:0,color:T.inkSoft}}>تابع تقدمك في الكورسات المهارية المسندة إليك.</p></div><Back/></div>
+        <CourseCards/>
+      </section>}
+
+      {page==="newsletter" && <section>
+        <div className="stu-page-head"><div><h1>📰 النشرة الأسبوعية</h1><p style={{margin:0,color:T.inkSoft}}>ما تعلمناه هذا الأسبوع وما سنبدأه في الأسبوع القادم.</p></div><Back/></div>
+        {publishedNews.length>1&&<div style={{marginBottom:12}}><span className="chip">{publishedNews.length} نشرات محفوظة</span></div>}
+        <NewsletterViewer newsletter={activeNews} archive={publishedNews} onSelect={setNewsId}/>
+      </section>}
+
+      {page==="journey" && <section>
+        <div className="stu-page-head"><div><h1>🏅 إنجازاتي ورحلتي التعليمية</h1><p style={{margin:0,color:T.inkSoft}}>إنجازاتك الحقيقية واتجاه تقدمك في مكان واحد.</p></div><Back/></div>
+        <div className="stu-achievements">
+          <div className="stu-ach"><span>🏆</span><b>{passedAttempts.length} شهادة</b><small>شهادات إتمام مستحقة</small></div>
+          <div className="stu-ach"><span>⭐</span><b>{bestScore}% أفضل نتيجة</b><small>أعلى نتيجة حققتها</small></div>
+          <div className="stu-ach"><span>🔥</span><b>{completed} كورس مكتمل</b><small>استمر في التقدم</small></div>
+        </div>
+        <div className="stu-lower">
+          <section className="stu-panel"><div className="stu-section-head" style={{marginTop:0}}><div><h2 style={{fontSize:22}}>📈 رحلتي التعليمية</h2><p>اتجاه نتائج آخر محاولاتك.</p></div></div><svg viewBox="0 0 100 100" style={{width:"100%",height:210,overflow:"visible"}}><line x1="5" y1="88" x2="95" y2="88" stroke="#dfe5ee"/><polyline points={points} fill="none" stroke="#2454c6" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>{trend.map((v,i)=><g key={i}><circle cx={i*18+5} cy={100-(v*.75+12)} r="2.7" fill="#2454c6"/><text x={i*18+5} y={100-(v*.75+17)} fontSize="5" textAnchor="middle" fill="#51617e">{v}%</text></g>)}</svg></section>
+          <section className="stu-panel"><div className="stu-section-head" style={{marginTop:0}}><div><h2 style={{fontSize:22}}>🕘 آخر النشاطات</h2><p>آخر ما أنجزته في المنصة.</p></div></div><div className="stu-activity">{mineAttempts.slice(0,8).map((a,i)=>{const c=courses.find(x=>x.id===a.course);return <div className="stu-act" key={a.id||i}><span>{a.passed?"🏆 أكملت":"📝 محاولة في"} {c?.title||"كورس"}</span><b>{a.pct||0}%</b></div>})}{mineAttempts.length===0&&<div style={{color:T.inkSoft,fontSize:12}}>لم تسجل محاولات بعد.</div>}</div></section>
+        </div>
+      </section>}
+
+      {page==="certificates" && <section>
+        <div className="stu-page-head"><div><h1>📜 الشهادات</h1><p style={{margin:0,color:T.inkSoft}}>افتح شهادات إتمام الكورسات مباشرة.</p></div><Back/></div>
+        {passedAttempts.length===0?<div className="card" style={{padding:22,color:T.inkSoft}}>لا توجد شهادات حتى الآن.</div>:<div className="stu-achievements">{passedAttempts.map(a=>{const c=courses.find(x=>x.id===a.course);return <button key={a.id} className="stu-ach" style={{textAlign:"right",cursor:"pointer",fontFamily:"inherit"}} onClick={()=>onCert&&onCert(a.id)}><span>📜</span><b>{c?.title||"شهادة إتمام"}</b><small>{a.pct}% · اضغط لفتح الشهادة</small></button>})}</div>}
+      </section>}
+
+      <footer className="adm-footer" style={{marginTop:32,borderRadius:18}}><div style={{position:"relative",zIndex:1,fontSize:11}}>منصة بالعربي أحلى — رحلة تعلم مستمرة</div><div className="adm-footer-main"><div className="adm-footer-tag">نزدهر • ننجح • ننمو</div><div style={{opacity:.72}}>GEMS Founders School Dubai — Inspiring Minds, Empowering Futures</div></div><div style={{position:"relative",zIndex:1,fontSize:11}}>قسم اللغة العربية</div></footer>
+    </div>
+  </div>;
 }
+
 function CourseView({ user, course, progress, attempts, onProgress, onStartExam, onCert }) {
   const key = pKey(user.key, course.id);
   const p = progress[key] || { done: [], cycle: 1 };
@@ -3522,20 +3863,6 @@ function Result({ attempt, course, onBack, onCert, onRetry, canRetry }) {
   );
 }
 function Certificate({ attempt, course, user, onBack }) {
-  const [email, setEmail] = useState(user.email || "");
-  const [sent, setSent] = useState(false);
-  const sendMail = () => {
-    if (!email.trim()) return;
-    const subject = `شهادة إتقان — ${course.title}`;
-    const body = [
-      `تهانينا ${user.name}،`, "",
-      `أتقنت مهارة «${course.title}» بدرجة ${attempt.pct}% بتاريخ ${dateAr(attempt.at)}.`,
-      `رقم الشهادة: ${attempt.serial}`, `رمز التحقق: ${attempt.token}`, "",
-      "لعرض شهادتك الكاملة أو طباعتها، عُد إلى منصة GFS بالعربي أحلى وافتح صفحة هذا الكورس.",
-    ].join("\n");
-    window.location.href = `mailto:${encodeURIComponent(email.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    setSent(true);
-  };
   return (
     <div className="wrap" style={{ paddingBottom: 60, maxWidth: 720 }}>
       <div className="card" style={{ padding: 40, textAlign: "center", border: `2px solid ${T.gold}`, background: "#FFFDF8" }}>
@@ -3551,14 +3878,9 @@ function Certificate({ attempt, course, user, onBack }) {
         <div style={{ borderTop: `1px solid ${T.rule}`, paddingTop: 16, fontSize: 12, color: T.inkSoft }}>
           <div>رقم الشهادة <span className="mono">{attempt.serial}</span></div><div>رمز التحقق <span className="mono">{attempt.token}</span></div></div>
       </div>
-      <div className="card noprint" style={{ padding: 16, marginTop: 16, background: T.paper }}>
-        <h4 style={{ marginBottom: 8 }}>أرسل الشهادة إلى بريدك</h4>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <input className="inp" type="email" style={{ flex: 1, minWidth: 200 }} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="بريدك الإلكتروني" />
-          <button className="btn btn-o" onClick={sendMail}>افتح بريدي وأرسل</button>
-        </div>
-        {sent && <div style={{ color: T.green, fontSize: 13, marginTop: 8 }}>فُتح تطبيق بريدك برسالة جاهزة — اضغط "إرسال" هناك لإكمال العملية.</div>}
-        <p style={{ fontSize: 12, color: T.inkSoft, marginTop: 8, marginBottom: 0 }}>هذا يفتح تطبيق البريد لديك برسالة معبَّأة مسبقًا؛ لا يوجد إرسال آلي من خادم خارجي في هذا الإصدار.</p>
+      <div className="card noprint" style={{ padding: 16, marginTop: 16, background: T.greenSoft, borderColor: T.green }}>
+        <h4 style={{ marginBottom: 6 }}>✅ تم إصدار الشهادة</h4>
+        <p style={{ fontSize: 13, color: T.inkSoft, margin: 0 }}>ترسل المنصة الشهادة تلقائيًا إلى بريد الطالب وبريد ولي الأمر المسجلين فور اجتياز الكورس، دون تدخل من المعلم.</p>
       </div>
       <div className="noprint" style={{ display: "flex", gap: 8, marginTop: 16 }}>
         <button className="btn btn-g" onClick={() => window.print()}>اطبع أو احفظ PDF</button><button className="btn btn-q" onClick={onBack}>عودة</button></div>
@@ -4288,8 +4610,12 @@ function buildReport(student, courses, progress, attempts) {
     const passed = at.find((a) => a.passed);
     const started = p.done.length > 0;
     const skillMap = skillMastery(at);
-    return { title: c.title, assigned, started, completed: !!passed, pct: p.done.length / c.stages.length * 100,
-      bestScore: at.length ? Math.max(...at.map((a) => a.pct)) : null, attempts: at.length,
+    const latest = [...at].sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0))[0] || null;
+    const latestPassed = [...at].filter((a) => a.passed).sort((a, b) => new Date(b.at || 0) - new Date(a.at || 0))[0] || null;
+    return { id: c.id, title: c.title, teacher: c.teacher || "", assigned, started, completed: !!passed, pct: c.stages?.length ? p.done.length / c.stages.length * 100 : 0,
+      bestScore: at.length ? Math.max(...at.map((a) => a.pct)) : null, attempts: at.length, lastAt: latest?.at || null,
+      history: [...at].sort((a, b) => new Date(a.at || 0) - new Date(b.at || 0)).map((a) => ({ at: a.at, pct: a.pct, passed: !!a.passed })),
+      certificateToken: latestPassed?.token || null, certificateSerial: latestPassed?.serial || null,
       weak: skillMap.filter(([, r]) => r < .6).map(([k]) => k),
       strong: skillMap.filter(([, r]) => r >= .8).map(([k]) => k) };
   }).filter((r) => r.assigned);
@@ -4302,8 +4628,17 @@ function skillMastery(at) {
 }
 function SendReportModal({ student, courses, progress, attempts, onSend, onClose }) {
   const rows = buildReport(student, courses, progress, attempts);
-  const [phone, setPhone] = useState(""); const [email, setEmail] = useState(""); const [consent, setConsent] = useState(false);
+  const [email, setEmail] = useState(student.parentEmail || "");
   const [done, setDone] = useState(null);
+  const [err, setErr] = useState("");
+  const send = () => {
+    const to = normEmail(email);
+    if (!to) return setErr("بريد ولي الأمر غير مسجل. أضفه أولًا إلى بيانات الطالب.");
+    setErr("");
+    const token = "PR-" + uid().toUpperCase();
+    onSend(token, { email: to, rows });
+    setDone(token);
+  };
   return (
     <div className="card" style={{ padding: 20, marginTop: 10, background: T.paper }}>
       <h4>تقرير {student.name}</h4>
@@ -4312,28 +4647,16 @@ function SendReportModal({ student, courses, progress, attempts, onSend, onClose
           <td className="mono">{r.bestScore === null ? "—" : r.bestScore + "%"}</td><td>{r.attempts}</td>
           <td style={{ fontSize: 12, color: T.green }}>{r.strong.join("، ") || "—"}</td>
           <td style={{ fontSize: 12, color: T.brick }}>{r.weak.join("، ") || "لا يوجد"}</td></tr>))}</tbody></table>
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", marginTop: 14 }}>
-        <div><label className="lbl">بريد ولي الأمر المسجَّل رسميًا</label><input className="inp" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="parent@example.com" /></div>
-        <div><label className="lbl">هاتف ولي الأمر المسجَّل (لإرسال يدوي لاحقًا)</label><input className="inp" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+9715XXXXXXXX" /></div>
+      <div style={{ marginTop: 14 }}>
+        <label className="lbl">بريد ولي الأمر</label>
+        <input className="inp" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="parent@example.com" />
       </div>
-      <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, fontSize: 13 }}>
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        أؤكد أن هذا هو رقم/بريد ولي الأمر المسجَّل والمصرَّح به في نظام المدرسة.</label>
-      <div className="card" style={{ padding: 10, background: T.goldSoft, borderColor: T.gold, marginTop: 10, fontSize: 12 }}>
-        الإرسال الفعلي عبر SMS أو WhatsApp Business API يتطلب اعتمادًا مؤسسيًا خارج هذا التطبيق. هذا الزر ينشئ رابط تقرير آمنًا ويسجّل طلب الإرسال؛ أرسِله يدويًا حتى اعتماد القناة الرسمية.
-      </div>
-      {!done ? (
-        <button className="btn btn-p" style={{ marginTop: 12 }} disabled={!consent || (!email && !phone)}
-          onClick={() => { const token = "PR-" + uid().toUpperCase(); onSend(token, { email, phone, rows }); setDone(token); }}>
-          أنشئ رابط التقرير الآمن
-        </button>
-      ) : (
-        <div className="card" style={{ padding: 14, marginTop: 12, background: T.greenSoft, borderColor: T.green }}>
-          <div style={{ fontWeight: 700, marginBottom: 6 }}>رمز التقرير جاهز:</div>
-          <div className="mono" style={{ fontSize: 15 }}>{done}</div>
-          <button className="btn btn-o" style={{ marginTop: 8 }} onClick={() => navigator.clipboard && navigator.clipboard.writeText(done)}>نسخ الرمز</button>
-        </div>
-      )}
+      {!done ? <button className="btn btn-p" style={{ marginTop: 12 }} onClick={send}>أرسل رابط التقرير إلى ولي الأمر</button>
+        : <div className="card" style={{ padding: 14, marginTop: 12, background: T.greenSoft, borderColor: T.green }}>
+            <div style={{ fontWeight: 700 }}>✅ تم إنشاء رابط التقرير وإرساله إلى بريد ولي الأمر.</div>
+            <div className="mono" style={{ fontSize: 12, marginTop: 5 }}>{done}</div>
+          </div>}
+      {err && <div style={{ color: T.brick, marginTop: 8, fontSize: 13 }}>{err}</div>}
       <button className="btn btn-q" style={{ marginTop: 10 }} onClick={onClose}>إغلاق</button>
     </div>
   );
@@ -4575,7 +4898,7 @@ function TeacherDashboard({ students, courses, attempts, progress, onNavigate })
 
 
 /* ==================== لوحة المعلم الكاملة ==================== */
-function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
+function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, newsletters = [], onSaveNewsletter, onDeleteNewsletter, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
   const [tab, setTab] = useState("d");
   const [aiProvider, setAiProvider] = useState("claude");
   const [aiBusy, setAiBusy] = useState(null);
@@ -4624,12 +4947,17 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
 
   return (
     <div className="wrap" style={{ paddingBottom: 60 }}>
-      <div className="tabs">
-        {[["d", "🏠 لوحتي"], ["s", "👨‍🎓 طلابي"], ["c", "📚 كورساتي"], ["res", "📊 النتائج"], ["ai", "🤖 المساعد الذكي"]].map(([k, l]) => (
-          <button key={k} className="tabbtn" onClick={() => setTab(k)} style={{ background: tab === k ? T.ink : T.paper, color: tab === k ? "#fff" : T.inkSoft }}>{l}</button>))}
+      <div className="teacher-nav-spacer" aria-hidden="true"></div>
+      <div className="teacher-nav-full">
+        <div className="teacher-nav-inner">
+          {[["d", "🏠 لوحتي"], ["s", "👨‍🎓 طلابي"], ["c", "📚 كورساتي"], ["nl", "📰 النشرة الأسبوعية"], ["res", "📊 النتائج"], ["ai", "🤖 المساعد الذكي"]].map(([k, l]) => (
+            <button key={k} className={`tabbtn ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{l}</button>))}
+        </div>
       </div>
 
       {tab === "d" && <TeacherDashboard students={students2} courses={mine} attempts={attempts2} progress={progress} onNavigate={setTab} />}
+
+      {tab === "nl" && <NewsletterEditor teacherName={teacherName} teacherEmail={teacherEmail} students={students2} newsletters={newsletters} onSave={onSaveNewsletter} onDelete={onDeleteNewsletter} />}
 
       {tab === "s" && (<div className="card" style={{ padding: 20, overflowX: "auto" }}>
         <h3 style={{ marginBottom: 12 }}>تحليل الطلاب وتقارير أولياء الأمور</h3>
@@ -4882,6 +5210,68 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
   );
 }
 
+/* ==================== محرر الكورس بالذكاء الاصطناعي لرئيس القسم ==================== */
+function AIEditCourse({ course, onSave, onCancel }) {
+  const [instruction, setInstruction] = useState("حسّن الشرح والأسئلة مع الحفاظ على مستوى الصف وعدم تكرار أي سؤال.");
+  const [provider, setProvider] = useState("auto");
+  const [busy, setBusy] = useState(false);
+  const [note, setNote] = useState("");
+  const [candidate, setCandidate] = useState(null);
+  const before = courseQuality(course);
+  const improve = async () => {
+    if (!instruction.trim()) return;
+    setBusy(true); setNote("جارٍ تحليل الكورس وإعداد نسخة محسّنة…"); setCandidate(null);
+    try {
+      const compact = { title: course.title, objective: course.objective, domain: course.domain, grade: course.grade, stages: course.stages || [], bank: course.bank || [] };
+      const prompt = `أنت خبير مناهج لغة عربية. عدّل الكورس التالي وفق التعليمات، وأعد JSON فقط بلا نص خارجه.
+تعليمات رئيس القسم: ${instruction}
+شروط إلزامية:
+1) حافظ على بنية stages وbank وعلى أنواع الأسئلة mcq/tf/fill/err/match.
+2) لا تكرر نص أي سؤال مرتين، ولا تكرر سؤالًا موجودًا داخل الشرح أو checks في بنك الاختبار.
+3) اجعل الأسئلة مناسبة للصف ${course.grade} ومتنوعة ومتدرجة.
+4) لا تغيّر هوية الكورس أو الصف أو المعلم أو حالة النشر.
+5) أعد: {"title":"","objective":"","stages":[],"bank":[]}
+الكورس الحالي: ${JSON.stringify(compact)}`;
+      const raw = await ask(prompt, provider);
+      if (!raw || !Array.isArray(raw.stages) || !Array.isArray(raw.bank)) throw new Error("صيغة غير صالحة");
+      const merged = { ...course, title: String(raw.title || course.title), objective: String(raw.objective || course.objective),
+        stages: raw.stages, bank: dedupeBank(raw.bank), id: course.id, teacher: course.teacher, grade: course.grade,
+        domain: course.domain, status: course.status, blocks: course.blocks, students: course.students };
+      merged.bank = cleanBank(merged);
+      if (merged.bank.length < 8) throw new Error("عدد الأسئلة الصالحة بعد منع التكرار أقل من الحد الآمن.");
+      setCandidate(merged);
+      const q = courseQuality(merged);
+      setNote(`تم إعداد النسخة المقترحة: جودة ${q.score}/100 · ${q.cleanCount} سؤالًا صالحًا · ${q.duplicateCount} تكرار.`);
+    } catch (e) { setNote(`تعذّر إنشاء نسخة آمنة: ${String(e?.message || e)}. لم يتغير الكورس الأصلي.`); }
+    finally { setBusy(false); }
+  };
+  const after = candidate ? courseQuality(candidate) : null;
+  return <div className="wrap" style={{paddingBottom:60,maxWidth:950}}><div className="card" style={{padding:22}}>
+    <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}>
+      <div><h2>🤖 تحسين الكورس بالذكاء الاصطناعي</h2><p style={{fontSize:12,color:T.inkSoft,margin:"4px 0"}}>{course.title} · الصف {course.grade} · يبقى رقم الكورس {course.id} كما هو لحماية النتائج والشهادات.</p></div>
+      <button className="btn btn-q" onClick={onCancel}>عودة</button>
+    </div>
+    <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))",margin:"16px 0"}}>
+      <Stat label="الجودة الحالية" value={`${before.score}/100`} tone={before.score>=80?T.green:before.score>=60?T.gold:T.brick}/>
+      <Stat label="الأسئلة الصالحة" value={before.cleanCount}/><Stat label="التكرارات" value={before.duplicateCount} tone={before.duplicateCount?T.brick:T.green}/><Stat label="الوحدات" value={before.stageCount}/>
+    </div>
+    <label className="lbl">ماذا تريد من الذكاء الاصطناعي أن يغيّر؟</label>
+    <textarea className="tarea" rows={4} value={instruction} onChange={e=>setInstruction(e.target.value)}/>
+    <div className="grid" style={{gridTemplateColumns:"minmax(180px,1fr) auto",marginTop:10}}>
+      <select className="inp" value={provider} onChange={e=>setProvider(e.target.value)}><option value="auto">تلقائي — Gemini أولًا</option>{Object.entries(PROVIDERS).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}</select>
+      <button className="btn btn-p" disabled={busy} onClick={improve}>{busy?"جارٍ التحليل…":"إنشاء نسخة محسّنة"}</button>
+    </div>
+    {note&&<p style={{fontSize:12,color:note.startsWith("تعذّر")?T.brick:T.green,marginTop:10}}>{note}</p>}
+    {candidate&&<div style={{marginTop:18}}><h3 style={{marginBottom:10}}>مقارنة قبل الاعتماد</h3>
+      <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))"}}>
+        <div className="card" style={{padding:14,background:T.paper}}><strong>قبل</strong><p>{course.objective}</p><div style={{fontSize:12,color:T.inkSoft}}>جودة {before.score}/100 · {before.cleanCount} سؤالًا</div></div>
+        <div className="card" style={{padding:14,background:T.greenSoft}}><strong>بعد</strong><p>{candidate.objective}</p><div style={{fontSize:12,color:T.inkSoft}}>جودة {after.score}/100 · {after.cleanCount} سؤالًا · تكرار {after.duplicateCount}</div></div>
+      </div>
+      <div style={{display:"flex",gap:8,marginTop:14,flexWrap:"wrap"}}><button className="btn btn-p" onClick={()=>onSave(candidate)}>اعتماد التعديل وحفظه</button><button className="btn btn-q" onClick={()=>setCandidate(null)}>رفض النسخة</button></div>
+    </div>}
+  </div></div>;
+}
+
 /* ==================== وحدة الإدارة / رئيس القسم ==================== */
 // نموذج خطة تدخل حقيقي — سجلّ كامل يُحفَظ فعليًّا (لا نافذة تأكيد شكلية):
 // المشكلة، الإجراء، المسؤول، تاريخ المراجعة. حقل "الإجراء" يشمل خيارات
@@ -4934,8 +5324,8 @@ function InterventionModal({ target, courses, actor, onClose, onSave }) {
   );
 }
 
-function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmin, audit, codes, onUpdateCodes, orgEmail, onUpdateOrgEmail, onSetTeacherEmail, onToggleTeacher, onAddBlock, onRemoveBlock,
-  onPublishAny, onPublishWithDetails, onArchiveAny, onDeleteCourse, onExportStudents, onExportAudit, onImportStudents,
+function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmin, blockGroups, audit, codes, onUpdateCodes, orgEmail, onUpdateOrgEmail, onSetTeacherEmail, onToggleTeacher, onAddTeacher, onDeleteTeacher, onSetTeacherCode, onAddBlock, onRemoveBlock, onSaveBlockGroup, onDeleteBlockGroup,
+  onGenerateCourse, onAIEditCourse, onPublishAny, onPublishWithDetails, onArchiveAny, onDeleteCourse, onExportStudents, onExportAudit, onImportStudents,
   interventions, onAddIntervention, onUpdateIntervention, onReopenAttempt, currentActor }) {
   const [adminPublishOpen, setAdminPublishOpen] = useState(null);
   const [analysisGrade, setAnalysisGrade] = useState("all");
@@ -4944,7 +5334,13 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
   const [selectedStudentKey, setSelectedStudentKey] = useState(null);
   const [newOrgEmail, setNewOrgEmail] = useState(orgEmail || ""); const [orgEmailMsg, setOrgEmailMsg] = useState("");
   const [editEmailFor, setEditEmailFor] = useState(null); const [teacherEmailDraft, setTeacherEmailDraft] = useState("");
+  const [teacherForm, setTeacherForm] = useState({ name: "", email: "", code: "" });
+  const [teacherCodeFor, setTeacherCodeFor] = useState(null); const [teacherCodeDraft, setTeacherCodeDraft] = useState("");
+  const [openGradeBlocks, setOpenGradeBlocks] = useState(null);
+  const [groupDraft, setGroupDraft] = useState({ grade: 7, name: "", blocks: [] });
+  const [simGrade, setSimGrade] = useState(7); const [simThreshold, setSimThreshold] = useState(70); const [simCourseId, setSimCourseId] = useState("");
   const [tab, setTab] = useState("dash");
+  const [navGroup, setNavGroup] = useState("lead");
   const [riskFilter, setRiskFilter] = useState("all");
   const [interventionFor, setInterventionFor] = useState(null); // { studentKey, studentName }
   const [noteDraft, setNoteDraft] = useState({});
@@ -4981,12 +5377,51 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
     return { c: "أخضر", tone: T.green, bg: T.greenSoft };
   };
 
+  const ADMIN_GROUPS = [
+    { k: "lead", icon: "🏠", label: "القيادة", first: "dash", items: [["dash","لوحة القيادة"],["reports","التقارير التنفيذية"],["cmp","المقارنات"],["o","نظرة عامة"]] },
+    { k: "students", icon: "👥", label: "الطلاب", first: "students2", items: [["students2","جميع الطلاب"],["risk","الطلاب المتعثرون"],["classes","الصفوف والبلوكات"],["an","تحليل طالب أو صف"],["io","استيراد وتصدير"]] },
+    { k: "teachers", icon: "👨‍🏫", label: "المعلمون", first: "teachperf", items: [["teachperf","أداء المعلمين"],["u","إدارة المعلمين والصلاحيات"],["classes","الصفوف المسندة"]] },
+    { k: "learning", icon: "📚", label: "الكورسات والمهارات", first: "skills", items: [["skills","تحليل الكورسات والمهارات"],["c","جميع الكورسات"],["b","الصفوف والبلوكات"]] },
+    { k: "intervention", icon: "🎯", label: "التدخلات والتحصيل", first: "plans", items: [["plans","الخطط والتدخلات"],["cmp","التقدم والمقارنات"],["reports","تقارير الأثر"],["risk","أولويات التدخل"]] },
+    { k: "admin", icon: "⚙️", label: "الإدارة والأمان", first: "u", items: [["u","المستخدمون والصلاحيات"],["b","الصفوف والبلوكات"],["log","سجل النشاط"],["io","البيانات والاستيراد"],["sec","الأمان"]] },
+  ];
+  const activeGroup = ADMIN_GROUPS.find((g) => g.k === navGroup) || ADMIN_GROUPS[0];
+  const goGroup = (g) => { setNavGroup(g.k); setTab(g.first); };
+
   return (
-    <div className="wrap" style={{ paddingBottom: 60 }}>
-      <div className="tabs">
-        {[["dash", "لوحة القيادة"], ["risk", "الطلاب المتعثرون"], ["classes", "متابعة الصفوف"], ["students2", "متابعة الطلاب"], ["skills", "الكورسات والمهارات"], ["teachperf", "أداء المعلمين"], ["plans", "الخطط والتدخلات"], ["reports", "التقارير"], ["o", "نظرة عامة"], ["cmp", "مقارنات"], ["an", "تحليل صف أو طالب"], ["u", "المستخدمون والصلاحيات"], ["b", "الصفوف والبلوكات"], ["c", "جميع الكورسات"], ["log", "سجل النشاط"], ["io", "استيراد وتصدير"], ["sec", "الأمان"]].map(([k, l]) => (
-          <button key={k} className="tabbtn" onClick={() => setTab(k)} style={{ background: tab === k ? T.ink : T.paper, color: tab === k ? "#fff" : T.inkSoft }}>{l}</button>))}
-      </div>
+    <div className="adm-shell">
+      <section className="adm-hero">
+        <img src={LOGO_URL} alt="" aria-hidden="true" className="adm-lion" />
+        <div className="adm-hero-row">
+          <div className="adm-brand">
+            <div className="logo-chip lg"><img src={LOGO_URL} alt="GEMS Founders School Dubai" /></div>
+            <div>
+              <div className="adm-hero-title">لوحة قيادة رئيس قسم اللغة العربية</div>
+              <div className="adm-hero-sub">رؤية شاملة لأداء القسم • قرارات مبنية على البيانات • متابعة فورية</div>
+            </div>
+          </div>
+          <div className="adm-actor">
+            <div className="adm-avatar">{(currentActor || "ر")[0]}</div>
+            <div>
+              <div style={{fontWeight:800,fontSize:13}}>{currentActor || "رئيس القسم"}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.65)"}}>رئيس قسم اللغة العربية</div>
+            </div>
+          </div>
+        </div>
+        <nav className="adm-mainnav" aria-label="مراكز إدارة القسم">
+          {ADMIN_GROUPS.map((g) => (
+            <button key={g.k} className={`adm-mainbtn ${navGroup===g.k?"on":""}`} onClick={() => goGroup(g)}>
+              <span style={{marginLeft:6}}>{g.icon}</span>{g.label}
+            </button>
+          ))}
+        </nav>
+      </section>
+      <nav className="adm-subnav" aria-label={`خيارات ${activeGroup.label}`}>
+        {activeGroup.items.map(([k,l]) => (
+          <button key={`${activeGroup.k}-${k}`} className={`adm-subbtn ${tab===k?"on":""}`} onClick={() => setTab(k)}>{l}</button>
+        ))}
+      </nav>
+      <div className="adm-content">
 
       {tab === "dash" && (() => {
         const now = new Date();
@@ -4994,81 +5429,213 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
         const attemptsByStudent = {};
         attempts.forEach((a) => { (attemptsByStudent[a.student] = attemptsByStudent[a.student] || []).push(a); });
 
-        // نشاط هذا الأسبوع: عدد الطلاب الذين لديهم محاولة واحدة على الأقل خلال 7 أيام
         const activeThisWeek = new Set(attempts.filter((a) => daysAgo(a.at) <= 7).map((a) => a.student)).size;
-        // لم يتفاعلوا إطلاقًا: لا محاولات مسجَّلة لهم على الإطلاق — المنصة لا تُسجِّل
-        // دخولًا منفصلًا عن المحاولات، فهذا أفضل مؤشر حقيقي متاح لعدم التفاعل، لا تتبّع دخول حرفي.
-        const neverAttempted = students.filter((s) => !attemptsByStudent[s.key]?.length);
-
-        // نسبة إكمال الكورسات: من بين كل زوج (طالب مُستهدَف بكورس منشور، الكورس)،
-        // كم زوجًا لديه محاولة ناجحة واحدة على الأقل — مقياس حقيقي لإكمال الكورس فعليًّا.
+        const neverAttempted = students.filter((st) => !attemptsByStudent[st.key]?.length);
         const published = courses.filter((c) => c.status === "published");
-        let assignedPairs = 0, completedPairs = 0;
+
+        let assignedPairs = 0, startedPairs = 0, completedPairs = 0;
         published.forEach((c) => {
-          const targeted = students.filter((s) => +s.grade === +c.grade && (c.blocks || []).includes(s.block));
+          const targeted = students.filter((st) => +st.grade === +c.grade && (c.blocks || []).includes(st.block));
           assignedPairs += targeted.length;
-          targeted.forEach((s) => { if (attempts.some((a) => a.student === s.key && a.course === c.id && a.passed)) completedPairs++; });
+          targeted.forEach((st) => {
+            const pairAttempts = attempts.filter((a) => a.student === st.key && a.course === c.id);
+            const p = progress[`${st.key}|${c.id}`];
+            if (pairAttempts.length || p?.done?.length) startedPairs++;
+            if (pairAttempts.some((a) => a.passed)) completedPairs++;
+          });
         });
         const completionPct = assignedPairs ? Math.round((completedPairs / assignedPairs) * 100) : null;
+        const avgScore = attempts.length ? Math.round(attempts.reduce((x, a) => x + a.pct, 0) / attempts.length) : null;
 
-        const avgScore = attempts.length ? Math.round(attempts.reduce((s, a) => s + a.pct, 0) / attempts.length) : null;
-
-        // متعثرون: متوسط أدائهم أقل من 70% (وله محاولات فعلية)، أو استنفدوا 4
-        // محاولات فأكثر على كورس واحد دون نجاح.
         const strugglingKeys = new Set();
-        students.forEach((s) => {
-          const at = attemptsByStudent[s.key] || [];
-          if (at.length && Math.round(at.reduce((x, a) => x + a.pct, 0) / at.length) < 70) strugglingKeys.add(s.key);
+        students.forEach((st) => {
+          const at = attemptsByStudent[st.key] || [];
+          if (at.length && Math.round(at.reduce((x, a) => x + a.pct, 0) / at.length) < 70) strugglingKeys.add(st.key);
+          const perCourse = {};
+          at.forEach((a) => (perCourse[a.course] = perCourse[a.course] || []).push(a));
+          Object.values(perCourse).forEach((arr) => { if (arr.length >= 4 && !arr.some((a) => a.passed)) strugglingKeys.add(st.key); });
         });
-        const byCourseCount = {};
-        attempts.forEach((a) => { const k = a.student + "|" + a.course; byCourseCount[k] = (byCourseCount[k] || 0) + 1; if (byCourseCount[k] >= 4 && !a.passed) strugglingKeys.add(a.student); });
 
-        const certificates = attempts.filter((a) => a.passed).length; // شهادة تُصدَر لكل كورس مُنجَز بنجاح — نفس منطق النظام الحالي
-        const failedAttempts = attempts.filter((a) => !a.passed).length;
-
-        // مقارنة بالأسبوع الماضي: متوسط أداء آخر 7 أيام مقابل الأسبوع الذي قبله
+        const certificates = attempts.filter((a) => a.passed).length;
         const last7 = attempts.filter((a) => daysAgo(a.at) <= 7);
         const prev7 = attempts.filter((a) => daysAgo(a.at) > 7 && daysAgo(a.at) <= 14);
-        const avgOf = (arr) => arr.length ? Math.round(arr.reduce((s, a) => s + a.pct, 0) / arr.length) : null;
+        const avgOf = (arr) => arr.length ? Math.round(arr.reduce((x, a) => x + a.pct, 0) / arr.length) : null;
         const last7Avg = avgOf(last7), prev7Avg = avgOf(prev7);
         const weekDelta = last7Avg != null && prev7Avg != null ? last7Avg - prev7Avg : null;
 
-        // اتجاه تقدّم حقيقي عبر آخر 6 أسابيع — نقطة بداية وارتفاع وانخفاض ونهاية فعلية من التواريخ الحقيقية
         const weeks = Array.from({ length: 6 }, (_, i) => 5 - i).map((w) => {
-          const inWeek = attempts.filter((a) => { const d = daysAgo(a.at); return d >= w * 7 && d < (w + 1) * 7; });
-          return { label: `أ${6 - w}`, v: inWeek.length ? Math.round(inWeek.reduce((s, a) => s + a.pct, 0) / inWeek.length) : null };
+          const arr = attempts.filter((a) => { const d = daysAgo(a.at); return d >= w * 7 && d < (w + 1) * 7; });
+          return { label: w === 0 ? "هذا الأسبوع" : `قبل ${w} أ`, v: arr.length ? Math.round(arr.reduce((x, a) => x + a.pct, 0) / arr.length) : null };
         }).filter((p) => p.v != null);
 
-        const worstBlock = Object.entries(byBlock).map(([k, v]) => ({ k, avg: v.c ? v.sum / v.c : null })).filter((x) => x.avg != null).sort((a, b) => a.avg - b.avg)[0];
+        const distribution = { high: 0, mid: 0, low: 0, none: 0 };
+        studentRows.forEach((r) => {
+          if (!r.attemptsCount) distribution.none++;
+          else if (r.avg >= 80) distribution.high++;
+          else if (r.avg >= 60) distribution.mid++;
+          else distribution.low++;
+        });
+        const measured = distribution.high + distribution.mid + distribution.low;
+        const hp = measured ? Math.round(distribution.high * 100 / measured) : 0;
+        const mp = measured ? Math.round(distribution.mid * 100 / measured) : 0;
+        const lp = measured ? Math.max(0, 100 - hp - mp) : 0;
+        const donutBg = measured
+          ? `conic-gradient(#2EAD5B 0 ${hp}%, #F1B51C ${hp}% ${hp+mp}%, #E63D3D ${hp+mp}% 100%)`
+          : "conic-gradient(#D9DEE8 0 100%)";
+
+        const blockRows = Object.entries(byBlock)
+          .map(([k,v]) => ({ k, avg: v.c ? Math.round(v.sum/v.c) : null, n:v.n }))
+          .filter((r) => r.avg != null)
+          .sort((a,b) => b.avg-a.avg);
+        const worstBlock = blockRows.length ? blockRows[blockRows.length-1] : null;
+
+        const coursePerf = courses.map((c) => {
+          const arr = attempts.filter((a) => a.course === c.id);
+          return { id:c.id, title:c.title, avg:arr.length?Math.round(arr.reduce((x,a)=>x+a.pct,0)/arr.length):null, count:arr.length };
+        }).filter((r)=>r.avg!=null).sort((a,b)=>b.count-a.count).slice(0,5);
+
+        const toneFor = (v) => v >= 80 ? "#2EAD5B" : v >= 60 ? "#F1B51C" : "#E63D3D";
+        const funnelStages = [
+          {label:"تم الإسناد", value:assignedPairs, color:"#284FB8"},
+          {label:"بدأ الكورس", value:startedPairs, color:"#19A7A0"},
+          {label:"أكمل بنجاح", value:completedPairs, color:"#F1B51C"},
+          {label:"حصل على شهادة", value:certificates, color:"#E63D3D"},
+        ];
+        const funnelMax = Math.max(1,...funnelStages.map((x)=>x.value));
+
+        const priorities = [];
+        if (worstBlock) priorities.push({level:worstBlock.avg<60?"عاجل":"متابعة", title:worstBlock.k, detail:`متوسط التحصيل ${worstBlock.avg}%`, value:worstBlock.avg});
+        if (strugglingKeys.size) priorities.push({level:"عاجل", title:"طلاب متعثرون", detail:`${strugglingKeys.size} طالب يحتاجون تدخّلًا`, value:Math.max(1,Math.min(59,avgScore||0))});
+        if (neverAttempted.length) priorities.push({level:"متابعة", title:"لم يبدؤوا", detail:`${neverAttempted.length} طالب بلا محاولة`, value:65});
+        const activityPct = students.length ? Math.round(activeThisWeek * 100 / students.length) : null;
+        const safePct = students.length ? Math.round((students.length - strugglingKeys.size) * 100 / students.length) : null;
+        const healthParts = [[avgScore, .40], [completionPct, .25], [activityPct, .15], [safePct, .20]].filter(([v]) => v != null);
+        const healthWeight = healthParts.reduce((n,[,w])=>n+w,0);
+        const healthScore = healthWeight ? Math.round(healthParts.reduce((n,[v,w])=>n+v*w,0)/healthWeight) : null;
 
         return (
           <div>
-            <div className="card" style={{ padding: 18, marginBottom: 16, background: T.greenSoft }}>
-              <div style={{ fontWeight: 700, marginBottom: 10 }}>📋 ملخّص رئيس القسم اليوم</div>
-              <ul style={{ margin: 0, paddingInlineStart: 18, fontSize: 13, lineHeight: 2 }}>
-                {weekDelta != null && <li>{weekDelta >= 0 ? "ارتفع" : "انخفض"} متوسط الأداء هذا الأسبوع من {prev7Avg}% إلى {last7Avg}% ({weekDelta >= 0 ? "+" : ""}{weekDelta} نقطة).</li>}
-                {neverAttempted.length > 0 && <li>يوجد <strong>{neverAttempted.length}</strong> طالبًا لم يبدؤوا أي محاولة على الإطلاق.</li>}
-                {strugglingKeys.size > 0 && <li>يوجد <strong>{strugglingKeys.size}</strong> طالبًا يحتاجون تدخّلًا (أداء ضعيف أو محاولات مستنفدة).</li>}
-                {worstBlock && <li>الصف/البلوك <strong>{worstBlock.k}</strong> هو الأقل أداءً حاليًّا ({Math.round(worstBlock.avg)}%).</li>}
-                {weekDelta == null && neverAttempted.length === 0 && strugglingKeys.size === 0 && <li>لا بيانات كافية بعد لملخّص ذكي — تحتاج نشاطًا فعليًّا من الطلاب أولًا.</li>}
-              </ul>
+            <div className="adm-filterbar">
+              <div>
+                <div style={{fontSize:19,fontWeight:800,color:"#12294a"}}>مركز قيادة القسم</div>
+                <div className="adm-muted">آخر قراءة من البيانات الفعلية المسجّلة في المنصة</div>
+              </div>
+              <div style={{display:"flex",gap:7,flexWrap:"wrap"}}>
+                <button className="adm-subbtn" onClick={()=>setTab("reports")}>📄 تقرير تنفيذي</button>
+                <button className="adm-subbtn" onClick={()=>setTab("cmp")}>📊 المقارنات</button>
+                <button className="adm-subbtn" onClick={()=>{setNavGroup("intervention");setTab("plans")}}>⚡ إنشاء/متابعة تدخل</button>
+              </div>
             </div>
 
-            <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))", marginBottom: 16 }}>
-              <Stat label="إجمالي الطلاب المسجَّلين" value={students.length} />
-              <Stat label="نشطون هذا الأسبوع" value={activeThisWeek} />
-              <Stat label="نسبة إكمال الكورسات" value={completionPct != null ? completionPct + "%" : "—"} note="محاولة ناجحة واحدة على الأقل لكل زوج طالب/كورس مستهدَف" />
-              <Stat label="متوسط نتائج الطلاب" value={avgScore != null ? avgScore + "%" : "—"} />
-              <Stat label="طلاب متعثرون" value={strugglingKeys.size} tone={strugglingKeys.size ? T.brick : T.green} />
-              <Stat label="لم يبدؤوا أي محاولة" value={neverAttempted.length} note="لا يوجد تتبّع دخول منفصل — هذا أفضل مؤشر تفاعل حقيقي متاح" />
-              <Stat label="شهادات صادرة" value={certificates} />
-              <Stat label="محاولات غير ناجحة" value={failedAttempts} />
-              {weekDelta != null && <Stat label="التغيّر عن الأسبوع الماضي" value={(weekDelta >= 0 ? "+" : "") + weekDelta + " نقطة"} tone={weekDelta >= 0 ? T.green : T.brick} />}
+            <div className="adm-kpis">
+              {[
+                ["❤️","صحة القسم",healthScore!=null?healthScore+"/100":"—",healthScore==null?"تظهر مع توافر البيانات":healthScore>=80?"مستقر وقوي":healthScore>=60?"يحتاج متابعة":"أولوية تدخل"],
+                ["👥","إجمالي الطلاب",students.length,"الطلاب المسجّلون فعليًا"],
+                ["🎯","متوسط التحصيل",avgScore!=null?avgScore+"%":"—",weekDelta!=null?`${weekDelta>=0?"↑":"↓"} ${Math.abs(weekDelta)} نقطة عن الأسبوع السابق`:"لا مقارنة كافية"],
+                ["📗","نسبة الإكمال",completionPct!=null?completionPct+"%":"—",`${completedPairs} من ${assignedPairs||0} إسناد مكتمل`],
+                ["⚠️","المعرضون للخطر",strugglingKeys.size,strugglingKeys.size?"يحتاجون متابعة أو تدخل":"لا حالات حالية"],
+                ["📚","الكورسات النشطة",published.length,`${courses.length} كورس إجمالًا`],
+                ["🏅","الشهادات الصادرة",certificates,"من نتائج النجاح المسجّلة"],
+              ].map(([ic,l,v,f])=>(
+                <div className="adm-kpi" key={l}>
+                  <div className="adm-kpi-top"><span className="adm-kpi-label">{l}</span><span className="adm-kpi-icon">{ic}</span></div>
+                  <div className="adm-kpi-value">{v}</div><div className="adm-kpi-foot">{f}</div>
+                </div>
+              ))}
             </div>
 
-            <div className="card" style={{ padding: 18 }}>
-              <h3 style={{ marginBottom: 10 }}>اتجاه متوسط الأداء — آخر 6 أسابيع فعلية</h3>
-              <TrendChart points={weeks} tone={T.green} />
+            <div className="adm-grid3">
+              <section className="adm-panel">
+                <h3>توزيع الطلاب حسب مستوى التحصيل</h3>
+                <div className="adm-donut" style={{background:donutBg}}>
+                  <div className="adm-donut-center"><div style={{fontSize:28}}>{avgScore!=null?avgScore+"%":"—"}</div><div className="adm-muted">متوسط التحصيل</div></div>
+                </div>
+                <div className="adm-legend">
+                  <div className="adm-legend-row"><span><i className="adm-dot" style={{background:"#2EAD5B"}}/>مرتفع (80%+)</span><b>{distribution.high}</b></div>
+                  <div className="adm-legend-row"><span><i className="adm-dot" style={{background:"#F1B51C"}}/>متوسط (60–79%)</span><b>{distribution.mid}</b></div>
+                  <div className="adm-legend-row"><span><i className="adm-dot" style={{background:"#E63D3D"}}/>منخفض (أقل من 60%)</span><b>{distribution.low}</b></div>
+                  {distribution.none>0 && <div className="adm-legend-row"><span><i className="adm-dot" style={{background:"#B8C0CF"}}/>لا توجد نتيجة بعد</span><b>{distribution.none}</b></div>}
+                </div>
+              </section>
+
+              <section className="adm-panel">
+                <h3>اتجاه متوسط التحصيل خلال آخر 6 أسابيع</h3>
+                {weeks.length>1 ? <TrendChart points={weeks} height={185} tone="#2EAD5B"/> :
+                  <div style={{padding:"56px 10px",textAlign:"center",color:T.inkSoft}}>لا توجد بيانات زمنية كافية لرسم الاتجاه بعد.</div>}
+                <div style={{textAlign:"center",marginTop:4}}><button className="adm-subbtn" onClick={()=>setTab("cmp")}>عرض التحليل الكامل ←</button></div>
+              </section>
+
+              <section className="adm-panel">
+                <h3>مقارنة الصفوف والبلوكات</h3>
+                {blockRows.length ? <div className="adm-bars">
+                  {blockRows.slice(0,7).map((r)=>(
+                    <div className="adm-bar-row" key={r.k}>
+                      <b>{r.k}</b><div className="adm-track"><div className="adm-fill" style={{width:`${r.avg}%`,background:toneFor(r.avg)}}/></div><b>{r.avg}%</b>
+                    </div>
+                  ))}
+                </div> : <div className="adm-muted">ستظهر المقارنة بعد وجود نتائج فعلية لأكثر من صف/بلوك.</div>}
+                <div style={{textAlign:"center",marginTop:13}}><button className="adm-subbtn" onClick={()=>{setNavGroup("students");setTab("classes")}}>عرض جميع الصفوف ←</button></div>
+              </section>
+            </div>
+
+            <div className="adm-grid4">
+              <section className="adm-panel">
+                <h3>خريطة أداء الكورسات/المهارات</h3>
+                {coursePerf.length ? <div className="adm-heat">
+                  <div className="adm-heat-row" style={{fontWeight:800,color:"#68758a"}}><span>المهارة/الكورس</span><span>الأداء</span><span>المحاولات</span><span>الحالة</span></div>
+                  {coursePerf.map((r)=>(
+                    <div className="adm-heat-row" key={r.id}>
+                      <span style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={r.title}>{r.title}</span>
+                      <span className="adm-heat-cell" style={{background:toneFor(r.avg)}}>{r.avg}%</span>
+                      <span style={{textAlign:"center",fontWeight:800}}>{r.count}</span>
+                      <span style={{textAlign:"center",color:toneFor(r.avg),fontWeight:800}}>{r.avg>=80?"مرتفع":r.avg>=60?"متوسط":"منخفض"}</span>
+                    </div>
+                  ))}
+                </div> : <div className="adm-muted">لا توجد نتائج كورسات كافية لبناء خريطة الأداء.</div>}
+                <div style={{textAlign:"center",marginTop:10}}><button className="adm-subbtn" onClick={()=>{setNavGroup("learning");setTab("skills")}}>خريطة المهارات الكاملة ←</button></div>
+              </section>
+
+              <section className="adm-panel">
+                <h3>رحلة الطالب في الكورس</h3>
+                {assignedPairs ? <div className="adm-funnel">
+                  {funnelStages.map((st,i)=>{
+                    const w=Math.max(32,Math.round(st.value/funnelMax*100));
+                    return <div key={st.label} style={{width:"100%",display:"grid",gridTemplateColumns:"1fr 58px",gap:8,alignItems:"center"}}>
+                      <div className="adm-funnel-step" style={{width:`${w}%`,minWidth:90,background:st.color,justifySelf:"center"}}>{st.label}</div>
+                      <b>{st.value}</b>
+                    </div>
+                  })}
+                </div>:<div className="adm-muted">لا توجد إسنادات منشورة كافية لبناء رحلة الكورس.</div>}
+                <div style={{textAlign:"center",marginTop:10}}><button className="adm-subbtn" onClick={()=>{setNavGroup("learning");setTab("c")}}>عرض جميع الكورسات ←</button></div>
+              </section>
+
+              <section className="adm-panel">
+                <h3>أعلى أولويات التدخل اليوم</h3>
+                <div className="adm-priority">
+                  {priorities.length ? priorities.slice(0,4).map((r,i)=>(
+                    <div className="adm-priority-item" key={`${r.title}-${i}`}>
+                      <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
+                        <b>{r.title}</b><span className="chip" style={{background:r.level==="عاجل"?"#FCE8E8":"#FFF3CF",color:r.level==="عاجل"?"#C93434":"#9B6C00"}}>{r.level}</span>
+                      </div>
+                      <div className="adm-muted">{r.detail}</div>
+                    </div>
+                  )):<div className="adm-muted">لا توجد حالات تستدعي تدخّلًا حاليًا.</div>}
+                </div>
+                <div style={{textAlign:"center",marginTop:10}}><button className="adm-subbtn" onClick={()=>{setNavGroup("intervention");setTab("plans")}}>عرض التدخلات ←</button></div>
+              </section>
+
+              <section className="adm-panel adm-ai">
+                <h3>✨ ملخّص ذكي لرئيس القسم</h3>
+                <ul>
+                  {weekDelta!=null && <li>أداء القسم {weekDelta>=0?"تحسّن":"انخفض"} بمقدار {Math.abs(weekDelta)} نقطة عن الأسبوع السابق.</li>}
+                  {worstBlock && <li>{worstBlock.k} هو الأقل أداءً حاليًا بمتوسط {worstBlock.avg}%.</li>}
+                  {strugglingKeys.size>0 && <li>{strugglingKeys.size} طالب يحتاجون تدخلًا أو متابعة مباشرة.</li>}
+                  {neverAttempted.length>0 && <li>{neverAttempted.length} طالب لم يسجلوا أي محاولة حتى الآن.</li>}
+                  {coursePerf.length>0 && <li>أعلى كورس/مهارة وفق النتائج الحالية: {coursePerf.slice().sort((a,b)=>b.avg-a.avg)[0].title}.</li>}
+                  {weekDelta==null && !worstBlock && !strugglingKeys.size && !neverAttempted.length && <li>لا توجد بيانات كافية بعد؛ سيُبنى الملخّص تلقائيًا مع نشاط الطلاب.</li>}
+                </ul>
+                <button className="adm-subbtn" style={{width:"100%",background:"rgba(255,255,255,.1)",color:"#fff"}} onClick={()=>setTab("reports")}>عرض التحليلات المتقدمة</button>
+              </section>
             </div>
           </div>
         );
@@ -5108,8 +5675,16 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
           const overdueCourses = assigned.filter((c) => c.dueDate && new Date(c.dueDate) < now && !at.some((a) => a.course === c.id && a.passed));
           if (overdueCourses.length) reasons.push({ k: "overdue", label: `تجاوز الموعد النهائي في ${overdueCourses.length} كورس` });
 
-          return { ...s, avg, reasons, exhaustedCourses, notes: interventions.filter((i) => i.studentKey === s.key) };
-        }).filter((r) => r.reasons.length > 0);
+          const riskScore = Math.min(100,
+            (!at.length ? 35 : 0) +
+            (notStarted.length ? Math.min(20, notStarted.length * 7) : 0) +
+            (avg != null && avg < 70 ? Math.min(25, 70 - avg) : 0) +
+            (exhaustedCourses.length ? Math.min(25, exhaustedCourses.length * 15) : 0) +
+            (reasons.some((x) => x.k === "declining") ? 15 : 0) +
+            (overdueCourses.length ? Math.min(15, overdueCourses.length * 5) : 0)
+          );
+          return { ...s, avg, reasons, exhaustedCourses, riskScore, notes: interventions.filter((i) => i.studentKey === s.key) };
+        }).filter((r) => r.reasons.length > 0).sort((a,b)=>b.riskScore-a.riskScore);
 
         const filtered = riskFilter === "all" ? rows : rows.filter((r) => r.reasons.some((rs) => rs.k === riskFilter));
         const REASON_TYPES = [["all", "الكل"], ["notEntered", "لم يدخلوا"], ["notStarted", "لم يبدؤوا"], ["lowScore", "أداء ضعيف"], ["exhausted", "استنفدوا المحاولات"], ["declining", "تراجع الأداء"], ["overdue", "تجاوزوا الموعد"]];
@@ -5132,6 +5707,7 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
                     <div>
                       <div style={{ fontWeight: 700 }}>{r.name}</div>
                       <div style={{ fontSize: 12, color: T.inkSoft }}>الصف {r.grade} — {r.block} {r.avg != null && `— متوسط ${r.avg}%`}</div>
+                      <div style={{marginTop:5}}><Chip tone={r.riskScore>=60?"r":r.riskScore>=30?"a":"g"}>مؤشر الخطر {r.riskScore}/100</Chip></div>
                     </div>
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                       {r.reasons.map((rs) => <span key={rs.k} style={{ fontSize: 11, padding: "3px 8px", borderRadius: 10, background: T.brickSoft, color: T.brick, fontWeight: 700 }}>{rs.label}</span>)}
@@ -5324,24 +5900,38 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
           const avgScore = myAttempts.length ? Math.round(myAttempts.reduce((s, a) => s + a.pct, 0) / myAttempts.length) : null;
           const myInterventions = interventions.filter((i) => i.responsible === t.name);
           const support = interventions.find((i) => i.teacherName === t.name);
+          const myNewsletters = newsletters.filter((n) => n.teacherName === t.name && n.status === "published").sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
+          const lastNewsletter = myNewsletters[0] || null;
           return { name: t.name, coursesCount: myCourses.length, studentsCount: targetedStudents.size,
             completionPct: targetedStudents.size ? Math.round((completedStudents.size / targetedStudents.size) * 100) : null,
-            avgScore, interventionsCount: myInterventions.length, lastUpdate: myCourses.reduce((max, c) => c.publishedAt && (!max || c.publishedAt > max) ? c.publishedAt : max, null), support };
+            avgScore, interventionsCount: myInterventions.length, newslettersCount: myNewsletters.length, newsletters: myNewsletters, lastNewsletter, lastUpdate: myCourses.reduce((max, c) => c.publishedAt && (!max || c.publishedAt > max) ? c.publishedAt : max, null), support };
         });
+        const avgLoad = rows.length ? Math.round(rows.reduce((n,r)=>n+r.studentsCount,0)/rows.length) : 0;
         return (
           <div>
+            <div className="card" style={{padding:14,marginBottom:12,background:T.paper}}>
+              <strong>⚖️ موازنة عبء المعلمين</strong>
+              <div style={{fontSize:12,color:T.inkSoft,marginTop:4}}>متوسط العبء الحالي {avgLoad} طالبًا لكل معلم. التصنيف يقارن عدد طلاب المعلم بمتوسط القسم ولا ينقل أي طالب تلقائيًا.</div>
+            </div>
             <p style={{ fontSize: 12, color: T.inkSoft, marginBottom: 12 }}>كل رقم محسوب من كورسات ومحاولات المعلم فعليًّا — لا تقييمًا يدويًّا.</p>
             <div style={{ display: "grid", gap: 10 }}>
               {rows.map((r) => (
                 <div key={r.name} className="card" style={{ padding: 16 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 8 }}>{r.name}</div>
+                  <div style={{ display:"flex",justifyContent:"space-between",gap:8,alignItems:"center",marginBottom:8 }}>
+                    <div style={{ fontWeight: 700 }}>{r.name}</div>
+                    <Chip tone={avgLoad && r.studentsCount>avgLoad*1.25?"r":avgLoad && r.studentsCount<avgLoad*.75?"a":"g"}>
+                      {avgLoad && r.studentsCount>avgLoad*1.25?"عبء مرتفع":avgLoad && r.studentsCount<avgLoad*.75?"عبء منخفض":"متوازن"}
+                    </Chip>
+                  </div>
                   <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", marginBottom: 10 }}>
                     <Stat label="الكورسات" value={r.coursesCount} />
                     <Stat label="الطلاب المتابَعون" value={r.studentsCount} />
                     <Stat label="نسبة الإكمال" value={r.completionPct != null ? r.completionPct + "%" : "—"} />
                     <Stat label="متوسط نتائج طلابه" value={r.avgScore != null ? r.avgScore + "%" : "—"} />
-                    <Stat label="تدخلات مسجَّلة" value={r.interventionsCount} />
+                    <Stat label="تدخلات مسجَّلة" value={r.interventionsCount} /><Stat label="النشرات المنشورة" value={r.newslettersCount} />
                   </div>
+                  {r.lastNewsletter && <div style={{fontSize:12,color:T.inkSoft,marginBottom:10,padding:"8px 10px",background:T.paper,borderRadius:8}}>📰 آخر نشرة: {new Date(r.lastNewsletter.publishedAt).toLocaleString("ar-AE")} — الصف {r.lastNewsletter.grade} — {(r.lastNewsletter.blocks||[]).join("، ")} — الإرسال: {r.lastNewsletter.sendStats ? `${r.lastNewsletter.sendStats.studentSent}/${r.lastNewsletter.sendStats.studentTotal} طلاب · ${r.lastNewsletter.sendStats.parentSent}/${r.lastNewsletter.sendStats.parentTotal} أولياء أمور` : "—"}</div>}
+                  {r.newsletters?.length>0 && <details style={{marginBottom:10}}><summary style={{cursor:"pointer",fontSize:12,fontWeight:700}}>🗂 سجل نشرات المعلم ({r.newsletters.length})</summary><div style={{marginTop:8,display:"grid",gap:6}}>{r.newsletters.slice(0,8).map(n=><div key={n.id} style={{fontSize:12,padding:"7px 9px",background:"#fff",border:`1px solid ${T.ruleSoft}`,borderRadius:8}}><strong>{new Date(n.publishedAt).toLocaleString("ar-AE")}</strong> — الصف {n.grade} — {(n.blocks||[]).join("، ")} <span style={{color:T.inkSoft}}>· الطلاب {n.sendStats?`${n.sendStats.studentSent}/${n.sendStats.studentTotal}`:"—"} · أولياء الأمور {n.sendStats?`${n.sendStats.parentSent}/${n.sendStats.parentTotal}`:"—"}</span></div>)}</div></details>}
                   <label style={{ fontSize: 12, fontWeight: 700 }}>الإجراء الداعم المطلوب من رئيس القسم</label>
                   <div style={{ display: "flex", gap: 6 }}>
                     <input className="inp" placeholder="مثال: تدريب، موارد إضافية، مراجعة التخطيط، دعم تقني"
@@ -5407,28 +5997,28 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
       })()}
 
       {tab === "plans" && (() => {
-        return (
-          <div>
-            <p style={{ fontSize: 12, color: T.inkSoft, marginBottom: 12 }}>سجلّ كامل حقيقي لكل خطط التدخل المحفوظة ({interventions.filter((i) => i.studentKey).length}).</p>
-            <div className="card" style={{ overflow: "auto" }}>
-              <table className="tbl">
-                <thead><tr><th>الطالب</th><th>المشكلة</th><th>الإجراء</th><th>المسؤول</th><th>تاريخ البداية</th><th>تاريخ المراجعة</th><th>الحالة</th></tr></thead>
-                <tbody>
-                  {interventions.filter((i) => i.studentKey).map((i) => (
-                    <tr key={i.id}>
-                      <td>{i.studentName}</td><td>{i.problem}</td><td>{i.action}</td><td>{i.responsible}</td>
-                      <td className="mono">{dateAr(i.at)}</td><td className="mono">{i.reviewDate || "—"}</td>
-                      <td><select className="inp" style={{ fontSize: 11, padding: "2px 6px", width: "auto" }} value={i.status} onChange={(e) => onUpdateIntervention(i.id, { status: e.target.value })}>
-                        <option>مفتوح</option><option>قيد المتابعة</option><option>مكتمل</option>
-                      </select></td>
-                    </tr>
-                  ))}
-                  {!interventions.filter((i) => i.studentKey).length && <tr><td colSpan={7} style={{ textAlign: "center", color: T.inkSoft, padding: 20 }}>لا خطط تدخل مسجَّلة بعد.</td></tr>}
-                </tbody>
-              </table>
+        const rows=interventions.filter(i=>i.studentKey).map(i=>{const before=attempts.filter(a=>a.student===i.studentKey&&new Date(a.at)<new Date(i.at)).slice(-3);const after=attempts.filter(a=>a.student===i.studentKey&&new Date(a.at)>=new Date(i.at));const av=x=>x.length?Math.round(x.reduce((n,a)=>n+a.pct,0)/x.length):null;const beforeAvg=av(before),afterAvg=av(after);return {...i,beforeAvg,afterAvg,delta:beforeAvg!=null&&afterAvg!=null?afterAvg-beforeAvg:null}});
+        const simCourse=courses.find(c=>c.id===simCourseId);
+        const simTargets=studentRows.filter(st=>+st.grade===+simGrade && st.avg!=null && st.avg<simThreshold && (!simCourse || !attempts.some(a=>a.student===st.key&&a.course===simCourse.id&&a.passed)));
+        return <div><div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap",marginBottom:12}}><div><h3>الخطط والتدخلات وقياس الأثر</h3><p style={{fontSize:12,color:T.inkSoft,margin:"4px 0 0"}}>الأثر محسوب من نتائج الطالب الفعلية: متوسط آخر 3 محاولات قبل التدخل مقابل المحاولات بعده.</p></div><Chip tone="g">{rows.filter(r=>r.delta!=null&&r.delta>0).length} تدخلًا ذا تحسن مقاس</Chip></div>
+          <div className="card" style={{padding:16,marginBottom:14,background:T.paper}}>
+            <h4 style={{marginBottom:8}}>🧪 محاكي القرار — ماذا لو؟</h4>
+            <p style={{fontSize:12,color:T.inkSoft,marginTop:0}}>جرّب الخطة أولًا. لا يتغير أي سجل حتى تضغط «اعتماد التدخلات».</p>
+            <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))"}}>
+              <select className="inp" value={simGrade} onChange={e=>setSimGrade(+e.target.value)}>{Array.from({length:13},(_,i)=><option key={i+1} value={i+1}>الصف {i+1}</option>)}</select>
+              <select className="inp" value={simThreshold} onChange={e=>setSimThreshold(+e.target.value)}><option value={60}>أقل من 60%</option><option value={70}>أقل من 70%</option><option value={80}>أقل من 80%</option></select>
+              <select className="inp" value={simCourseId} onChange={e=>setSimCourseId(e.target.value)}><option value="">بدون كورس محدد</option>{courses.filter(c=>c.status==="published"&&+c.grade===+simGrade).map(c=><option key={c.id} value={c.id}>{c.title}</option>)}</select>
+              <div className="card" style={{padding:10,background:"#fff"}}><div style={{fontSize:11,color:T.inkSoft}}>الطلاب المستهدفون</div><div style={{fontSize:24,fontWeight:800}}>{simTargets.length}</div></div>
             </div>
+            {simTargets.length>0&&<div style={{fontSize:12,color:T.inkSoft,marginTop:8}}>يشمل: {simTargets.slice(0,8).map(x=>x.name).join("، ")}{simTargets.length>8?"…":""}</div>}
+            <button className="btn btn-p" style={{marginTop:10}} disabled={!simTargets.length} onClick={()=>{
+              if(!window.confirm(`إنشاء خطة تدخل لـ ${simTargets.length} طالبًا؟`)) return;
+              const review=new Date(Date.now()+14*86400000).toISOString().slice(0,10);
+              simTargets.forEach(st=>onAddIntervention({studentKey:st.key,studentName:st.name,problem:`أداء أقل من ${simThreshold}%`,action:simCourse?`كورس علاجي — ${simCourse.title}`:"متابعة علاجية موجهة",responsible:currentActor,reviewDate:review}));
+            }}>اعتماد التدخلات</button>
           </div>
-        );
+          <div className="card" style={{overflow:"auto"}}><table className="tbl"><thead><tr><th>الطالب</th><th>المشكلة</th><th>الإجراء</th><th>قبل</th><th>بعد</th><th>أثر التدخل</th><th>المراجعة</th><th>الحالة</th></tr></thead><tbody>{rows.map(i=><tr key={i.id}><td>{i.studentName}</td><td>{i.problem}</td><td>{i.action}</td><td className="mono">{i.beforeAvg!=null?i.beforeAvg+"%":"—"}</td><td className="mono">{i.afterAvg!=null?i.afterAvg+"%":"—"}</td><td>{i.delta!=null?<Chip tone={i.delta>0?"g":i.delta<0?"r":"a"}>{i.delta>0?"+":""}{i.delta} نقطة</Chip>:<span style={{color:T.inkSoft}}>بانتظار بيانات بعد التدخل</span>}</td><td className="mono">{i.reviewDate||"—"}</td><td><select className="inp" style={{fontSize:11,padding:"2px 6px",width:"auto"}} value={i.status} onChange={e=>onUpdateIntervention(i.id,{status:e.target.value})}><option>مفتوح</option><option>قيد المتابعة</option><option>مكتمل</option></select></td></tr>)}{!rows.length&&<tr><td colSpan={8} style={{textAlign:"center",color:T.inkSoft,padding:20}}>لا خطط تدخل مسجلة بعد.</td></tr>}</tbody></table></div>
+        </div>;
       })()}
 
       {tab === "reports" && (() => {
@@ -5446,7 +6036,13 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
 
         const toHTML = (rows) => `<table><tr>${rows[0].map((h) => `<th>${h}</th>`).join("")}</tr>${rows.slice(1).map((r) => `<tr>${r.map((c) => `<td>${c}</td>`).join("")}</tr>`).join("")}</table>`;
 
+        const evidenceRows = () => {
+          const avg = attempts.length ? Math.round(attempts.reduce((s,a)=>s+a.pct,0)/attempts.length) : 0;
+          const completedInterventions = interventions.filter(i=>i.status==="مكتمل").length;
+          return [["دليل القسم","القيمة"],["إجمالي الطلاب",students.length],["المعلمون",teachers.length],["الكورسات",courses.length],["الكورسات المنشورة",courses.filter(c=>c.status==="published").length],["المحاولات",attempts.length],["متوسط التحصيل",avg+"%"],["الشهادات",attempts.filter(a=>a.passed).length],["خطط التدخل",interventions.filter(i=>i.studentKey).length],["تدخلات مكتملة",completedInterventions],["تاريخ التقرير",new Date().toLocaleString("ar-AE")]];
+        };
         const REPORTS = [
+          { key: "evidence", title: "حزمة أدلة القسم — Evidence Pack", rows: evidenceRows },
           { key: "weekly", title: "تقرير أسبوعي لرئيس القسم", rows: weeklyRows },
           { key: "class", title: "تقرير أداء الصفوف", rows: classRows },
           { key: "struggling", title: "تقرير الطلاب المتعثرين", rows: strugglingRows },
@@ -5573,58 +6169,74 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
         </div>
       </Locked>)}
 
-      {tab === "u" && (<div className="card" style={{ padding: 20 }}>
-        <h3 style={{ marginBottom: 12 }}>المعلمون وحالات الحسابات</h3>
-        <Locked title="حسابات المعلمين" note="تفعيل وتعطيل الحسابات — إجراء حسّاس يظهر فقط بعد ضغطة صريحة.">
-        {teachers.length === 0 ? <p style={{ color: T.inkSoft }}>لم يسجّل دخول أي معلم بعد.</p> : (
-          <table className="tbl"><thead><tr><th>المعلم</th><th>الكورسات</th><th>البريد للتنبيهات</th><th>الحالة</th><th></th></tr></thead>
-            <tbody>{teachers.map((t) => (<tr key={t.name}><td style={{ fontWeight: 600 }}>{t.name}</td>
-              <td>{courses.filter((c) => c.teacher === t.name).length}</td>
-              <td>
-                {editEmailFor === t.name ? (
-                  <div style={{ display: "flex", gap: 6 }}>
-                    <input className="inp mono" style={{ minWidth: 170 }} type="email" value={teacherEmailDraft} onChange={(e) => setTeacherEmailDraft(e.target.value)} placeholder="name@school.ae" />
-                    <button className="btn btn-q" onClick={() => { onSetTeacherEmail(t.name, teacherEmailDraft.trim()); setEditEmailFor(null); }}>حفظ</button>
-                  </div>
-                ) : (
-                  <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}>
-                    {t.email || <span style={{ color: T.inkSoft }}>—</span>}
-                    <button className="btn btn-q" onClick={() => { setEditEmailFor(t.name); setTeacherEmailDraft(t.email || ""); }}>تعديل</button>
-                  </span>
-                )}
-              </td>
-              <td>{t.active ? <Chip tone="g">مفعّل</Chip> : <Chip tone="r">معطَّل</Chip>}</td>
-              <td><Switch on={t.active} onClick={() => onToggleTeacher(t.name)} /></td></tr>))}</tbody></table>)}
-        <p style={{ fontSize: 12, color: T.inkSoft, marginTop: 12 }}>تعطيل المعلم يمنع نشر كورسات جديدة باسمه في هذه الجلسة التجريبية؛ الربط الكامل بحسابات Entra ID يتم في الإصدار المؤسسي. بريد المعلم يُستعمل لإشعارات نشر الكورسات وإتمام الطلاب.</p>
-        </Locked>
-      </div>)}
-
-      {tab === "b" && (<div className="card" style={{ padding: 20 }}>
-        <h3 style={{ marginBottom: 12 }}>إدارة الصفوف والبلوكات</h3>
-        {Array.from({ length: 13 }, (_, i) => i + 1).map((g) => (
-          <div key={g} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: `1px solid ${T.ruleSoft}`, flexWrap: "wrap" }}>
-            <strong style={{ minWidth: 60 }}>الصف {g}</strong>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-              {(blocksAdmin[g] || DEFAULT_BLOCKS).map((b) => (<Chip key={b}>{b} <span style={{ cursor: "pointer", marginRight: 4 }} onClick={() => onRemoveBlock(g, b)}>×</span></Chip>))}
-            </div>
-            <button className="btn btn-q" onClick={() => { const n = prompt(`اسم البلوك الجديد للصف ${g}`); if (n) onAddBlock(g, n); }}>+ بلوك</button>
-          </div>))}
-      </div>)}
-
-      {tab === "c" && (<div className="grid">
-        {courses.map((c) => (<div key={c.id} className="card" style={{ padding: 16 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-            <div><h4>{c.title}</h4><div style={{ fontSize: 12, color: T.inkSoft }}>المعلم: {c.teacher} · الصف {c.grade} · {DOMAINS[c.domain]}</div></div>
-            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              {c.status === "published" ? <Chip tone="g">منشور</Chip> : c.status === "archived" ? <Chip>مؤرشف</Chip> : <Chip tone="a">مسودة — غير مرئي لأي طالب</Chip>}
-              {c.status !== "published" && <button className="btn btn-q" onClick={() => setAdminPublishOpen(adminPublishOpen === c.id ? null : c.id)}>{adminPublishOpen === c.id ? "إغلاق" : "نشر"}</button>}
-              {c.status === "published" && <button className="btn btn-q" onClick={() => onArchiveAny(c.id)}>أرشفة</button>}
-              <button className="btn btn-q" style={{ color: T.brick }} onClick={() => onDeleteCourse(c.id)}>حذف</button>
+      {tab === "u" && (<div style={{ display:"grid", gap:16 }}>
+        <div className="card" style={{ padding:20 }}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
+            <div><h3>المعلمون والصلاحيات</h3><p style={{margin:"4px 0 0",fontSize:12,color:T.inkSoft}}>إضافة المعلمين، تعديل بياناتهم، تفعيل الحساب، وتخصيص رمز دخول لكل معلم مع بقاء الرمز العام احتياطيًا.</p></div>
+            <Chip tone="g">{teachers.filter(t=>t.active).length} مفعّل من {teachers.length}</Chip>
+          </div>
+          <div className="card" style={{padding:14,background:T.paper,marginBottom:16}}>
+            <h4 style={{marginBottom:10}}>➕ إضافة معلم جديد</h4>
+            <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))"}}>
+              <input className="inp" placeholder="اسم المعلم" value={teacherForm.name} onChange={e=>setTeacherForm({...teacherForm,name:e.target.value})}/>
+              <input className="inp mono" type="email" placeholder="البريد الإلكتروني" value={teacherForm.email} onChange={e=>setTeacherForm({...teacherForm,email:e.target.value})}/>
+              <input className="inp mono" placeholder="رمز دخول خاص (اختياري)" value={teacherForm.code} onChange={e=>setTeacherForm({...teacherForm,code:e.target.value})}/>
+              <button className="btn btn-p" onClick={()=>{ const name=teacherForm.name.trim(); if(!name) return alert("اكتب اسم المعلم."); onAddTeacher({name,email:teacherForm.email.trim(),code:teacherForm.code.trim()}); setTeacherForm({name:"",email:"",code:""}); }}>إضافة المعلم</button>
             </div>
           </div>
-          {adminPublishOpen === c.id && <PublishPanel course={c} students={students} onClose={() => setAdminPublishOpen(null)} onPublish={(patch) => { onPublishWithDetails(c.id, patch); setAdminPublishOpen(null); }} />}
-        </div>))}
+          <Locked title="حسابات المعلمين" note="تغيير حالة الحساب أو حذف معلم إجراء إداري حساس.">
+          {teachers.length===0?<p style={{color:T.inkSoft}}>لا يوجد معلمون مسجلون بعد.</p>:<div style={{overflowX:"auto"}}><table className="tbl"><thead><tr><th>المعلم</th><th>الكورسات</th><th>البريد</th><th>رمز الدخول</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>
+            {teachers.map(t=><tr key={t.name}><td style={{fontWeight:700}}>{t.name}</td><td>{courses.filter(c=>c.teacher===t.name).length}</td>
+              <td>{editEmailFor===t.name?<div style={{display:"flex",gap:6}}><input className="inp mono" value={teacherEmailDraft} onChange={e=>setTeacherEmailDraft(e.target.value)}/><button className="btn btn-q" onClick={()=>{onSetTeacherEmail(t.name,teacherEmailDraft.trim());setEditEmailFor(null)}}>حفظ</button></div>:<span style={{display:"flex",gap:6,alignItems:"center"}}>{t.email||"—"}<button className="btn btn-q" onClick={()=>{setEditEmailFor(t.name);setTeacherEmailDraft(t.email||"")}}>تعديل</button></span>}</td>
+              <td>{teacherCodeFor===t.name?<div style={{display:"flex",gap:6}}><input className="inp mono" value={teacherCodeDraft} onChange={e=>setTeacherCodeDraft(e.target.value)} placeholder={codes.teacher}/><button className="btn btn-q" onClick={()=>{onSetTeacherCode(t.name,teacherCodeDraft.trim());setTeacherCodeFor(null);setTeacherCodeDraft("")}}>حفظ</button></div>:<button className="btn btn-q" onClick={()=>{setTeacherCodeFor(t.name);setTeacherCodeDraft(t.code||"")}}>{t.code?"تغيير الرمز":"تخصيص رمز"}</button>}</td>
+              <td>{t.active?<Chip tone="g">مفعّل</Chip>:<Chip tone="r">معطّل</Chip>}</td>
+              <td><div style={{display:"flex",gap:6,alignItems:"center"}}><Switch on={t.active} onClick={()=>onToggleTeacher(t.name)}/><button className="btn btn-q" style={{color:T.brick}} onClick={()=>{const linked=courses.filter(c=>c.teacher===t.name).length; const msg=linked?`لدى هذا المعلم ${linked} كورس/كورسات مرتبطة. الحذف سيزيل حساب المعلم فقط ولن يحذف الكورسات. هل تريد المتابعة؟`:"حذف حساب المعلم؟"; if(window.confirm(msg))onDeleteTeacher(t.name)}}>حذف</button></div></td>
+            </tr>)}
+          </tbody></table></div>}
+          </Locked>
+        </div>
       </div>)}
+
+      {tab === "b" && (<div style={{display:"grid",gap:16}}>
+        <div className="card" style={{padding:20}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap",marginBottom:14}}>
+            <div><h3>إدارة الصفوف والبلوكات</h3><p style={{margin:"4px 0 0",fontSize:12,color:T.inkSoft}}>اعرض بلوكات أي صف عند الحاجة فقط، وأنشئ مجموعات لاستخدامها لاحقًا في الإسناد والتقارير.</p></div>
+            <Chip>{Object.values(blockGroups||{}).reduce((n,a)=>n+(Array.isArray(a)?a.length:0),0)} مجموعة محفوظة</Chip>
+          </div>
+          <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))"}}>
+            {Array.from({length:13},(_,i)=>i+1).map(g=>{const blocks=blocksAdmin[g]||DEFAULT_BLOCKS;const groups=(blockGroups&&blockGroups[g])||[];const stCount=students.filter(st=>+st.grade===+g).length;return <div key={g} className="card" style={{padding:14,background:"#fff"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8}}><div><strong>الصف {g}</strong><div style={{fontSize:11,color:T.inkSoft}}>{stCount} طالب · {blocks.length} بلوك · {groups.length} مجموعة</div></div><button className="btn btn-q" onClick={()=>setOpenGradeBlocks(openGradeBlocks===g?null:g)}>{openGradeBlocks===g?"إخفاء":"عرض البلوكات"}</button></div>
+              {openGradeBlocks===g&&<div style={{marginTop:12}}><div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:10}}>{blocks.map(b=><Chip key={b}>{b} <span style={{cursor:"pointer",marginRight:4}} onClick={()=>onRemoveBlock(g,b)}>×</span></Chip>)}</div>
+                <button className="btn btn-q" onClick={()=>{const n=prompt(`اسم البلوك الجديد للصف ${g}`);if(n)onAddBlock(g,n.trim())}}>+ بلوك</button>
+                {groups.length>0&&<div style={{marginTop:12,borderTop:`1px solid ${T.ruleSoft}`,paddingTop:10}}><div style={{fontSize:12,fontWeight:700,marginBottom:6}}>مجموعات البلوكات</div>{groups.map(gr=><div key={gr.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:8,padding:"5px 0"}}><span><strong>{gr.name}</strong> · {(gr.blocks||[]).join("، ")}</span><button className="btn btn-q" style={{color:T.brick}} onClick={()=>onDeleteBlockGroup(g,gr.id)}>حذف</button></div>)}</div>}
+              </div>}
+            </div>})}
+          </div>
+        </div>
+        <div className="card" style={{padding:20}}><h3 style={{marginBottom:10}}>➕ إنشاء مجموعة بلوكات</h3>
+          <div className="grid" style={{gridTemplateColumns:"160px minmax(220px,1fr)"}}><select className="inp" value={groupDraft.grade} onChange={e=>setGroupDraft({grade:+e.target.value,name:"",blocks:[]})}>{Array.from({length:13},(_,i)=><option key={i+1} value={i+1}>الصف {i+1}</option>)}</select><input className="inp" placeholder="اسم المجموعة، مثال: A إلى E" value={groupDraft.name} onChange={e=>setGroupDraft({...groupDraft,name:e.target.value})}/></div>
+          <div style={{display:"flex",gap:7,flexWrap:"wrap",margin:"12px 0"}}>{(blocksAdmin[groupDraft.grade]||DEFAULT_BLOCKS).map(b=>{const on=groupDraft.blocks.includes(b);return <button key={b} className="btn btn-q" style={{background:on?T.greenSoft:T.paper,color:on?T.green:T.inkSoft,border:`1px solid ${on?T.green:T.rule}`}} onClick={()=>setGroupDraft({...groupDraft,blocks:on?groupDraft.blocks.filter(x=>x!==b):[...groupDraft.blocks,b]})}>{on?"✓ ":""}{b}</button>})}</div>
+          <button className="btn btn-p" onClick={()=>{if(!groupDraft.name.trim()||groupDraft.blocks.length<2)return alert("اكتب اسم المجموعة واختر بلوكين على الأقل.");onSaveBlockGroup(groupDraft.grade,{id:"bg-"+uid(),name:groupDraft.name.trim(),blocks:groupDraft.blocks});setGroupDraft({...groupDraft,name:"",blocks:[]})}}>حفظ المجموعة</button>
+        </div>
+      </div>)}
+
+      {tab === "c" && (() => {
+        const publishedCount=courses.filter(c=>c.status==="published").length, draftCount=courses.filter(c=>c.status!=="published"&&c.status!=="archived").length, archivedCount=courses.filter(c=>c.status==="archived").length;
+        const certCount=attempts.filter(a=>a.passed).length; const byGradeCourses={}; courses.forEach(c=>{byGradeCourses[c.grade]=(byGradeCourses[c.grade]||0)+1}); const maxGradeCount=Math.max(1,...Object.values(byGradeCourses));
+        return <div style={{display:"grid",gap:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",gap:12,alignItems:"center",flexWrap:"wrap"}}><div><h3>مركز الكورسات والمهارات</h3><p style={{fontSize:12,color:T.inkSoft,margin:"4px 0 0"}}>إنشاء، مراجعة، تحسين بالذكاء الاصطناعي، نشر وتحليل الكورسات من مكان واحد.</p></div><button className="btn btn-p" onClick={onGenerateCourse}>✨ توليد كورس بالذكاء الاصطناعي</button></div>
+          <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(135px,1fr))"}}><Stat label="إجمالي الكورسات" value={courses.length}/><Stat label="منشورة" value={publishedCount} tone={T.green}/><Stat label="مسودات" value={draftCount} tone={T.gold}/><Stat label="مؤرشفة" value={archivedCount}/><Stat label="شهادات صادرة" value={certCount} tone={T.green}/></div>
+          <div className="card" style={{padding:16}}><h4 style={{marginBottom:10}}>توزيع الكورسات حسب الصف</h4>{Object.keys(byGradeCourses).length===0?<p style={{color:T.inkSoft}}>لا توجد كورسات بعد.</p>:<div style={{display:"grid",gap:8}}>{Object.entries(byGradeCourses).sort((a,b)=>+a[0]-+b[0]).map(([g,n])=><div key={g} style={{display:"grid",gridTemplateColumns:"80px 1fr 44px",gap:8,alignItems:"center"}}><span>الصف {g}</span><div className="inkbar"><i style={{width:`${Math.round(n/maxGradeCount*100)}%`,background:n>=maxGradeCount*.66?T.green:n>=maxGradeCount*.33?T.gold:T.brick}}/></div><strong>{n}</strong></div>)}</div>}</div>
+          <div className="grid">{courses.map(c=>{const q=courseQuality(c);const cAttempts=attempts.filter(a=>a.course===c.id);const avg=cAttempts.length?Math.round(cAttempts.reduce((n,a)=>n+a.pct,0)/cAttempts.length):null;const passed=new Set(cAttempts.filter(a=>a.passed).map(a=>a.student)).size;return <div key={c.id} className="card" style={{padding:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",gap:12,flexWrap:"wrap"}}><div style={{flex:1,minWidth:240}}><div style={{display:"flex",alignItems:"center",gap:8,flexWrap:"wrap"}}><h4>{c.title}</h4>{c.status==="published"?<Chip tone="g">منشور</Chip>:c.status==="archived"?<Chip>مؤرشف</Chip>:<Chip tone="a">مسودة</Chip>}<Chip tone={q.score>=80?"g":q.score>=60?"a":"r"}>جودة {q.score}/100</Chip></div>
+              <div style={{fontSize:12,color:T.inkSoft,marginTop:4}}>المعلم: {c.teacher} · الصف {c.grade} · {DOMAINS[c.domain]} · {q.cleanCount} سؤالًا صالحًا · {q.stageCount} وحدات</div>
+              <div className="grid" style={{gridTemplateColumns:"repeat(auto-fit,minmax(105px,1fr))",marginTop:10}}><Stat label="المحاولات" value={cAttempts.length}/><Stat label="نجحوا" value={passed}/><Stat label="متوسط النتيجة" value={avg!=null?avg+"%":"—"}/><Stat label="تكرارات مكتشفة" value={q.duplicateCount} tone={q.duplicateCount?T.brick:T.green}/></div>
+              {q.duplicateCount>0&&<p style={{fontSize:12,color:T.brick,margin:"8px 0 0"}}>⚠️ بوابة الجودة اكتشفت {q.duplicateCount} سؤالًا مكررًا أو متعارضًا مع سؤال داخل الشرح؛ لن تدخل هذه التكرارات في اختبار الطالب.</p>}
+            </div><div style={{display:"flex",gap:6,alignItems:"flex-start",flexWrap:"wrap"}}><button className="btn btn-q" onClick={()=>onAIEditCourse(c.id)}>🤖 تعديل بالذكاء الاصطناعي</button>{c.status!=="published"&&<button className="btn btn-q" onClick={()=>setAdminPublishOpen(adminPublishOpen===c.id?null:c.id)}>{adminPublishOpen===c.id?"إغلاق":"نشر"}</button>}{c.status==="published"&&<button className="btn btn-q" onClick={()=>onArchiveAny(c.id)}>أرشفة</button>}<button className="btn btn-q" style={{color:T.brick}} onClick={()=>onDeleteCourse(c.id)}>حذف</button></div></div>
+            {adminPublishOpen===c.id&&<PublishPanel course={c} students={students} onClose={()=>setAdminPublishOpen(null)} onPublish={patch=>{onPublishWithDetails(c.id,patch);setAdminPublishOpen(null)}}/>}
+          </div>})}</div>
+        </div>
+      })()}
 
       {tab === "log" && (<div className="card" style={{ padding: 20 }}>
         <h3 style={{ marginBottom: 12 }}>سجل العمليات</h3>
@@ -5689,38 +6301,158 @@ function AdminHome({ courses, students, attempts, progress, teachers, blocksAdmi
           الإرسال الفعلي يتطلب ضبط <span className="mono">RESEND_API_KEY</span> في متغيرات بيئة الخادم — راجع README. بلا هذا المفتاح، كل شيء آخر في المنصة يعمل بلا تأثر.
         </p>
       </div>)}
+      </div>
+      <footer className="adm-footer">
+        <div style={{position:"relative",zIndex:1,fontSize:11}}>آخر تحديث: {new Date().toLocaleString("ar-AE")}</div>
+        <div className="adm-footer-main">
+          <div className="adm-footer-tag">نزدهر • ننجح • ننمو</div>
+          <div style={{opacity:.72}}>GEMS Founders School Dubai — Inspiring Minds, Empowering Futures</div>
+        </div>
+        <div style={{position:"relative",zIndex:1,fontSize:11}}>لوحة قيادة قسم اللغة العربية</div>
+      </footer>
     </div>
   );
 }
 
 /* ==================== بوابة ولي الأمر ==================== */
-function ParentPortal({ report, onBack }) {
+function ParentPortal({ report, newsletters = [], onBack, orgEmail = "" }) {
   if (!report) return null;
-  const { student, rows } = report;
+  const { student, rows = [] } = report;
+  const [tab, setTab] = useState("overview");
+  const [contactSubject, setContactSubject] = useState("متابعة تقدم ابني");
+  const [contactMessage, setContactMessage] = useState("");
+  const [supportType, setSupportType] = useState("ضعف أكاديمي");
+  const [supportNote, setSupportNote] = useState("");
+  const [sending, setSending] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  const allHistory = rows.flatMap((r) => (r.history || []).map((h) => ({ ...h, title: r.title })))
+    .filter((x) => x.at).sort((a, b) => new Date(a.at) - new Date(b.at));
+  const scored = rows.filter((r) => r.bestScore != null);
+  const avg = scored.length ? Math.round(scored.reduce((sum, r) => sum + r.bestScore, 0) / scored.length) : null;
+  const completed = rows.filter((r) => r.completed).length;
+  const started = rows.filter((r) => r.started).length;
+  const certificates = rows.filter((r) => r.certificateToken).length;
+  const completionPct = rows.length ? Math.round(completed / rows.length * 100) : 0;
+  const latestActivity = [...allHistory].sort((a, b) => new Date(b.at) - new Date(a.at));
+  const allStrong = rows.flatMap((r) => r.strong || []);
+  const allWeak = rows.flatMap((r) => r.weak || []);
+  const rankSkills = (arr) => Object.entries(arr.reduce((m, x) => { m[x] = (m[x] || 0) + 1; return m; }, {}))
+    .sort((a, b) => b[1] - a[1]).slice(0, 6).map(([name, count]) => ({ name, count }));
+  const strongSkills = rankSkills(allStrong), weakSkills = rankSkills(allWeak);
+  const status = avg == null ? { label: "بانتظار بيانات", color: T.inkSoft, bg: T.paper } : avg >= 80 ? { label: "مستقر ومتقدم", color: T.green, bg: T.greenSoft } : avg >= 60 ? { label: "يحتاج متابعة", color: T.gold, bg: T.goldSoft } : { label: "يحتاج تدخل", color: T.brick, bg: T.brickSoft };
+  const trendPoints = allHistory.slice(-8).map((h) => ({ v: h.pct, label: new Date(h.at).toLocaleDateString("ar-AE", { day: "numeric", month: "numeric" }) }));
+  const teacherEmail = normEmail(student.teacherEmail || "");
+  const parentNews = newsletters.filter(n=>n.status==="published" && +n.grade===+student.grade && (n.blocks||[]).map(normBlock).includes(normBlock(student.block))).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
+  const [parentNewsId,setParentNewsId]=useState(parentNews[0]?.id||null);
+  const activeParentNews=parentNews.find(n=>n.id===parentNewsId)||parentNews[0]||null;
+
+  const sendContact = async (kind) => {
+    const note = kind === "support" ? supportNote.trim() : contactMessage.trim();
+    if (!note) return setMsg("اكتب الرسالة أولًا.");
+    const recipients = [teacherEmail, normEmail(orgEmail)].filter(Boolean);
+    if (!recipients.length) return setMsg("لا يوجد بريد للمعلم أو رئيس القسم مسجل حاليًا.");
+    setSending(true); setMsg("");
+    const subject = kind === "support" ? `طلب دعم للطالب ${student.name} — ${supportType}` : `${contactSubject} — ${student.name}`;
+    const body = `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9"><p>السلام عليكم،</p><p>رسالة من ولي أمر الطالب <strong>${student.name}</strong> (الصف ${student.grade} — ${student.block}).</p>${kind === "support" ? `<p><strong>نوع طلب الدعم:</strong> ${supportType}</p>` : ""}<p>${note.replace(/\n/g, "<br>")}</p><p style="font-size:12px;color:#667085">أُرسلت هذه الرسالة من بوابة متابعة ولي الأمر في منصة بالعربي أحلى.</p></div>`;
+    try {
+      await notifyEmail(recipients, subject, body);
+      const entry = { at: new Date().toISOString(), actor: `ولي أمر — ${student.name}`, action: kind === "support" ? "طلب دعم" : "تواصل مع المعلم", detail: `${supportType}${kind === "support" ? " — " : ""}${note}` };
+      await putRecord(REC.audit, `${entry.at}-${uid()}`, entry);
+      setMsg(kind === "support" ? "✅ تم إرسال طلب الدعم للمعلم ورئيس القسم." : "✅ تم إرسال رسالتك للمعلم.");
+      if (kind === "support") setSupportNote(""); else setContactMessage("");
+    } catch (e) { setMsg("تعذّر الإرسال الآن. حاول مرة أخرى لاحقًا."); }
+    setSending(false);
+  };
+
+  const tabs = [["overview", "🏠 نظرة عامة"], ["newsletter", "📰 النشرة الأسبوعية"], ["courses", "📚 الكورسات"], ["skills", "🎯 نقاط القوة والدعم"], ["activity", "🕘 آخر النشاط"], ["contact", "✉️ التواصل والدعم"]];
+
   return (
     <div className="gfs"><style>{CSS}</style>
-      <div className="topbar" style={{ padding: "20px 0" }}><div className="wrap topbar-inner brand-row">
-        <div className="logo-chip"><img src={LOGO_URL} alt="GEMS Founders School" /></div>
-        <div><h2 className="brand-title" style={{ color: "#fff", fontSize: 19 }}>تقرير تقدّم الطالب</h2><div className="brand-tagline">بالعربي أحلى — قسم اللغة العربية</div></div>
-      </div></div>
-      <div className="wrap" style={{ paddingTop: 22, paddingBottom: 60 }}>
-        <div className="card" style={{ padding: 20, marginBottom: 16 }}>
-          <h3>{student.name}</h3><div style={{ fontSize: 13, color: T.inkSoft }}>الصف {student.grade} — {student.block}</div>
+      <section className="adm-hero">
+        <img src={LOGO_URL} alt="" aria-hidden="true" className="adm-lion" />
+        <div className="adm-hero-row">
+          <div className="adm-brand">
+            <div className="logo-chip lg"><img src={LOGO_URL} alt="GEMS Founders School" /></div>
+            <div><div className="adm-hero-title">بوابة متابعة تقدم الطالب</div><div className="adm-hero-sub">بالعربي أحلى — قسم اللغة العربية | متابعة واضحة، تواصل مباشر، ودعم مبكر</div></div>
+          </div>
+          <div className="adm-actor"><div className="adm-avatar">👨‍👩‍👧</div><div><strong>ولي الأمر</strong><div className="adm-hero-sub">متابعة {student.name}</div></div></div>
         </div>
-        <div className="card" style={{ padding: 20 }}>
-          <table className="tbl"><thead><tr><th>الكورس</th><th>الحالة</th><th>الإنجاز</th><th>أفضل نتيجة</th><th>المحاولات</th><th>نقاط القوة</th><th>تحتاج دعمًا</th></tr></thead>
-            <tbody>{rows.map((r) => (<tr key={r.title}><td style={{ fontWeight: 600 }}>{r.title}</td>
-              <td>{r.completed ? <Chip tone="g">مكتمل</Chip> : r.started ? <Chip tone="a">قيد التعلّم</Chip> : <Chip>لم يبدأ</Chip>}</td>
-              <td>{Math.round(r.pct)}%</td><td className="mono">{r.bestScore === null ? "—" : r.bestScore + "%"}</td><td>{r.attempts}</td>
-              <td style={{ fontSize: 12, color: T.green }}>{r.strong.join("، ") || "—"}</td>
-              <td style={{ fontSize: 12, color: T.brick }}>{r.weak.join("، ") || "لا يوجد"}</td></tr>))}</tbody></table>
+        <nav className="adm-mainnav noprint" style={{ marginTop: 16 }}>
+          {tabs.map(([k, l]) => <button key={k} className={`adm-mainbtn ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{l}</button>)}
+          <button className="adm-mainbtn" onClick={onBack}>↩ عودة</button>
+        </nav>
+      </section>
+
+      <main className="adm-content" style={{ maxWidth: 1500, margin: "0 auto" }}>
+        <div className="card" style={{ padding: 18, marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+          <div><h2 style={{ fontSize: 24 }}>{student.name}</h2><div style={{ color: T.inkSoft, fontSize: 13 }}>الصف {student.grade} — البلوك {student.block} {student.stream ? `— المسار ${student.stream}` : ""}</div></div>
+          <span className="chip" style={{ background: status.bg, color: status.color, padding: "7px 14px", fontSize: 12 }}>{status.label}</span>
         </div>
-        <button className="btn btn-q noprint" style={{ marginTop: 16 }} onClick={onBack}>عودة</button>
-      </div>
+
+        {tab === "overview" && <>
+          <div className="adm-kpis">
+            <div className="adm-kpi"><div className="adm-kpi-label">متوسط الأداء</div><div className="adm-kpi-value" style={{ color: status.color }}>{avg == null ? "—" : `${avg}%`}</div><div className="adm-kpi-foot">من أفضل نتائج الكورسات</div></div>
+            <div className="adm-kpi"><div className="adm-kpi-label">إكمال الكورسات</div><div className="adm-kpi-value">{completionPct}%</div><div className="adm-kpi-foot">{completed} من {rows.length} كورسات</div></div>
+            <div className="adm-kpi"><div className="adm-kpi-label">بدأ التعلم</div><div className="adm-kpi-value">{started}</div><div className="adm-kpi-foot">من {rows.length} كورسات مسندة</div></div>
+            <div className="adm-kpi"><div className="adm-kpi-label">الشهادات</div><div className="adm-kpi-value">{certificates}</div><div className="adm-kpi-foot">شهادات إتمام متاحة</div></div>
+          </div>
+          <div className="adm-grid3">
+            <section className="adm-panel">
+              <h3>مستوى التقدم الحالي</h3>
+              <div className="adm-donut" style={{ background: `conic-gradient(${T.green} 0 ${completionPct}%, ${T.gold} ${completionPct}% ${Math.min(100, completionPct + Math.max(0, started - completed) / Math.max(1, rows.length) * 100)}%, ${T.brick} 0)` }}>
+                <div className="adm-donut-center"><div style={{ fontSize: 28 }}>{completionPct}%</div><div className="adm-muted">إكمال</div></div>
+              </div>
+              <div className="adm-legend"><div className="adm-legend-row"><span><i className="adm-dot" style={{ background: T.green }} />مكتمل</span><strong>{completed}</strong></div><div className="adm-legend-row"><span><i className="adm-dot" style={{ background: T.gold }} />قيد التعلم</span><strong>{Math.max(0, started-completed)}</strong></div><div className="adm-legend-row"><span><i className="adm-dot" style={{ background: T.brick }} />لم يبدأ</span><strong>{Math.max(0, rows.length-started)}</strong></div></div>
+            </section>
+            <section className="adm-panel"><h3>اتجاه الأداء</h3><TrendChart points={trendPoints} height={170} tone={status.color} /><div className="adm-muted">يعتمد على آخر محاولات الطالب الفعلية.</div></section>
+            <section className="adm-panel adm-ai"><h3>✨ توصية المتابعة</h3><ul>
+              {avg == null && <li>لم تتوافر نتائج كافية بعد. شجّع الطالب على بدء الكورس المسند.</li>}
+              {avg != null && avg >= 80 && <li>الأداء جيد. استمروا في المتابعة والمحافظة على انتظام التدريب.</li>}
+              {avg != null && avg >= 60 && avg < 80 && <li>الأداء مقبول ويحتاج متابعة مركزة في المهارات الظاهرة ضمن «تحتاج دعمًا».</li>}
+              {avg != null && avg < 60 && <li>يوصى بطلب دعم من المعلم ووضع متابعة قصيرة للمهارات الأضعف.</li>}
+              {weakSkills[0] && <li>أولوية التدريب الحالية: <strong>{weakSkills[0].name}</strong>.</li>}
+              {rows.some((r) => !r.started) && <li>يوجد كورس مسند لم يبدأه الطالب بعد.</li>}
+            </ul><button className="btn" style={{ width: "100%", background: "#fff", color: "#102d68" }} onClick={() => setTab("contact")}>اطلب دعمًا لابني</button></section>
+          </div>
+        </>}
+
+
+        {tab === "newsletter" && <div><div style={{marginBottom:12}}><h2>📰 النشرة الأسبوعية</h2><div className="adm-muted">تظهر هنا النشرة نفسها التي نشرها المعلم، مع أرشيفها بالتاريخ.</div></div><NewsletterViewer newsletter={activeParentNews} archive={parentNews} onSelect={setParentNewsId}/></div>}
+
+        {tab === "courses" && <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit,minmax(290px,1fr))" }}>
+          {rows.length === 0 ? <div className="card" style={{ padding: 22 }}>لا توجد كورسات مسندة للطالب حاليًا.</div> : rows.map((r) => <article className="card" key={r.id || r.title} style={{ padding: 18 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "start" }}><h3>{r.title}</h3>{r.completed ? <Chip tone="g">مكتمل</Chip> : r.started ? <Chip tone="a">قيد التعلم</Chip> : <Chip>لم يبدأ</Chip>}</div>
+            <div style={{ height: 9, background: T.ruleSoft, borderRadius: 999, overflow: "hidden", margin: "16px 0 6px" }}><div style={{ width: `${Math.max(0, Math.min(100, r.pct))}%`, height: "100%", background: r.completed ? T.green : r.started ? T.gold : T.rule }} /></div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: T.inkSoft }}><span>الإنجاز {Math.round(r.pct)}%</span><span>أفضل نتيجة {r.bestScore == null ? "—" : `${r.bestScore}%`}</span></div>
+            <div style={{ marginTop: 10, fontSize: 12, color: T.inkSoft }}>المحاولات: {r.attempts}{r.lastAt ? ` — آخر نشاط ${dateAr(r.lastAt)}` : ""}</div>
+            {r.certificateToken && <a className="btn btn-p" style={{ display: "inline-block", marginTop: 12, textDecoration: "none" }} href={`/api/send-email?certificate=${encodeURIComponent(r.certificateToken)}`} target="_blank" rel="noreferrer">🏆 فتح الشهادة</a>}
+          </article>)}
+        </div>}
+
+        {tab === "skills" && <div className="adm-grid3">
+          <section className="adm-panel"><h3>💪 نقاط القوة</h3>{strongSkills.length ? strongSkills.map((x) => <div key={x.name} style={{ padding: "9px 0", borderBottom: `1px solid ${T.ruleSoft}`, display: "flex", justifyContent: "space-between" }}><span>{x.name}</span><Chip tone="g">قوة</Chip></div>) : <p className="adm-muted">ستظهر نقاط القوة بعد وجود محاولات كافية.</p>}</section>
+          <section className="adm-panel"><h3>🎯 تحتاج دعمًا</h3>{weakSkills.length ? weakSkills.map((x) => <div key={x.name} style={{ padding: "9px 0", borderBottom: `1px solid ${T.ruleSoft}`, display: "flex", justifyContent: "space-between" }}><span>{x.name}</span><span className="chip" style={{ background: T.brickSoft, color: T.brick }}>متابعة</span></div>) : <p className="adm-muted">لا توجد مهارات ضعيفة متكررة في البيانات الحالية.</p>}</section>
+          <section className="adm-panel"><h3>كيف يمكنني مساعدته في المنزل؟</h3><p style={{ fontSize: 13, color: T.inkSoft }}>ركزوا على مهارة واحدة في كل مرة، واطلبوا من الطالب شرح القاعدة بصوته ثم تطبيقها على مثال جديد. تجنبوا إعادة الاختبار نفسه؛ الهدف هو فهم المهارة.</p>{weakSkills[0] && <div className="viz-callout" style={{ marginTop: 10 }}>ابدؤوا هذا الأسبوع بمهارة: <strong>{weakSkills[0].name}</strong></div>}</section>
+        </div>}
+
+        {tab === "activity" && <section className="adm-panel"><h3>آخر ما حدث</h3>{latestActivity.length === 0 ? <p className="adm-muted">لا يوجد نشاط بعد.</p> : latestActivity.slice(0, 12).map((a, i) => <div key={`${a.at}-${i}`} style={{ display: "grid", gridTemplateColumns: "110px 1fr auto", gap: 12, alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${T.ruleSoft}` }}><span className="adm-muted">{dateAr(a.at)}</span><span>أجرى محاولة في <strong>{a.title}</strong></span><span className="chip" style={{ background: a.passed ? T.greenSoft : a.pct >= 60 ? T.goldSoft : T.brickSoft, color: a.passed ? T.green : a.pct >= 60 ? T.gold : T.brick }}>{a.pct}%</span></div>)}</section>}
+
+        {tab === "contact" && <div className="adm-grid3">
+          <section className="adm-panel" style={{ gridColumn: "span 2" }}><h3>✉️ تواصل مع المعلم</h3><label className="lbl">الموضوع</label><select className="inp" value={contactSubject} onChange={(e) => setContactSubject(e.target.value)}><option>متابعة تقدم ابني</option><option>استفسار عن كورس</option><option>استفسار عن نتيجة</option><option>طلب موعد للتواصل</option></select><label className="lbl" style={{ marginTop: 10 }}>رسالتك</label><textarea className="tarea" rows={5} value={contactMessage} onChange={(e) => setContactMessage(e.target.value)} placeholder="اكتب رسالتك للمعلم..."/><button className="btn btn-p" disabled={sending} style={{ marginTop: 10 }} onClick={() => sendContact("contact")}>{sending ? "جارٍ الإرسال…" : "إرسال إلى المعلم"}</button></section>
+          <section className="adm-panel"><h3>🆘 اطلب دعمًا لابني</h3><label className="lbl">نوع الدعم</label><select className="inp" value={supportType} onChange={(e) => setSupportType(e.target.value)}><option>ضعف أكاديمي</option><option>صعوبة في كورس</option><option>لم يفهم المهارة</option><option>تكرار المحاولات دون تحسن</option><option>أحتاج التواصل مع المعلم</option></select><label className="lbl" style={{ marginTop: 10 }}>تفاصيل مختصرة</label><textarea className="tarea" rows={4} value={supportNote} onChange={(e) => setSupportNote(e.target.value)} placeholder="صف ما يحتاجه الطالب..."/><button className="btn btn-d" disabled={sending} style={{ marginTop: 10 }} onClick={() => sendContact("support")}>إرسال طلب الدعم</button></section>
+          {msg && <div className="card" aria-live="polite" style={{ gridColumn: "1/-1", padding: 14, background: msg.startsWith("✅") ? T.greenSoft : T.goldSoft, color: msg.startsWith("✅") ? T.green : T.ink }}>{msg}</div>}
+        </div>}
+      </main>
+
+      <footer className="adm-footer">
+        <div style={{ position: "relative", zIndex: 1, fontSize: 11 }}>تقرير ديناميكي — آخر فتح: {new Date().toLocaleString("ar-AE")}</div>
+        <div className="adm-footer-main"><div className="adm-footer-tag">نزدهر • ننجح • ننمو</div><div style={{ opacity: .72 }}>GEMS Founders School Dubai — Inspiring Minds, Empowering Futures</div></div>
+        <div style={{ position: "relative", zIndex: 1, fontSize: 11 }}>بوابة ولي الأمر — قسم اللغة العربية</div>
+      </footer>
     </div>
   );
 }
-
 /* ============================ التطبيق ============================ */
 export default function App() {
   const [ready, setReady] = useState(false);
@@ -5733,11 +6465,13 @@ export default function App() {
   const [progress, setProgress] = useState({});
   const [teachers, setTeachers] = useState([]);
   const [blocksAdmin, setBlocksAdmin] = useState({});
+  const [blockGroups, setBlockGroups] = useState({});
   const [codes, setCodes] = useState({ teacher: "GFS-2026", admin: "GFS-ADMIN-2026" });
   const [orgEmail, setOrgEmail] = useState("");
   const [audit, setAudit] = useState([]);
   const [interventions, setInterventions] = useState([]);
   const [parentTokens, setParentTokens] = useState({});
+  const [newsletters, setNewsletters] = useState([]);
   const [parentReport, setParentReport] = useState(null);
   const [exam, setExam] = useState(null);
   const seq = useRef(0);
@@ -5803,8 +6537,47 @@ export default function App() {
     setCodes(await readKey(K.codes, { teacher: "GFS-2026", admin: "GFS-ADMIN-2026" }));
     setOrgEmail(await readKey(K.orgEmail, ""));
     setBlocksAdmin(await readKey(K.blocksAdmin, {}));
+    setBlockGroups(await readKey(K.blockGroups, {}));
+    const newsletterList = await listRecords(REC.newsletter);
+    newsletterList.sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
+    setNewsletters(newsletterList);
     setReady(true);
   })(); }, []);
+
+  // مزامنة خفيفة للنشرات فقط: إذا نشر المعلم نشرة بينما صفحة الطالب أو
+  // ولي الأمر مفتوحة، تظهر دون الحاجة إلى تسجيل خروج/دخول. لا نُحمّل بقية
+  // بيانات المنصة دوريًا حتى لا نزيد طلبات Redis بلا داعٍ.
+  useEffect(() => {
+    if (!ready) return;
+    let cancelled = false;
+    const refreshNewsletters = async () => {
+      const list = await listRecords(REC.newsletter);
+      if (cancelled) return;
+      list.sort((a,b)=>(b.publishedAt||b.createdAt||"").localeCompare(a.publishedAt||a.createdAt||""));
+      setNewsletters(list);
+    };
+    const onFocus = () => { refreshNewsletters(); };
+    const timer = setInterval(refreshNewsletters, 20000);
+    window.addEventListener("focus", onFocus);
+    return () => { cancelled = true; clearInterval(timer); window.removeEventListener("focus", onFocus); };
+  }, [ready]);
+
+  useEffect(() => {
+    const token = new URLSearchParams(window.location.search).get("parent");
+    if (!token || !students.length) return;
+    (async () => {
+      const normalized = token.trim().toUpperCase();
+      let rec = parentTokens[normalized];
+      if (!rec) {
+        const stored = await readRecord(REC.parentTok, normalized);
+        rec = stored && (stored.__val || stored);
+      }
+      if (!rec) return;
+      const student = students.find((s) => s.key === rec.studentKey);
+      if (!student) return;
+      setParentReport({ student, rows: buildReport(student, courses, progress, attempts) });
+    })();
+  }, [students, courses, attempts, progress, parentTokens]);
 
   // كل دالة هنا تكتب سجلّها الخاص فقط، لا نسخة كاملة من المجموعة — فمعلمان
   // ينشران كورسين مختلفين في اللحظة نفسها لا يمحو أحدهما عمل الآخر.
@@ -5874,6 +6647,15 @@ export default function App() {
     const v = teachers.map((t) => t.name === name ? { ...t, email: normalized } : t);
     setTeachers(v); writeKey(K.teachers, v); log(actor, "تسجيل بريد معلم", `${name} — ${normalized}`);
   };
+  const addTeacherAdmin = (rec, actor) => {
+    const name = String(rec?.name || "").trim(), email = normEmail(rec?.email);
+    if (!name) return;
+    if (teachers.some((t) => t.name === name || (email && normEmail(t.email) === email))) return alert("هذا المعلم أو البريد مسجل بالفعل.");
+    const next = [...teachers, { name, email, code: String(rec?.code || "").trim(), active: true }];
+    setTeachers(next); writeKey(K.teachers, next); log(actor, "إضافة معلم", `${name} — ${email || "بلا بريد"}`);
+  };
+  const deleteTeacherAdmin = (name, actor) => { const next=teachers.filter(t=>t.name!==name); setTeachers(next); writeKey(K.teachers,next); log(actor,"حذف حساب معلم",name); };
+  const setTeacherCodeAdmin = (name, code, actor) => { const next=teachers.map(t=>t.name===name?{...t,code:String(code||"").trim()}:t); setTeachers(next); writeKey(K.teachers,next); log(actor,"تغيير رمز معلم",name); };
 
   // كل انتقال بين الشاشات يمرّ عبر nav فيُحفظ مكان الوصول السابق تلقائيًا،
   // فزر "رجوع" الظاهر في كل صفحة يعيد المستخدم بالضبط إلى ما قبل الخطأ.
@@ -5913,22 +6695,39 @@ export default function App() {
     if (a.passed) {
       const teacherEmail = (teachers.find((t) => t.name === c.teacher) || {}).email;
       const studentRec = students.find((s) => s.key === user.key) || {};
+
+      const reportToken = "PR-" + uid().toUpperCase();
+      const reportRows = buildReport(studentRec.key ? studentRec : user, courses, progress, [...attempts, a]);
+      const reportRec = { studentKey: user.key, rows: reportRows, at: new Date().toISOString() };
+      setParentTokens((prev) => ({ ...prev, [reportToken]: reportRec }));
+      putRecord(REC.parentTok, reportToken, { __key: reportToken, __val: reportRec });
+      const reportUrl = `${window.location.origin}/?parent=${encodeURIComponent(reportToken)}`;
+
       notifyEmail([orgEmail, teacherEmail],
         `إتمام كورس: ${user.name} — ${c.title}`,
         `<p>أنهى الطالب <strong>${user.name}</strong> (الصف ${user.grade} — ${user.block}) كورس <strong>${c.title}</strong> بنجاح.</p><p>الدرجة: ${a.pct}% — المحاولة ${a.no} من الدورة ${a.cycle}.</p>`);
-      const parentTo = studentRec.parentEmail || user.parentEmail;
+
+      const parentTo = normEmail(studentRec.parentEmail || user.parentEmail);
       if (parentTo) {
         notifyEmail(parentTo, `شهادة إتقان — ${c.title}`,
-          `<p>تهانينا،</p><p>أتقن ابنكم/ابنتكم <strong>${user.name}</strong> مهارة «${c.title}» بدرجة ${a.pct}% بتاريخ ${dateAr(a.at)}.</p>
-           <p>رقم الشهادة: ${a.serial} — رمز التحقق: ${a.token}</p>
-           <p>لعرض الشهادة كاملة أو طباعتها، تواصلوا مع المعلم أو راجعوا المنصة.</p>`);
+          `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
+             <p>عزيزي ولي الأمر،</p>
+             <p>يسعدنا أن نهنئكم بأن ابنكم/ابنتكم <strong>${user.name}</strong> قد اجتاز كورس <strong>«${c.title}»</strong> بنجاح، وحصل على درجة <strong>${a.pct}%</strong> بتاريخ ${dateAr(a.at)}.</p>
+             <p>رقم الشهادة: <strong>${a.serial}</strong> — رمز التحقق: <strong>${a.token}</strong></p>
+             <p><a href="${reportUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">📊 متابعة تقدم الطالب</a></p>
+             <p style="font-size:12px;color:#667085">ستجدون أيضًا زر فتح شهادة الإتمام في هذه الرسالة.</p>
+           </div>`);
       }
-      const studentTo = studentRec.email || user.email;
+
+      const studentTo = normEmail(studentRec.email || user.email);
       if (studentTo) {
         notifyEmail(studentTo, `تهانينا — أتممت «${c.title}» بنجاح`,
-          `<p>مرحبًا ${user.name}،</p><p>أتممت مهارة «${c.title}» بدرجة ${a.pct}% بتاريخ ${dateAr(a.at)}. تهانينا على إنجازك!</p>
-           <p>رقم الشهادة: ${a.serial} — رمز التحقق: ${a.token}</p>
-           <p>افتح المنصة الآن لعرض شهادتك كاملة أو طباعتها.</p>`);
+          `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
+             <p>مرحبًا <strong>${user.name}</strong>،</p>
+             <p>تهانينا! أتممت كورس <strong>«${c.title}»</strong> بنجاح وحصلت على درجة <strong>${a.pct}%</strong> بتاريخ ${dateAr(a.at)}.</p>
+             <p>رقم الشهادة: <strong>${a.serial}</strong> — رمز التحقق: <strong>${a.token}</strong></p>
+             <p>ستجد زر <strong>🏆 فتح شهادة الإتمام</strong> في هذه الرسالة لعرض الشهادة مباشرة وطباعتها أو حفظها PDF.</p>
+           </div>`);
       }
     }
     setExam(null); nav({ n: "result", id: a.id });
@@ -5936,9 +6735,10 @@ export default function App() {
 
   if (!ready) return <div className="gfs"><style>{CSS}</style><div className="wrap" style={{ padding: 60, color: T.inkSoft }}>جارٍ فتح المنصة…</div></div>;
 
-  if (parentReport) return <ParentPortal report={parentReport} onBack={() => { setParentReport(null); }} />;
+  if (parentReport) return <ParentPortal report={parentReport} newsletters={newsletters} orgEmail={orgEmail} onBack={() => { setParentReport(null); }} />;
 
   if (!user) return <Login
+    teachers={teachers}
     onStudent={(u) => { setUser(u); setHist([]); setView({ n: "home" });
       const existing = students.find((s) => s.key === u.key);
       if (!existing) { const rec = { key: u.key, name: u.name, grade: u.grade, block: u.block, stream: u.stream, teacherEmail: normEmail(u.teacherEmail), email: normEmail(u.email), parentEmail: normEmail(u.parentEmail) }; setStudents((prev) => [...prev, rec]); putRecord(REC.student, rec.key, rec); }
@@ -5948,12 +6748,17 @@ export default function App() {
       } }}
     onTeacher={(name, email) => { ensureTeacher(name, email); setUser({ role: "teacher", name, email: normEmail(email) }); setHist([]); setView({ n: "home" }); }}
     onAdmin={() => { setUser({ role: "admin", name: "رئيس القسم" }); setHist([]); setView({ n: "home" }); }}
-    onParent={(tok, setErr) => {
-      const rec = parentTokens[tok];
+    onParent={async (tok, setErr) => {
+      const normalized = String(tok || "").trim().toUpperCase();
+      let rec = parentTokens[normalized];
+      if (!rec) {
+        const stored = await readRecord(REC.parentTok, normalized);
+        rec = stored && (stored.__val || stored);
+      }
       if (!rec) return setErr("رمز غير صحيح أو منتهي.");
       const student = students.find((s) => s.key === rec.studentKey);
       if (!student) return setErr("تعذّر العثور على بيانات الطالب.");
-      setParentReport({ student, rows: rec.rows });
+      setParentReport({ student, rows: buildReport(student, courses, progress, attempts) });
     }} codes={codes} students={students} courses={courses} attempts={attempts} />;
 
   const course = view.id && courses.find((c) => c.id === view.id);
@@ -6158,6 +6963,54 @@ export default function App() {
     setStudents((prev) => prev.filter((x) => x.key !== key)); deleteRecord(REC.student, key);
     log(actor, "حذف طالب من القائمة", s ? `${s.name} — ${key}` : key);
   };
+  const saveNewsletter = async (rec) => {
+    const gradeStudents = students.filter(s => +s.grade === +rec.grade);
+    const existingBlocks = [...new Set(gradeStudents.map(s => normBlock(s.block)).filter(Boolean))].sort();
+    const effectiveBlocks = ((rec.blocks || []).length ? rec.blocks : existingBlocks).map(normBlock).filter(Boolean);
+    if (!effectiveBlocks.length) throw new Error("لا توجد بلوكات مسجلة لهذا الصف.");
+    const publishedAt = rec.status === "published" ? new Date().toISOString() : null;
+    let next = { ...rec, blocks: effectiveBlocks, publishedAt };
+    const saved = await putRecord(REC.newsletter, next.id, next);
+    if (!saved) throw new Error("تعذر حفظ النشرة في قاعدة البيانات.");
+    setNewsletters(prev => [next, ...prev.filter(x=>x.id!==next.id)]);
+    if (rec.status !== "published") { log(user?.name||"معلم", "حفظ مسودة نشرة أسبوعية", `الصف ${rec.grade}`); return next; }
+
+    // اختيار الصف والبلوك هو المرجع النهائي للنشر. بريد المعلم لا يمنع وصول النشرة
+    // إذا كانت بيانات ربط المعلم في سجل طالب قديمة أو ناقصة.
+    const targets = gradeStudents.filter(s => effectiveBlocks.includes(normBlock(s.block)));
+    let studentSent=0,parentSent=0,failed=0;
+    const errors = [];
+    const tasks = [];
+    targets.forEach((st) => {
+      if (normEmail(st.email)) tasks.push(async()=>({kind:"student",student:st.name,to:normEmail(st.email),result:await sendEmailTracked(st.email, `النشرة الأسبوعية — ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, false))}));
+      if (normEmail(st.parentEmail)) tasks.push(async()=>({kind:"parent",student:st.name,to:normEmail(st.parentEmail),result:await sendEmailTracked(st.parentEmail, `النشرة الأسبوعية لابنكم ${st.name} — اللغة العربية`, newsletterEmailHtml(next, st.name, true))}));
+    });
+    const sendResults = await runEmailTasks(tasks, 6);
+    sendResults.forEach(({kind,student,to,result})=>{
+      if(result?.ok){ if(kind==="student") studentSent++; else parentSent++; }
+      else { failed++; errors.push({kind,student,to,status:result?.status||0,error:result?.error||"فشل الإرسال"}); }
+    });
+    next = { ...next, sendStats: {
+      targetStudents: targets.length,
+      studentTotal: targets.filter(s=>normEmail(s.email)).length, studentSent,
+      parentTotal: targets.filter(s=>normEmail(s.parentEmail)).length, parentSent,
+      failed, errors: errors.slice(0,20), at: new Date().toISOString()
+    }};
+    const savedStats = await putRecord(REC.newsletter, next.id, next);
+    if (!savedStats) throw new Error("تم النشر لكن تعذر حفظ حالة الإرسال في قاعدة البيانات.");
+    setNewsletters(prev => [next, ...prev.filter(x=>x.id!==next.id)]);
+    log(rec.teacherName||user?.name||"معلم", "نشر النشرة الأسبوعية", `الصف ${rec.grade} — ${effectiveBlocks.join("، ")} — الطلاب ${studentSent}/${next.sendStats.studentTotal} — أولياء الأمور ${parentSent}/${next.sendStats.parentTotal} — فشل ${failed}`);
+    return next;
+  };
+
+  const deleteNewsletter = async (id, rec = null) => {
+    const deleted = await deleteRecord(REC.newsletter, id);
+    if (!deleted) throw new Error("تعذر حذف النشرة من قاعدة البيانات.");
+    setNewsletters(prev => prev.filter(x => x.id !== id));
+    log(rec?.teacherName || user?.name || "معلم", "حذف نشرة أسبوعية", rec ? `الصف ${rec.grade} — ${(rec.blocks||[]).join("، ")}` : id);
+    return { ok: true };
+  };
+
   // مسح كامل لقائمة الطلاب دفعة واحدة — للتراجع عن استيراد خاطئ بالكامل
   // بدل حذف كل طالب يدويًا واحدًا تلو الآخر.
   const clearAllStudents = (actor) => {
@@ -6185,20 +7038,20 @@ export default function App() {
       </div>
 
       {user.role === "admin" ? (
-        <AdminHome courses={courses} students={students} attempts={attempts} progress={progress} teachers={teachers} blocksAdmin={blocksAdmin} audit={audit}
-          interventions={interventions} onAddIntervention={addIntervention} onUpdateIntervention={updateIntervention} onReopenAttempt={reopenAttempt}
-          currentActor={user?.name || "رئيس القسم"}
-          codes={codes} onUpdateCodes={(next) => updateCodes(next, user.name)}
-          orgEmail={orgEmail} onUpdateOrgEmail={(email) => updateOrgEmail(email, user.name)}
-          onSetTeacherEmail={(name, email) => setTeacherEmail(name, email, user.name)}
-          onToggleTeacher={(name) => { const v = teachers.map((t) => t.name === name ? { ...t, active: !t.active } : t); setTeachers(v); writeKey(K.teachers, v); log(user.name, "تبديل حالة معلم", name); }}
-          onAddBlock={(g, b) => { const v = { ...blocksAdmin, [g]: [...(blocksAdmin[g] || DEFAULT_BLOCKS), b] }; setBlocksAdmin(v); writeKey(K.blocksAdmin, v); log(user.name, "إضافة بلوك", `الصف ${g} — ${b}`); }}
-          onRemoveBlock={(g, b) => { const v = { ...blocksAdmin, [g]: (blocksAdmin[g] || DEFAULT_BLOCKS).filter((x) => x !== b) }; setBlocksAdmin(v); writeKey(K.blocksAdmin, v); log(user.name, "حذف بلوك", `الصف ${g} — ${b}`); }}
-          onPublishAny={(id) => { patchCourse(id, { status: "published" }); log(user.name, "نشر كورس", id); }}
-          onPublishWithDetails={(id, patch) => { patchCourse(id, patch); log(user.name, "نشر كورس بتفاصيل كاملة", `${id} — الصف ${patch.grade} — الموعد ${patch.dueDate}`); }}
-          onArchiveAny={(id) => { patchCourse(id, { status: "archived" }); log(user.name, "أرشفة كورس", id); }}
-          onDeleteCourse={(id) => { if (window.confirm("حذف الكورس نهائيًا؟")) { deleteCourseRec(id); log(user.name, "حذف كورس", id); } }}
-          onExportStudents={exportStudentsCSV} onExportAudit={exportAuditCSV} onImportStudents={importStudentsCSV} />
+        view.n === "admin-gen" ? <Generator teacherName={user.name} onCancel={()=>setView({n:"home"})} onSave={d=>{addCourse(d);log(user.name,"توليد كورس بالذكاء الاصطناعي",d.title);setView({n:"home"})}} />
+        : view.n === "admin-ai-edit" && course ? <AIEditCourse course={course} onCancel={()=>setView({n:"home"})} onSave={d=>{replaceCourse(d);log(user.name,"تحسين كورس بالذكاء الاصطناعي",d.title);setView({n:"home"})}} />
+        : <AdminHome courses={courses} students={students} attempts={attempts} progress={progress} teachers={teachers} newsletters={newsletters} blocksAdmin={blocksAdmin} blockGroups={blockGroups} audit={audit}
+          interventions={interventions} onAddIntervention={addIntervention} onUpdateIntervention={updateIntervention} onReopenAttempt={reopenAttempt} currentActor={user?.name||"رئيس القسم"}
+          codes={codes} onUpdateCodes={next=>updateCodes(next,user.name)} orgEmail={orgEmail} onUpdateOrgEmail={email=>updateOrgEmail(email,user.name)}
+          onSetTeacherEmail={(name,email)=>setTeacherEmail(name,email,user.name)} onAddTeacher={rec=>addTeacherAdmin(rec,user.name)} onDeleteTeacher={name=>deleteTeacherAdmin(name,user.name)} onSetTeacherCode={(name,code)=>setTeacherCodeAdmin(name,code,user.name)}
+          onToggleTeacher={name=>{const v=teachers.map(t=>t.name===name?{...t,active:!t.active}:t);setTeachers(v);writeKey(K.teachers,v);log(user.name,"تبديل حالة معلم",name)}}
+          onAddBlock={(g,b)=>{const list=[...(blocksAdmin[g]||DEFAULT_BLOCKS)];if(list.includes(b))return;const v={...blocksAdmin,[g]:[...list,b]};setBlocksAdmin(v);writeKey(K.blocksAdmin,v);log(user.name,"إضافة بلوك",`الصف ${g} — ${b}`)}}
+          onRemoveBlock={(g,b)=>{const v={...blocksAdmin,[g]:(blocksAdmin[g]||DEFAULT_BLOCKS).filter(x=>x!==b)};setBlocksAdmin(v);writeKey(K.blocksAdmin,v);log(user.name,"حذف بلوك",`الصف ${g} — ${b}`)}}
+          onSaveBlockGroup={(g,rec)=>{const next={...blockGroups,[g]:[...((blockGroups&&blockGroups[g])||[]),rec]};setBlockGroups(next);writeKey(K.blockGroups,next);log(user.name,"إضافة مجموعة بلوكات",`الصف ${g} — ${rec.name}`)}}
+          onDeleteBlockGroup={(g,id)=>{const next={...blockGroups,[g]:((blockGroups&&blockGroups[g])||[]).filter(x=>x.id!==id)};setBlockGroups(next);writeKey(K.blockGroups,next);log(user.name,"حذف مجموعة بلوكات",`الصف ${g}`)}}
+          onGenerateCourse={()=>setView({n:"admin-gen"})} onAIEditCourse={id=>setView({n:"admin-ai-edit",id})}
+          onPublishAny={id=>{patchCourse(id,{status:"published"});log(user.name,"نشر كورس",id)}} onPublishWithDetails={(id,patch)=>{patchCourse(id,patch);log(user.name,"نشر كورس بتفاصيل كاملة",`${id} — الصف ${patch.grade} — الموعد ${patch.dueDate}`)}} onArchiveAny={id=>{patchCourse(id,{status:"archived"});log(user.name,"أرشفة كورس",id)}}
+          onDeleteCourse={id=>{if(window.confirm("حذف الكورس نهائيًا؟")){deleteCourseRec(id);log(user.name,"حذف كورس",id)}}} onExportStudents={exportStudentsCSV} onExportAudit={exportAuditCSV} onImportStudents={importStudentsCSV} />
       ) : user.role === "teacher" ? (
         view.n === "gen" ? <Generator teacherName={user.name} onCancel={() => nav({ n: "home" })}
           onSave={(d) => { addCourse(d); log(user.name, "توليد كورس بالذكاء الاصطناعي", d.title); nav({ n: "home" }); }} />
@@ -6219,7 +7072,7 @@ export default function App() {
                 <div style={{ fontWeight: 600 }}>{i + 1}. {b.q} <Chip>{QTYPE[b.t]}</Chip></div><div style={{ color: T.green }}>الصواب: {correctText(b)}</div><div style={{ color: T.inkSoft }}>{b.e}</div></div>))}
             </div>
           </div>
-        ) : <TeacherHome teacherName={user.name} teacherEmail={user.email} courses={courses} attempts={attempts} progress={progress} students={students}
+        ) : <TeacherHome teacherName={user.name} teacherEmail={user.email} courses={courses} attempts={attempts} progress={progress} students={students} newsletters={newsletters} onSaveNewsletter={saveNewsletter} onDeleteNewsletter={deleteNewsletter}
               onNew={() => nav({ n: "gen" })} onManual={() => nav({ n: "manual" })} onPaste={() => nav({ n: "paste" })}
               onView={(id) => nav({ n: "course", id })} onEdit={(id) => nav({ n: "manual", id, edit: true })}
               onPublish={(id) => { patchCourse(id, { status: "published" }); log(user.name, "نشر كورس", id); }}
@@ -6235,7 +7088,17 @@ export default function App() {
                 const rec = { studentKey: student.key, rows, at: new Date().toISOString() };
                 setParentTokens((prev) => ({ ...prev, [token]: rec }));
                 putRecord(REC.parentTok, token, { __key: token, __val: rec });
-                log(user.name, "إنشاء رابط تقرير لولي أمر", `${student.name} — ${token}`);
+                const reportUrl = `${window.location.origin}/?parent=${encodeURIComponent(token)}`;
+                if (payload.email) {
+                  notifyEmail(payload.email, `متابعة تقدم ${student.name} — بالعربي أحلى`,
+                    `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
+                       <p>عزيزي ولي الأمر،</p>
+                       <p>يمكنكم متابعة أحدث تقدم للطالب <strong>${student.name}</strong> من خلال الرابط الآمن التالي:</p>
+                       <p><a href="${reportUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">📊 فتح تقرير التقدم</a></p>
+                       <p style="font-size:12px;color:#667085">رمز التقرير: ${token}</p>
+                     </div>`);
+                }
+                log(user.name, "إرسال تقرير لولي أمر", `${student.name} — ${token}`);
               }}
               onExport={exportStudentsCSV} onImportFile={importStudentsFile}
               onTemplate={downloadStudentTemplate}
@@ -6254,7 +7117,7 @@ export default function App() {
         <div className="wrap noprint"><button className="btn btn-q" onClick={goBack}>→ رجوع</button></div>
         <CourseView user={user} course={course} progress={progress} attempts={attempts} onProgress={saveProgress} onStartExam={startExam} onCert={(id) => nav({ n: "cert", id })} />
       </>) : (
-        <StudentHome user={user} courses={courses} progress={progress} attempts={attempts} onOpen={(id) => nav({ n: "course", id })} />
+        <StudentHome user={user} courses={courses} progress={progress} attempts={attempts} newsletters={newsletters} onOpen={(id) => nav({ n: "course", id })} onCert={(id) => nav({ n: "cert", id })} />
       )}
     </div>
   );
