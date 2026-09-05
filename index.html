@@ -9,6 +9,127 @@
   </head>
   <body style="margin:0">
     <div id="root"></div>
+    <script>
+      // Student-name compatibility layer:
+      // accepts the first 2 or 3 words only when they match the beginning of the
+      // student's full registered name. The existing App.jsx security check is
+      // preserved: before React validates, this layer resolves the same student
+      // by the last 6 digits of the school ID and substitutes the full stored name.
+      (() => {
+        const STUDENT_PREFIX = "gfs:rec:student:";
+        let studentKeysPromise = null;
+        let bypassOnce = false;
+
+        const normalizeName = (value = "") => String(value)
+          .normalize("NFKC")
+          .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
+          .replace(/ـ/g, "")
+          .replace(/[أإآٱ]/g, "ا")
+          .replace(/ى/g, "ي")
+          .trim()
+          .replace(/\s+/g, " ")
+          .toLowerCase();
+
+        const nameParts = (value) => normalizeName(value).split(" ").filter(Boolean);
+
+        const prefixMatches = (entered, stored) => {
+          const a = nameParts(entered);
+          const b = nameParts(stored);
+          if (a.length !== 2 && a.length !== 3) return false;
+          if (b.length < a.length) return false;
+          return a.every((part, i) => part === b[i]);
+        };
+
+        async function getStudentKeys() {
+          if (!studentKeysPromise) {
+            studentKeysPromise = fetch(`/api/storage?action=list&prefix=${encodeURIComponent(STUDENT_PREFIX)}`)
+              .then((r) => r.ok ? r.json() : Promise.reject(new Error("student index unavailable")))
+              .then((d) => Array.isArray(d.keys) ? d.keys : [])
+              .catch(() => []);
+          }
+          return studentKeysPromise;
+        }
+
+        async function getStudentRecord(storageKey) {
+          try {
+            const r = await fetch(`/api/storage?key=${encodeURIComponent(storageKey)}`);
+            if (!r.ok) return null;
+            const d = await r.json();
+            const raw = typeof d.value === "string" ? d.value : JSON.stringify(d.value || null);
+            return raw ? JSON.parse(raw) : null;
+          } catch {
+            return null;
+          }
+        }
+
+        function setReactInputValue(input, value) {
+          const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+          if (setter) setter.call(input, value); else input.value = value;
+          input.dispatchEvent(new Event("input", { bubbles: true }));
+          input.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+
+        async function resolveRegisteredName(enteredName, sid) {
+          if (!/^\d{6}$/.test(sid)) return null;
+          const keys = await getStudentKeys();
+          const candidates = keys.filter((k) => String(k).endsWith(`-${sid}`) || String(k).endsWith(`_${sid}`));
+          if (!candidates.length) return null;
+
+          const records = (await Promise.all(candidates.map(getStudentRecord))).filter(Boolean);
+          const matches = records.filter((s) => s.name && prefixMatches(enteredName, s.name));
+          return matches.length === 1 ? matches[0].name : null;
+        }
+
+        // Keep the visible wording aligned with the new rule without changing
+        // the original stored student data or the App.jsx component structure.
+        const refreshStudentNameLabel = () => {
+          const input = document.getElementById("nm");
+          if (!input) return;
+          const label = document.querySelector('label[for="nm"]');
+          if (label) label.textContent = "اسم الطالب (ثنائي أو ثلاثي)";
+          input.placeholder = "مثال: أحمد محمد أو أحمد محمد علي";
+        };
+        new MutationObserver(refreshStudentNameLabel).observe(document.documentElement, { childList: true, subtree: true });
+        document.addEventListener("DOMContentLoaded", refreshStudentNameLabel);
+
+        document.addEventListener("click", async (event) => {
+          const button = event.target.closest("button");
+          if (!button || bypassOnce) {
+            bypassOnce = false;
+            return;
+          }
+
+          const input = document.getElementById("nm");
+          const sidInput = document.getElementById("sid");
+          if (!input || !sidInput || !button.closest(".lh-panel")) return;
+
+          const entered = input.value;
+          const parts = nameParts(entered);
+          if (parts.length !== 2 && parts.length !== 3) return;
+          if (!/^\d{6}$/.test(sidInput.value)) return;
+
+          event.preventDefault();
+          event.stopPropagation();
+          event.stopImmediatePropagation();
+
+          const registeredName = await resolveRegisteredName(entered, sidInput.value);
+          if (!registeredName) {
+            // Re-run the original handler so its normal validation/error message
+            // remains authoritative when no unique registered match exists.
+            bypassOnce = true;
+            button.click();
+            return;
+          }
+
+          setReactInputValue(input, registeredName);
+          // Let React commit the controlled-input state, then continue normally.
+          requestAnimationFrame(() => {
+            bypassOnce = true;
+            button.click();
+          });
+        }, true);
+      })();
+    </script>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
