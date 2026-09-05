@@ -10,11 +10,9 @@
   <body style="margin:0">
     <div id="root"></div>
     <script>
-      // Student-name compatibility layer:
-      // accepts the first 2 or 3 words only when they match the beginning of the
-      // student's full registered name. The existing App.jsx security check is
-      // preserved: before React validates, this layer resolves the same student
-      // by the last 6 digits of the school ID and substitutes the full stored name.
+      // Student-name compatibility layer.
+      // Accepts the first 2 or 3 words when they match the beginning of the
+      // student's full registered name, while preserving the original App.jsx checks.
       (() => {
         const STUDENT_PREFIX = "gfs:rec:student:";
         let studentKeysPromise = null;
@@ -74,22 +72,34 @@
           const keys = await getStudentKeys();
           const candidates = keys.filter((k) => String(k).endsWith(`-${sid}`) || String(k).endsWith(`_${sid}`));
           if (!candidates.length) return null;
-
           const records = (await Promise.all(candidates.map(getStudentRecord))).filter(Boolean);
           const matches = records.filter((s) => s.name && prefixMatches(enteredName, s.name));
           return matches.length === 1 ? matches[0].name : null;
         }
 
-        // Keep the visible wording aligned with the new rule without changing
-        // the original stored student data or the App.jsx component structure.
+        // Update the student-name wording only when needed. The previous version
+        // rewrote label.textContent on every DOM mutation, which could trigger the
+        // observer again continuously and freeze the browser.
         const refreshStudentNameLabel = () => {
           const input = document.getElementById("nm");
           if (!input) return;
           const label = document.querySelector('label[for="nm"]');
-          if (label) label.textContent = "اسم الطالب (ثنائي أو ثلاثي)";
-          input.placeholder = "مثال: أحمد محمد أو أحمد محمد علي";
+          const wantedLabel = "اسم الطالب (ثنائي أو ثلاثي)";
+          const wantedPlaceholder = "مثال: أحمد محمد أو أحمد محمد علي";
+          if (label && label.textContent !== wantedLabel) label.textContent = wantedLabel;
+          if (input.placeholder !== wantedPlaceholder) input.placeholder = wantedPlaceholder;
         };
-        new MutationObserver(refreshStudentNameLabel).observe(document.documentElement, { childList: true, subtree: true });
+
+        let refreshQueued = false;
+        const observer = new MutationObserver(() => {
+          if (refreshQueued) return;
+          refreshQueued = true;
+          requestAnimationFrame(() => {
+            refreshQueued = false;
+            refreshStudentNameLabel();
+          });
+        });
+        observer.observe(document.documentElement, { childList: true, subtree: true });
         document.addEventListener("DOMContentLoaded", refreshStudentNameLabel);
 
         document.addEventListener("click", async (event) => {
@@ -114,15 +124,12 @@
 
           const registeredName = await resolveRegisteredName(entered, sidInput.value);
           if (!registeredName) {
-            // Re-run the original handler so its normal validation/error message
-            // remains authoritative when no unique registered match exists.
             bypassOnce = true;
             button.click();
             return;
           }
 
           setReactInputValue(input, registeredName);
-          // Let React commit the controlled-input state, then continue normally.
           requestAnimationFrame(() => {
             bypassOnce = true;
             button.click();
