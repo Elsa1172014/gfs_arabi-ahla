@@ -10,12 +10,7 @@
   <body style="margin:0">
     <div id="root"></div>
     <script>
-      // Student-name compatibility layer.
-      // Accepts the first 2 or 3 words when they match the beginning of the
-      // student's full registered name, while preserving the original App.jsx checks.
       (() => {
-        const STUDENT_PREFIX = "gfs:rec:student:";
-        let studentKeysPromise = null;
         let bypassOnce = false;
 
         const normalizeName = (value = "") => String(value)
@@ -30,36 +25,6 @@
 
         const nameParts = (value) => normalizeName(value).split(" ").filter(Boolean);
 
-        const prefixMatches = (entered, stored) => {
-          const a = nameParts(entered);
-          const b = nameParts(stored);
-          if (a.length !== 2 && a.length !== 3) return false;
-          if (b.length < a.length) return false;
-          return a.every((part, i) => part === b[i]);
-        };
-
-        async function getStudentKeys() {
-          if (!studentKeysPromise) {
-            studentKeysPromise = fetch(`/api/storage?action=list&prefix=${encodeURIComponent(STUDENT_PREFIX)}`)
-              .then((r) => r.ok ? r.json() : Promise.reject(new Error("student index unavailable")))
-              .then((d) => Array.isArray(d.keys) ? d.keys : [])
-              .catch(() => []);
-          }
-          return studentKeysPromise;
-        }
-
-        async function getStudentRecord(storageKey) {
-          try {
-            const r = await fetch(`/api/storage?key=${encodeURIComponent(storageKey)}`);
-            if (!r.ok) return null;
-            const d = await r.json();
-            const raw = typeof d.value === "string" ? d.value : JSON.stringify(d.value || null);
-            return raw ? JSON.parse(raw) : null;
-          } catch {
-            return null;
-          }
-        }
-
         function setReactInputValue(input, value) {
           const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
           if (setter) setter.call(input, value); else input.value = value;
@@ -67,27 +32,49 @@
           input.dispatchEvent(new Event("change", { bubbles: true }));
         }
 
-        async function resolveRegisteredName(enteredName, sid) {
-          if (!/^\d{6}$/.test(sid)) return null;
-          const keys = await getStudentKeys();
-          const candidates = keys.filter((k) => String(k).endsWith(`-${sid}`) || String(k).endsWith(`_${sid}`));
-          if (!candidates.length) return null;
-          const records = (await Promise.all(candidates.map(getStudentRecord))).filter(Boolean);
-          const matches = records.filter((s) => s.name && prefixMatches(enteredName, s.name));
-          return matches.length === 1 ? matches[0].name : null;
+        function showCompatError(message) {
+          const sidInput = document.getElementById("sid");
+          if (!sidInput) return;
+          let box = document.getElementById("student-name-compat-error");
+          if (!box) {
+            box = document.createElement("div");
+            box.id = "student-name-compat-error";
+            box.style.color = "#A6402F";
+            box.style.fontSize = "13px";
+            box.style.marginTop = "6px";
+            sidInput.parentElement?.insertAdjacentElement("afterend", box);
+          }
+          box.textContent = message;
         }
 
-        // Update the student-name wording only when needed. The previous version
-        // rewrote label.textContent on every DOM mutation, which could trigger the
-        // observer again continuously and freeze the browser.
+        function clearCompatError() {
+          const box = document.getElementById("student-name-compat-error");
+          if (box) box.remove();
+        }
+
+        async function resolveRegisteredName(name, sid) {
+          try {
+            const r = await fetch("/api/student-resolve", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name, sid })
+            });
+            const data = await r.json().catch(() => ({}));
+            if (r.ok && data?.ok && data?.fullName) return { ok: true, fullName: data.fullName };
+            if (r.status === 409) return { ok: false, message: "يوجد أكثر من طالب مطابق. تحقّق من الرقم المدرسي أو راجع معلمك." };
+            if (r.status === 404) return { ok: false, message: "الاسم لا يطابق الطالب المسجّل لهذا الرقم. اكتب أول اسمين أو أول ثلاثة أسماء كما هي في المنصة." };
+            return { ok: false, message: "تعذّر التحقق من بيانات الطالب الآن. حاول مرة أخرى." };
+          } catch {
+            return { ok: false, message: "تعذّر الاتصال بخدمة التحقق. حاول مرة أخرى." };
+          }
+        }
+
         const refreshStudentNameLabel = () => {
           const input = document.getElementById("nm");
           if (!input) return;
           const label = document.querySelector('label[for="nm"]');
-          const wantedLabel = "اسم الطالب (ثنائي أو ثلاثي)";
-          const wantedPlaceholder = "مثال: أحمد محمد أو أحمد محمد علي";
-          if (label && label.textContent !== wantedLabel) label.textContent = wantedLabel;
-          if (input.placeholder !== wantedPlaceholder) input.placeholder = wantedPlaceholder;
+          if (label && label.textContent !== "اسم الطالب (ثنائي أو ثلاثي)") label.textContent = "اسم الطالب (ثنائي أو ثلاثي)";
+          if (input.placeholder !== "مثال: أحمد محمد أو أحمد محمد علي") input.placeholder = "مثال: أحمد محمد أو أحمد محمد علي";
         };
 
         let refreshQueued = false;
@@ -104,7 +91,8 @@
 
         document.addEventListener("click", async (event) => {
           const button = event.target.closest("button");
-          if (!button || bypassOnce) {
+          if (!button) return;
+          if (bypassOnce) {
             bypassOnce = false;
             return;
           }
@@ -115,25 +103,30 @@
 
           const entered = input.value;
           const parts = nameParts(entered);
+          const sid = sidInput.value;
+
           if (parts.length !== 2 && parts.length !== 3) return;
-          if (!/^\d{6}$/.test(sidInput.value)) return;
+          if (!/^\d{6}$/.test(sid)) return;
 
           event.preventDefault();
           event.stopPropagation();
           event.stopImmediatePropagation();
+          clearCompatError();
+          button.disabled = true;
 
-          const registeredName = await resolveRegisteredName(entered, sidInput.value);
-          if (!registeredName) {
-            bypassOnce = true;
-            button.click();
+          const result = await resolveRegisteredName(entered, sid);
+          button.disabled = false;
+
+          if (!result.ok) {
+            showCompatError(result.message);
             return;
           }
 
-          setReactInputValue(input, registeredName);
-          requestAnimationFrame(() => {
+          setReactInputValue(input, result.fullName);
+          setTimeout(() => {
             bypassOnce = true;
             button.click();
-          });
+          }, 30);
         }, true);
       })();
     </script>
