@@ -46,19 +46,27 @@ export default async function handler(req, res) {
     const passed = attempts.filter((a) => a?.passed);
     const certificates = new Set(passed.map((a) => a.serial || `${a.student || "?"}|${a.course || "?"}`)).size;
 
+    // External dashboard must represent ALL registered students.
+    // A student with no assigned course yet is included with 0% progress,
+    // so the three tier counts always add up to the real student total.
+    let studentsWithAssignedCourses = 0;
     const rows = students.map((s) => {
       const assigned = published.filter((c) => assignedTo(c, s));
-      if (!assigned.length) return null;
+      if (!assigned.length) return { pct: 0, assigned: 0 };
+
+      studentsWithAssignedCourses += 1;
       const studentAttempts = attempts.filter((a) => a?.student === s.key);
-      const passedCourses = new Set(studentAttempts.filter((a) => a.passed).map((a) => a.course)).size;
+      const passedCourses = new Set(
+        studentAttempts.filter((a) => a.passed).map((a) => a.course)
+      ).size;
       const pct = Math.round((passedCourses / assigned.length) * 100);
-      return { pct };
-    }).filter(Boolean);
+      return { pct, assigned: assigned.length };
+    });
 
     const advanced = rows.filter((r) => r.pct >= 90).length;
     const progressing = rows.filter((r) => r.pct >= 70 && r.pct < 90).length;
     const support = rows.filter((r) => r.pct < 70).length;
-    const total = rows.length;
+    const total = students.length;
     const pct = (n) => total ? Math.round((n / total) * 100) : 0;
 
     const activeCutoff = Date.now() - 15 * 60 * 1000;
@@ -75,7 +83,9 @@ export default async function handler(req, res) {
       attempts: attempts.length,
       certificates,
       activeNow,
-      studentsWithAssignedCourses: total,
+      studentsWithAssignedCourses,
+      studentsWithoutAssignedCourses: Math.max(0, students.length - studentsWithAssignedCourses),
+      tiersTotal: total,
       tiers: {
         advanced: { count: advanced, pct: pct(advanced) },
         progressing: { count: progressing, pct: pct(progressing) },
