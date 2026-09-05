@@ -12,6 +12,7 @@
     <script>
       (() => {
         let bypassOnce = false;
+        let statsTimer = null;
 
         const normalizeName = (value = "") => String(value)
           .normalize("NFKC")
@@ -69,13 +70,59 @@
           }
         }
 
-        const refreshStudentNameLabel = () => {
+        function refreshStudentNameLabel() {
           const input = document.getElementById("nm");
           if (!input) return;
           const label = document.querySelector('label[for="nm"]');
           if (label && label.textContent !== "اسم الطالب (ثنائي أو ثلاثي)") label.textContent = "اسم الطالب (ثنائي أو ثلاثي)";
           if (input.placeholder !== "مثال: أحمد محمد أو أحمد محمد علي") input.placeholder = "مثال: أحمد محمد أو أحمد محمد علي";
-        };
+        }
+
+        function num(v) {
+          return Number.isFinite(Number(v)) ? Number(v).toLocaleString("ar-AE") : "—";
+        }
+
+        function applyLiveStats(stats) {
+          const activeEls = document.querySelectorAll(".lx-active strong, .lx-live-sub");
+          activeEls.forEach((el) => {
+            if (el.classList.contains("lx-live-sub")) el.textContent = `${num(stats.activeNow)} متعلمًا نشطًا الآن`;
+            else el.textContent = num(stats.activeNow);
+          });
+
+          const tierData = [stats.tiers?.advanced, stats.tiers?.progressing, stats.tiers?.support];
+          document.querySelectorAll(".lx-tier").forEach((el, i) => {
+            const t = tierData[i];
+            if (!t) return;
+            const strong = el.querySelector("strong");
+            const small = el.querySelector("small");
+            if (strong) strong.textContent = `${t.pct}%`;
+            if (small) small.textContent = `${num(t.count)} طالب`;
+            const ring = el.querySelector(".lx-ring");
+            if (ring) ring.style.setProperty("--p", t.pct);
+          });
+
+          document.querySelectorAll(".lh-stats .lh-stat").forEach((el) => {
+            const label = (el.querySelector("span")?.textContent || "").trim();
+            const value = el.querySelector("b");
+            if (!value) return;
+            if (label.includes("طالب")) value.textContent = num(stats.students);
+            else if (label.includes("كورس")) value.textContent = num(stats.publishedCourses);
+            else if (label.includes("شهادة")) value.textContent = num(stats.certificates);
+          });
+
+          const note = document.querySelector(".lh-gauge-note");
+          if (note) note.textContent = `نسبة إنجاز الطلاب لكورساتهم المُسنَدة (${num(stats.studentsWithAssignedCourses)} طالب لديهم كورسات)`;
+        }
+
+        async function refreshStats() {
+          try {
+            const r = await fetch(`/api/public-stats?t=${Date.now()}`, { cache: "no-store" });
+            if (!r.ok) return;
+            const data = await r.json();
+            if (!data || data.error) return;
+            applyLiveStats(data);
+          } catch {}
+        }
 
         let refreshQueued = false;
         const observer = new MutationObserver(() => {
@@ -87,7 +134,12 @@
           });
         });
         observer.observe(document.documentElement, { childList: true, subtree: true });
-        document.addEventListener("DOMContentLoaded", refreshStudentNameLabel);
+
+        document.addEventListener("DOMContentLoaded", () => {
+          refreshStudentNameLabel();
+          refreshStats();
+          statsTimer = setInterval(refreshStats, 30000);
+        });
 
         document.addEventListener("click", async (event) => {
           const button = event.target.closest("button");
@@ -126,7 +178,7 @@
           setTimeout(() => {
             bypassOnce = true;
             button.click();
-          }, 30);
+          }, 120);
         }, true);
       })();
     </script>
