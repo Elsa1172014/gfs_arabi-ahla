@@ -1,47 +1,8 @@
 (() => {
-  const VERSION = "2026-09-12-content-v2";
+  const VERSION = "2026-09-12-hamza-approved-v1";
   const MARKER_KEY = `gfs:course-content-upgrade:${VERSION}`;
   const COURSE_PREFIX = "gfs:rec:course:";
   const API = "/api/storage";
-
-  /* فيديوهات تمت مراجعة موضوعها يدويًا. لا نضع فيديو غير متعلق بالدرس. */
-  const VIDEO_IDS = {
-    "الهمزة المتوسطة": "Zu6W9eO6B8Q",
-    "الفاعل ونائب الفاعل": "2tLJA0MfiJA",
-    "الألف اللينة في آخر الأسماء": "3nbdyrRObf0",
-    "الاستعارة التصريحية": "Is4R7o4u9XU",
-    "الاستعارة المكنية": "Is4R7o4u9XU",
-    "التشبيه المرسل": "JY0VJekdfuA",
-    "التشبيه المؤكد": "JY0VJekdfuA",
-    "التشبيه المجمل": "JY0VJekdfuA",
-    "التشبيه المفصَّل": "JY0VJekdfuA",
-    "التشبيه التمثيلي": "JY0VJekdfuA",
-    "التشبيه الضمني": "JY0VJekdfuA",
-    "همزة الوصل وهمزة القطع": "R6ZyWeqebdw",
-    "الهمزة المتطرفة": "CnASFuLa51Q",
-    "المبتدأ والخبر": "8LpQNzz7AMI",
-    "أقسام الكلام: اسم وفعل وحرف": "LXDtA9IZEWU",
-    "المفعول به": "b7CLeDUXUvE",
-    "المفعول فيه (ظرف الزمان والمكان)": "b7CLeDUXUvE",
-    "المفعول معه": "b7CLeDUXUvE",
-    "المفعول المطلق": "b7CLeDUXUvE",
-    "المفعول لأجله": "b7CLeDUXUvE",
-    "المقابلة": "G9RFzCQXZGo"
-  };
-
-  const ART_BY_TITLE = {
-    "الهمزة المتوسطة": ["hamza-anatomy", "hamza-scale"],
-    "الفاعل ونائب الفاعل": ["passive-flow"],
-    "الألف اللينة في آخر الأسماء": ["alif-tree"]
-  };
-
-  const normalize = (s) => String(s || "")
-    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
-    .replace(/ـ/g, "")
-    .replace(/[أإآٱ]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .trim().toLowerCase();
 
   async function req(url, opts) {
     const r = await fetch(url, opts);
@@ -67,149 +28,183 @@
     });
   }
 
-  function stripUpgradePrefix(q) {
-    return String(q || "")
-      .replace(/^تحدّي\s*\d+\s*:\s*/u, "")
-      .replace(/^موقف\s*\d+\s*:\s*/u, "")
-      .replace(/^حلّل ثم اختر\s*:\s*/u, "")
-      .trim();
-  }
-
-  function cleanBank(bank) {
-    if (!Array.isArray(bank)) return [];
-    const out = [], seen = new Set();
-    for (const raw of bank) {
-      if (!raw) continue;
-      const q = stripUpgradePrefix(raw.q);
-      const key = normalize(q || raw.sn);
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      out.push({ ...raw, q });
-      if (out.length === 25) break;
-    }
-    return out;
-  }
-
-  function getRuleInfo(course, oldStages, cleanStages) {
-    const upgradedRule = oldStages.find(s => s?.t === "rule" && s?.__gfsUpgrade);
-    const originalRule = cleanStages.find(s => s?.t === "rule");
-    const visual = oldStages.find(s => s?.__gfsUpgrade && Array.isArray(s?.bullets) && s.bullets.length);
-    const summary = [...cleanStages].reverse().find(s => s?.t === "summary");
-    const ruleText = upgradedRule?.body || originalRule?.body || summary?.body || course.objective || `تعلّم مهارة ${course.title} من خلال الملاحظة والتطبيق.`;
-    const bullets = visual?.bullets?.length ? visual.bullets :
-      summary?.bullets?.length ? summary.bullets :
-      originalRule?.concepts?.length ? originalRule.concepts :
-      [course.objective || ruleText];
-    return { ruleText, bullets, originalRule };
-  }
-
-  function warmupFor(course, ruleInfo) {
-    if (course.title === "الهمزة المتوسطة") {
-      return {
-        t: "rule", title: "تهيئة — فكّر قبل أن تشاهد", strat: "استدعاء المعرفة السابقة",
-        body: "أمامك كلمات تتغيّر فيها صورة الهمزة. لا تحفظ الرسم؛ ابحث أولًا عن الحركة الأقوى.",
-        art: ["hamza-anatomy"],
-        checks: [
-          { t: "mcq", q: "في كلمة «سُئِلَ»؛ ما حركة الهمزة؟", o: ["الكسرة", "الضمة", "الفتحة", "السكون"], a: 0, e: "الهمزة مكسورة، والكسرة أقوى الحركات." },
-          { t: "tf", q: "عند رسم الهمزة المتوسطة ننظر إلى حركة الهمزة وحركة الحرف الذي قبلها.", a: true, e: "صحيح؛ ثم نأخذ أقوى الحركتين." },
-          { t: "match", q: "صل كل حركة بما يناسبها من كرسي الهمزة.", pairs: [["الكسرة", "نبرة ئ"], ["الضمة", "واو ؤ"], ["الفتحة", "ألف أ"], ["السكون", "السطر ء"]], e: "هذه خريطة القرار الأساسية." }
-        ],
-        __gfsUpgrade: VERSION
-      };
-    }
-    const b = ruleInfo.bullets || [];
-    const first = b[0] || course.objective || ruleInfo.ruleText;
-    const second = b[1] || ruleInfo.ruleText;
-    return {
-      t: "rule", title: "تهيئة — ماذا تلاحظ؟", strat: "ملاحظة واستنتاج",
-      body: `ابدأ من عنوان الدرس «${course.title}». اقرأ الهدف، ثم توقّع القاعدة قبل مشاهدة الفيديو.`,
+  const HAMZA_STAGES = [
+    {
+      t: "discover",
+      title: "مقدمة وتمهيد — ابدأ بالملاحظة لا بالحفظ",
+      strat: "التعلّم بالاكتشاف",
+      intro: "لاحظ الكلمات الثلاث. لا تبحث عن القاعدة مباشرة؛ اسأل نفسك: ما حركة الهمزة؟ وما حركة الحرف الذي قبلها؟",
+      table: {
+        head: ["الكلمة", "حركة الهمزة", "حركة ما قبلها", "صورة الهمزة"],
+        rows: [
+          ["بِئْر", "سكون", "كسرة", "على نبرة ئ"],
+          ["مُؤْمِن", "سكون", "ضمة", "على واو ؤ"],
+          ["مَسْأَلَة", "فتحة", "سكون", "على ألف أ"]
+        ]
+      },
+      art: ["hamza-anatomy"],
       checks: [
-        { t: "mcq", q: `أي خطوة ترتبط مباشرة بمهارة «${course.title}»؟`, o: [first, "تجاوز الأمثلة والبدء بالاختبار", "حفظ شكل الإجابة دون فهم", "اختيار إجابة عشوائية"], a: 0, e: `التركيز هنا على: ${first}` },
-        { t: "tf", q: second, a: true, e: ruleInfo.ruleText }
+        { t: "mcq", q: "ما العنصران اللذان نقارنهما قبل اختيار كرسي الهمزة؟", o: ["عدد الحروف وطول الكلمة", "حركة الهمزة وحركة ما قبلها", "أول حرف وآخر حرف", "حركة ما بعد الهمزة فقط"], a: 1, e: "نقارن حركة الهمزة بحركة الحرف الذي قبلها." },
+        { t: "tf", q: "شكل الهمزة المتوسطة يتغير عشوائيًا من كلمة إلى أخرى.", a: false, e: "رسمها تحكمه قاعدة قوة الحركات." },
+        { t: "mcq", q: "أي كلمة من الآتي كُتبت همزتها على نبرة؟", o: ["مُؤْمِن", "بِئْر", "سَأَلَ", "رُؤْيَة"], a: 1, e: "في بِئْر سبقت الهمزةَ كسرة، وهي أقوى من السكون." }
       ],
       __gfsUpgrade: VERSION
-    };
-  }
-
-  function videoFor(course, oldStages, ruleInfo) {
-    const previous = oldStages.find(s => s?.t === "video");
-    const preservedClips = Array.isArray(previous?.clips) ? previous.clips.filter(v => v?.id) : [];
-    const mapped = VIDEO_IDS[course.title];
-    const clips = preservedClips.length ? preservedClips : mapped ? [{ id: mapped, start: 0, label: `شرح ${course.title}` }] : [];
-    const stage = {
-      t: "video", title: "شاهد ثم طبّق", strat: "التعلّم المدمج",
-      intro: `شاهد الشرح الخاص بدرس «${course.title}» بتركيز. بعده ستجيب عن تحقق قصير قبل الانتقال.`,
-      clips,
-      videoQuery: clips.length ? undefined : `${course.title} شرح مبسط لغة عربية`,
+    },
+    {
+      t: "video",
+      title: "الفيديو والفهم — شاهد ثم تحقّق",
+      strat: "التعلّم المدمج",
+      intro: "شاهد الفيديو القصير، ثم أجب عن أسئلة الفهم قبل الانتقال إلى القاعدة.",
+      clips: [{ id: "N99RtSaAEj4", start: 0, label: "شرح مبسّط للهمزة المتوسطة" }],
+      checks: [
+        { t: "mcq", q: "ما الحركتان اللتان تدخلان في قرار رسم الهمزة المتوسطة؟", o: ["حركة أول حرف وآخر حرف", "حركة الهمزة وحركة ما قبلها", "حركة ما بعدها فقط", "السكون فقط"], a: 1, e: "هذه هي نقطة البداية في القاعدة." },
+        { t: "match", q: "صل كل خطوة بما يليها في طريقة اتخاذ القرار.", pairs: [["1. أحدد حركة الهمزة", "2. أحدد حركة ما قبلها"], ["2. أحدد حركة ما قبلها", "3. أقارن قوة الحركتين"], ["3. أقارن قوة الحركتين", "4. أختار الكرسي المناسب"]], e: "القرار الصحيح يمر بأربع خطوات واضحة." }
+      ],
       __gfsUpgrade: VERSION
-    };
-    if (course.title === "الهمزة المتوسطة") {
-      stage.checks = [
-        { t: "mcq", q: "بعد الشرح: ما ترتيب قوة الحركات من الأقوى إلى الأضعف؟", o: ["الكسرة، الضمة، الفتحة، السكون", "الضمة، الكسرة، السكون، الفتحة", "الفتحة، الضمة، الكسرة، السكون", "السكون، الفتحة، الضمة، الكسرة"], a: 0, e: "الكسرة ثم الضمة ثم الفتحة ثم السكون." },
-        { t: "tf", q: "إذا كانت الكسرة إحدى الحركتين فإنها تحسم رسم الهمزة على نبرة غالبًا.", a: true, e: "الكسرة أقوى الحركات." },
-        { t: "fill", q: "اكتب كلمة صحيحة فيها همزة متوسطة على واو.", a: ["مؤمن", "مسؤول", "رؤوس", "تفاؤل", "مُؤْمِن"], e: "أي مثال صحيح من هذه الأمثلة مقبول." }
-      ];
-    } else {
-      const b = ruleInfo.bullets || [];
-      stage.checks = [
-        { t: "tf", q: ruleInfo.ruleText, a: true, e: "هذه هي الفكرة الرئيسة في الدرس." },
-        { t: "mcq", q: "أي نقطة من الآتي ينبغي أن تستخدمها عند التطبيق؟", o: [b[1] || b[0] || course.objective, "أتجاهل القاعدة", "أحفظ الإجابة نفسها", "أختار بلا تعليل"], a: 0, e: b[1] || b[0] || ruleInfo.ruleText }
-      ];
+    },
+    {
+      t: "summary",
+      title: "أقوى الحركتين — إنفوجرافيك القوة",
+      strat: "التشفير البصري",
+      body: "الكسرة أقوى، ثم الضمة، ثم الفتحة، ثم السكون. الحركة الأقوى هي التي تحدد كرسي الهمزة.",
+      bullets: ["الكسرة ِ ← نبرة ئ", "الضمة ُ ← واو ؤ", "الفتحة َ ← ألف أ", "السكون ْ ← الأضعف"],
+      art: ["hamza-scale"],
+      checks: [
+        { t: "mcq", q: "أي الحركات أقوى؟", o: ["السكون", "الفتحة", "الضمة", "الكسرة"], a: 3, e: "الكسرة هي أقوى الحركات." },
+        { t: "mcq", q: "أنا أقوى من الفتحة وأضعف من الكسرة. من أنا؟", o: ["السكون", "الضمة", "الفتحة", "الكسرة"], a: 1, e: "الضمة تأتي في المرتبة الثانية." }
+      ],
+      __gfsUpgrade: VERSION
+    },
+    {
+      t: "worked",
+      title: "على الألف — عندما تفوز الفتحة",
+      strat: "النمذجة المتدرّجة",
+      intro: "اضغط المثال لترى القرار خطوة خطوة.",
+      items: [
+        { w: "سَأَلَ", steps: ["حركة الهمزة: فتحة", "حركة ما قبلها: فتحة", "الأقوى: الفتحة", "الكرسي المناسب: الألف أ"] },
+        { w: "مَسْأَلَة", steps: ["حركة الهمزة: فتحة", "حركة ما قبلها: سكون", "الفتحة أقوى من السكون", "إذن تكتب الهمزة على الألف"] }
+      ],
+      checks: [
+        { t: "mcq", q: "اختر الكلمة التي كُتبت همزتها على الألف.", o: ["بِئْر", "سَأَلَ", "مُؤْمِن", "فِئَة"], a: 1, e: "في سأل الفتحة هي الأقوى." },
+        { t: "fill", q: "أكمل الكلمة بالكرسي الصحيح: مَسْـ…ـلَة", a: ["أ"], e: "الفتحة أقوى من السكون؛ لذلك نكتبها على ألف." }
+      ],
+      __gfsUpgrade: VERSION
+    },
+    {
+      t: "worked",
+      title: "على الواو — عندما تفوز الضمة",
+      strat: "النمذجة المتدرّجة",
+      intro: "لاحظ كيف تحسم الضمة القرار.",
+      items: [
+        { w: "مُؤْمِن", steps: ["حركة الهمزة: سكون", "حركة ما قبلها: ضمة", "الضمة أقوى من السكون", "الكرسي المناسب: الواو ؤ"] },
+        { w: "رُؤْيَة", steps: ["الهمزة ساكنة", "ما قبلها مضموم", "الضمة هي الأقوى", "تكتب الهمزة على الواو"] }
+      ],
+      checks: [
+        { t: "mcq", q: "أي كتابة صحيحة؟", o: ["مُأْمِن", "مُؤْمِن", "مُئْمِن", "مُءْمِن"], a: 1, e: "الضمة أقوى من السكون؛ لذلك تكتب على واو." },
+        { t: "tf", q: "إذا كانت الضمة هي الأقوى، فالكرسي المناسب هو الواو.", a: true, e: "صحيح." }
+      ],
+      __gfsUpgrade: VERSION
+    },
+    {
+      t: "worked",
+      title: "على الياء — عندما تفوز الكسرة",
+      strat: "النمذجة المتدرّجة",
+      intro: "الكسرة أقوى الحركات؛ لذلك تحسم القرار بسرعة.",
+      items: [
+        { w: "بِئْر", steps: ["الهمزة ساكنة", "ما قبلها مكسور", "الكسرة أقوى من السكون", "تكتب الهمزة على نبرة ئ"] },
+        { w: "فِئَة", steps: ["الهمزة مفتوحة", "ما قبلها مكسور", "الكسرة أقوى من الفتحة", "تكتب الهمزة على نبرة ئ"] }
+      ],
+      checks: [
+        { t: "mcq", q: "أي كلمة همزتها على نبرة؟", o: ["رُؤْيَة", "سَأَلَ", "فِئَة", "مُؤْمِن"], a: 2, e: "في فئة سبقت الهمزة كسرة وهي الأقوى." },
+        { t: "fill", q: "اكتب كرسي الهمزة الموافق للكسرة.", a: ["ئ"], e: "الكسرة يناسبها النبرة." }
+      ],
+      __gfsUpgrade: VERSION
+    },
+    {
+      t: "rule",
+      title: "حالات خاصة — لا تطبّق القاعدة آليًا",
+      strat: "الانتباه إلى الاستثناء والسياق",
+      body: "بعض الكلمات تحتاج النظر إلى بنية الكلمة وحروف المد، وقد ترسم الهمزة فيها منفردة على السطر، مثل: قراءة، عباءة، مروءة.",
+      concepts: ["قراءة", "عباءة", "مروءة"],
+      note: "القاعدة أساس القرار، لكن الكلمة كاملة هي الحكم النهائي.",
+      checks: [
+        { t: "mcq", q: "أي كلمة تظهر فيها الهمزة منفردة على السطر؟", o: ["سَأَلَ", "قِرَاءَة", "بِئْر", "مُؤْمِن"], a: 1, e: "في قراءة تظهر الهمزة على السطر." },
+        { t: "tf", q: "في الحالات الخاصة نفحص الكلمة كاملة ولا نطبق قاعدة القوة بصورة آلية فقط.", a: true, e: "صحيح؛ حروف المد قد تؤثر في الرسم." }
+      ],
+      __gfsUpgrade: VERSION
+    },
+    {
+      t: "summary",
+      title: "خريطة المفاهيم — القرار في نظرة واحدة",
+      strat: "الخريطة المفاهيمية",
+      body: "حدّد → قارن → اختر → علّل.",
+      bullets: ["ِ الكسرة ← ئ", "ُ الضمة ← ؤ", "َ الفتحة ← أ", "ْ السكون ← الأضعف"],
+      art: ["hamza-scale", "hamza-anatomy"],
+      checks: [
+        { t: "match", q: "صل الحركة بالكرسي المناسب.", pairs: [["الكسرة", "ئ"], ["الضمة", "ؤ"], ["الفتحة", "أ"]], e: "هذه الخريطة تختصر قاعدة أقوى الحركتين." },
+        { t: "mcq", q: "ما الترتيب الصحيح لاتخاذ القرار؟", o: ["أختار الكرسي ثم أبحث عن الحركات", "أحدد الحركتين ثم أقارن القوة ثم أختار الكرسي", "أنظر إلى آخر حرف فقط", "أحفظ شكل الكلمة دون تعليل"], a: 1, e: "هذه هي طريقة الحل الصحيحة." }
+      ],
+      __gfsUpgrade: VERSION
+    },
+    {
+      t: "template",
+      title: "محاكاة وتطبيق — ميزان الهمزة",
+      strat: "التعلّم بالقالب",
+      cols: ["الكلمة", "حركة الهمزة", "حركة ما قبلها", "الأقوى", "الرسم"],
+      rows: [
+        ["يُئِسَ", "كسرة", "ضمة", "الكسرة", "ئ"],
+        ["رُؤُوس", "ضمة", "ضمة", "الضمة", "ؤ"],
+        ["شَأْن", "سكون", "فتحة", "الفتحة", "أ"],
+        ["عَبَاءَة", "فتحة", "ألف مد", "حالة خاصة", "ء"]
+      ],
+      opts: {
+        1: ["كسرة", "ضمة", "فتحة", "سكون"],
+        2: ["كسرة", "ضمة", "فتحة", "سكون", "ألف مد"],
+        3: ["الكسرة", "الضمة", "الفتحة", "السكون", "حالة خاصة"],
+        4: ["ئ", "ؤ", "أ", "ء"]
+      },
+      checks: [
+        { t: "mcq", q: "همزة ساكنة وما قبلها مكسور: ما الكرسي الصحيح؟", o: ["أ", "ؤ", "ئ", "ء"], a: 2, e: "الكسرة أقوى من السكون." },
+        { t: "mcq", q: "همزة مفتوحة وما قبلها مضموم: أي حركة هي الأقوى؟", o: ["الفتحة", "الضمة", "السكون", "لا توجد حركة أقوى"], a: 1, e: "الضمة أقوى من الفتحة." }
+      ],
+      __gfsUpgrade: VERSION
     }
-    return stage;
-  }
+  ];
 
-  function simpleRuleStage(course, ruleInfo) {
-    const art = ART_BY_TITLE[course.title] || [];
-    return {
-      ...(ruleInfo.originalRule || {}),
-      t: "rule", title: "القاعدة بأبسط صورة", strat: "شرح مباشر مبسّط",
-      body: ruleInfo.ruleText,
-      concepts: ruleInfo.originalRule?.concepts?.length ? ruleInfo.originalRule.concepts : ruleInfo.bullets,
-      art,
-      note: "افهم الفكرة أولًا، ثم طبّقها على مثال جديد. لا تعتمد على حفظ المثال.",
-      __gfsUpgrade: VERSION
-    };
-  }
+  const HAMZA_BANK = [
+    { t: "mcq", sn: "تحليل قوة الحركات", q: "في كلمة «سُئِلَ»؛ ما الحركة الأقوى التي حددت رسم الهمزة؟", o: ["الكسرة", "الضمة", "الفتحة", "السكون"], a: 0, e: "الهمزة مكسورة، والكسرة أقوى من الضمة." },
+    { t: "tf", sn: "مقارنة", q: "الكسرة أقوى من الضمة في ترتيب قوة الحركات.", a: true, e: "الترتيب يبدأ بالكسرة ثم الضمة." },
+    { t: "fill", sn: "كرسي الحركة", q: "اكتب كرسي الهمزة الذي يناسب الضمة.", a: ["ؤ"], e: "الضمة يناسبها الواو." },
+    { t: "mcq", sn: "اكتشاف الرسم", q: "أي كلمة كُتبت همزتها المتوسطة على الألف؟", o: ["بِئْر", "سَأَلَ", "مُؤْمِن", "فِئَة"], a: 1, e: "في سأل الفتحة هي الأقوى." },
+    { t: "tf", sn: "ترتيب", q: "السكون هو أقوى الحركات في قاعدة الهمزة المتوسطة.", a: false, e: "السكون أضعف الحركات." },
+    { t: "fill", sn: "كرسي الحركة", q: "اكتب كرسي الهمزة الذي يناسب الكسرة.", a: ["ئ"], e: "الكسرة يناسبها كرسي الياء/النبرة." },
+    { t: "mcq", sn: "تمييز", q: "أي كلمة كُتبت همزتها على الواو؟", o: ["رُؤْيَة", "بِئْر", "فِئَة", "سَأَلَ"], a: 0, e: "في رؤية الضمة أقوى من السكون." },
+    { t: "tf", sn: "قاعدة القرار", q: "نقارن عند رسم الهمزة المتوسطة بين حركة الهمزة وحركة ما قبلها.", a: true, e: "هذه هي قاعدة القرار." },
+    { t: "mcq", sn: "اختيار الكرسي", q: "في كلمة «فِئَة»؛ ما الكرسي الصحيح للهمزة؟", o: ["أ", "ؤ", "ئ", "ء"], a: 2, e: "الكسرة أقوى من الفتحة." },
+    { t: "fill", sn: "كرسي الحركة", q: "اكتب كرسي الهمزة الذي يناسب الفتحة.", a: ["أ"], e: "الفتحة يناسبها الألف." },
+    { t: "mcq", sn: "سُلّم القوة", q: "أي ترتيب صحيح من الأقوى إلى الأضعف؟", o: ["كسرة ← ضمة ← فتحة ← سكون", "ضمة ← كسرة ← فتحة ← سكون", "فتحة ← ضمة ← كسرة ← سكون", "سكون ← فتحة ← ضمة ← كسرة"], a: 0, e: "هذا هو ترتيب قوة الحركات." },
+    { t: "tf", sn: "تطبيق", q: "في كلمة «مُؤْمِن»؛ تناسب الضمةُ الواوَ.", a: true, e: "الضمة أقوى من السكون هنا." },
+    { t: "mcq", sn: "حالة مركبة", q: "همزة ساكنة وما قبلها مفتوح؛ أين تُكتب؟", o: ["ئ", "ؤ", "أ", "ء"], a: 2, e: "الفتحة أقوى من السكون؛ فتكتب على الألف." },
+    { t: "fill", sn: "تصحيح", q: "صحح كتابة الكلمة: «مُئْمِن».", a: ["مؤمن", "مُؤْمِن"], e: "الصواب على الواو لأن الضمة هي الأقوى." },
+    { t: "tf", sn: "تعليل", q: "في «بِئْر» تغلب الكسرةُ السكونَ.", a: true, e: "لذلك تكتب الهمزة على نبرة." },
+    { t: "mcq", sn: "تمييز بصري", q: "أي الكلمات الآتية همزتها على نبرة؟", o: ["مَسْأَلَة", "فِئَة", "رُؤْيَة", "مُؤْمِن"], a: 1, e: "الكسرة قبل الهمزة في فئة هي الأقوى." },
+    { t: "fill", sn: "تصحيح", q: "صحح كتابة الكلمة: «فَأَة» لتصبح الكلمة المقصودة بمعنى جماعة قليلة.", a: ["فئة", "فِئَة"], e: "تكتب الهمزة على نبرة: فئة." },
+    { t: "tf", sn: "حالات خاصة", q: "قد تحتاج بعض الكلمات إلى النظر إلى حروف المد قبل الحكم النهائي على رسم الهمزة.", a: true, e: "مثل قراءة وعباءة ومروءة." },
+    { t: "mcq", sn: "حالة خاصة", q: "أي كلمة تظهر فيها الهمزة منفردة على السطر؟", o: ["قِرَاءَة", "بِئْر", "سَأَلَ", "مُؤْمِن"], a: 0, e: "قراءة من الحالات التي تظهر فيها الهمزة على السطر." },
+    { t: "fill", sn: "إكمال", q: "أكمل الشكل الصحيح: رُ_يَة.", a: ["ؤ"], e: "الصواب: رُؤْيَة." },
+    { t: "mcq", sn: "تحليل", q: "في «مَسْأَلَة»؛ أي حركة هي الأقوى؟", o: ["السكون", "الفتحة", "الضمة", "الكسرة"], a: 1, e: "الفتحة أقوى من السكون." },
+    { t: "tf", sn: "استراتيجية الحل", q: "يمكن اختيار كرسي الهمزة قبل تحديد الحركتين.", a: false, e: "يجب تحديد الحركتين أولًا ثم المقارنة." },
+    { t: "match", sn: "ربط المفهوم", q: "صل كل حركة بالكرسي الذي يناسبها.", pairs: [["الكسرة", "ئ"], ["الضمة", "ؤ"], ["الفتحة", "أ"]], e: "هذه خريطة المقاعد الأساسية." },
+    { t: "fill", sn: "إكمال", q: "أكمل الكلمة بالكرسي الصحيح: بِ_ْر.", a: ["ئ"], e: "الصواب: بِئْر." },
+    { t: "mcq", sn: "الفكرة المركزية", q: "أي عبارة تلخص قاعدة الهمزة المتوسطة أفضل تلخيص؟", o: ["الحركة الأقوى تحدد كرسي الهمزة", "الكلمة الأطول تحدد الكرسي", "آخر حرف في الكلمة يحدد الكرسي", "شكل الهمزة يحفظ بلا تعليل"], a: 0, e: "نحدد الحركتين ونأخذ الأقوى ثم نختار الكرسي." }
+  ];
 
-  function visualStage(course, ruleInfo) {
-    return {
-      t: "summary", title: "إنفوجرافيك — خريطة القرار", strat: "التشفير البصري",
-      body: `حوّل قاعدة «${course.title}» إلى خطوات قصيرة قابلة للتطبيق.`,
-      bullets: ruleInfo.bullets.slice(0, 6),
-      art: ART_BY_TITLE[course.title] || [],
-      note: "اشرح الخريطة بصوتك في عشرين ثانية، ثم انتقل إلى التطبيق.",
-      __gfsUpgrade: VERSION
-    };
-  }
-
-  function upgradeCourse(course) {
-    if (!course || !course.id) return course;
-    const oldStages = Array.isArray(course.stages) ? course.stages : [];
-    const cleanStages = oldStages.filter(s => !s?.__gfsUpgrade);
-    const ruleInfo = getRuleInfo(course, oldStages, cleanStages);
-
-    const discover = cleanStages.filter(s => s?.t === "discover");
-    const worked = cleanStages.filter(s => ["worked", "template", "sort", "errors", "problem", "produce"].includes(s?.t));
-    const summaries = cleanStages.filter(s => s?.t === "summary");
-    const other = cleanStages.filter(s => !["discover", "worked", "template", "sort", "errors", "problem", "produce", "summary", "video", "rule"].includes(s?.t));
-
-    const stages = [
-      warmupFor(course, ruleInfo),
-      videoFor(course, oldStages, ruleInfo),
-      ...discover,
-      simpleRuleStage(course, ruleInfo),
-      visualStage(course, ruleInfo),
-      ...worked,
-      ...other,
-      ...summaries
-    ];
-
+  function upgradeHamza(course) {
     return {
       ...course,
       q: 25,
-      stages,
-      bank: cleanBank(course.bank),
+      stages: HAMZA_STAGES,
+      bank: HAMZA_BANK,
       contentVersion: VERSION
     };
   }
@@ -218,31 +213,34 @@
     try {
       const marker = await getKey(MARKER_KEY);
       if (marker?.done) return;
+
       let keys = [];
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < 6; i++) {
         keys = await listKeys(COURSE_PREFIX);
         if (keys.length) break;
-        await new Promise(r => setTimeout(r, 1200));
+        await new Promise(r => setTimeout(r, 1400));
       }
       if (!keys.length) return;
 
       let changed = 0;
       for (const key of keys) {
         const course = await getKey(key);
-        if (!course || course.contentVersion === VERSION) continue;
-        await setKey(key, upgradeCourse(course));
+        if (!course || course.title !== "الهمزة المتوسطة") continue;
+        if (course.contentVersion === VERSION) continue;
+        await setKey(key, upgradeHamza(course));
         changed++;
       }
-      await setKey(MARKER_KEY, { done: true, version: VERSION, changed, total: keys.length, at: new Date().toISOString() });
-      if (changed) {
+
+      await setKey(MARKER_KEY, { done: true, version: VERSION, changed, at: new Date().toISOString() });
+      if (changed > 0) {
         const reloadKey = `gfs:upgrade-reloaded:${VERSION}`;
         if (!sessionStorage.getItem(reloadKey)) {
           sessionStorage.setItem(reloadKey, "1");
-          setTimeout(() => location.reload(), 500);
+          setTimeout(() => location.reload(), 450);
         }
       }
     } catch (e) {
-      console.warn("GFS course content v2 upgrade failed", e);
+      console.warn("GFS hamza content upgrade failed", e);
     }
   }
 
