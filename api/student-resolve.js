@@ -12,63 +12,18 @@ function normalizeName(value = "") {
     .toLowerCase();
 }
 
-function nameMatches(entered, stored) {
+function prefixMatches(entered, stored) {
   const a = normalizeName(entered).split(" ").filter(Boolean);
   const b = normalizeName(stored).split(" ").filter(Boolean);
-  if (a.length < 2 || b.length < 2) return false;
-
-  // Accept the full name, the first two/three names, or a short form such as
-  // first name + family name (e.g. "Sham Ezzi") as long as every entered
-  // name part exists in the registered name. The six-digit school ID remains
-  // the primary unique identifier.
-  if (a.join(" ") === b.join(" ")) return true;
-  if (a.length <= b.length && a.every((part, i) => part === b[i])) return true;
-  return a.every(part => b.includes(part));
+  if (a.length !== 2 && a.length !== 3) return false;
+  if (b.length < a.length) return false;
+  return a.every((part, i) => part === b[i]);
 }
 
 function parseRecord(value) {
   if (!value) return null;
   if (typeof value === "object") return value;
   try { return JSON.parse(value); } catch { return null; }
-}
-
-function digits6(value) {
-  const digits = String(value ?? "").replace(/\D/g, "");
-  return digits ? digits.slice(-6).padStart(6, "0") : "";
-}
-
-function lastSix(rec, key = "") {
-  const possible = [
-    rec?.schoolId,
-    rec?.schoolID,
-    rec?.sid,
-    rec?.studentId,
-    rec?.studentID,
-    rec?.student_id,
-    rec?.id,
-    rec?.admissionNo,
-    rec?.admissionNumber,
-    rec?.studentNumber,
-    rec?.number,
-    rec?.key,
-    key
-  ];
-  for (const value of possible) {
-    const d = digits6(value);
-    if (d) return d;
-  }
-  return "";
-}
-
-function pushIfMatch(list, seen, rec, key, name, sid) {
-  if (!rec || !rec.name) return;
-  if (lastSix(rec, key) !== sid) return;
-  if (!nameMatches(name, rec.name)) return;
-  const unique = rec.key || key || `${rec.name}-${sid}`;
-  if (!seen.has(unique)) {
-    seen.add(unique);
-    list.push(rec);
-  }
 }
 
 export default async function handler(req, res) {
@@ -79,51 +34,38 @@ export default async function handler(req, res) {
 
   try {
     const name = String(req.body?.name || "").trim();
-    const sid = digits6(req.body?.sid);
+    const sid = String(req.body?.sid || "").replace(/\D/g, "");
     if (!name || !/^\d{6}$/.test(sid)) {
       return res.status(400).json({ ok: false, error: "invalid input" });
     }
 
     const parts = normalizeName(name).split(" ").filter(Boolean);
-    if (parts.length < 2) {
-      return res.status(400).json({ ok: false, error: "name must contain at least 2 parts" });
+    if (parts.length !== 2 && parts.length !== 3) {
+      return res.status(400).json({ ok: false, error: "name must contain 2 or 3 parts" });
     }
 
     const redis = getRedis();
+    const keys = await redis.keys(`gfs:rec:student:*-${sid}`);
     const candidates = [];
-    const seen = new Set();
 
-    // Current per-student records.
-    const keys = await redis.keys("gfs:rec:student:*");
     for (const key of keys || []) {
       const rec = parseRecord(await redis.get(key));
-      pushIfMatch(candidates, seen, rec, key, name, sid);
+      if (rec && rec.name && prefixMatches(name, rec.name)) candidates.push(rec);
     }
 
-    // Legacy combined arrays used by older platform versions.
-    const legacyKeys = ["gfs:students:v5", "gfs:students:v4", "gfs:students:v3", "gfs:students"];
-    for (const legacyKey of legacyKeys) {
-      const legacy = parseRecord(await redis.get(legacyKey));
-      if (!Array.isArray(legacy)) continue;
-      for (const rec of legacy) pushIfMatch(candidates, seen, rec, "", name, sid);
+    // Fallback for older deployments that still keep the combined students array.
+    if (!candidates.length) {
+      const legacy = parseRecord(await redis.get("gfs:students:v5"));
+      if (Array.isArray(legacy)) {
+        for (const rec of legacy) {
+          const recSid = String(rec?.schoolId || rec?.key?.split("-")?.pop() || "").replace(/\D/g, "").slice(-6);
+          if (recSid === sid && rec?.name && prefixMatches(name, rec.name)) candidates.push(rec);
+        }
+      }
     }
 
     if (candidates.length === 1) {
-      const s = candidates[0];
-      return res.status(200).json({
-        ok: true,
-        fullName: s.name,
-        student: {
-          key: s.key || "",
-          name: s.name,
-          grade: s.grade,
-          block: s.block,
-          stream: s.stream || "A",
-          email: s.email || "",
-          parentEmail: s.parentEmail || "",
-          teacherEmail: s.teacherEmail || ""
-        }
-      });
+      return res.status(200).json({ ok: true, fullName: candidates[0].name });
     }
     if (candidates.length > 1) {
       return res.status(409).json({ ok: false, error: "ambiguous" });
