@@ -15,8 +15,15 @@ function normalizeName(value = "") {
 function nameMatches(entered, stored) {
   const a = normalizeName(entered).split(" ").filter(Boolean);
   const b = normalizeName(stored).split(" ").filter(Boolean);
-  if (a.length < 2 || b.length < a.length) return false;
-  return a.every((part, i) => part === b[i]);
+  if (a.length < 2 || b.length < 2) return false;
+
+  // Accept the full name, the first two/three names, or a short form such as
+  // first name + family name (e.g. "Sham Ezzi") as long as every entered
+  // name part exists in the registered name. The six-digit school ID remains
+  // the primary unique identifier.
+  if (a.join(" ") === b.join(" ")) return true;
+  if (a.length <= b.length && a.every((part, i) => part === b[i])) return true;
+  return a.every(part => b.includes(part));
 }
 
 function parseRecord(value) {
@@ -25,10 +32,43 @@ function parseRecord(value) {
   try { return JSON.parse(value); } catch { return null; }
 }
 
+function digits6(value) {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  return digits ? digits.slice(-6).padStart(6, "0") : "";
+}
+
 function lastSix(rec, key = "") {
-  const raw = String(rec?.schoolId ?? rec?.sid ?? rec?.studentId ?? rec?.key ?? key ?? "");
-  const digits = raw.replace(/\D/g, "");
-  return digits.slice(-6).padStart(6, "0");
+  const possible = [
+    rec?.schoolId,
+    rec?.schoolID,
+    rec?.sid,
+    rec?.studentId,
+    rec?.studentID,
+    rec?.student_id,
+    rec?.id,
+    rec?.admissionNo,
+    rec?.admissionNumber,
+    rec?.studentNumber,
+    rec?.number,
+    rec?.key,
+    key
+  ];
+  for (const value of possible) {
+    const d = digits6(value);
+    if (d) return d;
+  }
+  return "";
+}
+
+function pushIfMatch(list, seen, rec, key, name, sid) {
+  if (!rec || !rec.name) return;
+  if (lastSix(rec, key) !== sid) return;
+  if (!nameMatches(name, rec.name)) return;
+  const unique = rec.key || key || `${rec.name}-${sid}`;
+  if (!seen.has(unique)) {
+    seen.add(unique);
+    list.push(rec);
+  }
 }
 
 export default async function handler(req, res) {
@@ -39,7 +79,7 @@ export default async function handler(req, res) {
 
   try {
     const name = String(req.body?.name || "").trim();
-    const sid = String(req.body?.sid || "").replace(/\D/g, "").slice(-6).padStart(6, "0");
+    const sid = digits6(req.body?.sid);
     if (!name || !/^\d{6}$/.test(sid)) {
       return res.status(400).json({ ok: false, error: "invalid input" });
     }
@@ -53,28 +93,19 @@ export default async function handler(req, res) {
     const candidates = [];
     const seen = new Set();
 
-    // Do not depend on the Redis key format. Read all student records and
-    // compare the last six digits of the stored ID with the entered ID.
+    // Current per-student records.
     const keys = await redis.keys("gfs:rec:student:*");
     for (const key of keys || []) {
       const rec = parseRecord(await redis.get(key));
-      if (!rec || !rec.name) continue;
-      if (lastSix(rec, key) !== sid) continue;
-      if (!nameMatches(name, rec.name)) continue;
-      const unique = rec.key || `${rec.name}-${sid}`;
-      if (!seen.has(unique)) { seen.add(unique); candidates.push(rec); }
+      pushIfMatch(candidates, seen, rec, key, name, sid);
     }
 
-    // Legacy combined students array fallback.
-    if (!candidates.length) {
-      const legacy = parseRecord(await redis.get("gfs:students:v5"));
-      if (Array.isArray(legacy)) {
-        for (const rec of legacy) {
-          if (!rec?.name || lastSix(rec) !== sid || !nameMatches(name, rec.name)) continue;
-          const unique = rec.key || `${rec.name}-${sid}`;
-          if (!seen.has(unique)) { seen.add(unique); candidates.push(rec); }
-        }
-      }
+    // Legacy combined arrays used by older platform versions.
+    const legacyKeys = ["gfs:students:v5", "gfs:students:v4", "gfs:students:v3", "gfs:students"];
+    for (const legacyKey of legacyKeys) {
+      const legacy = parseRecord(await redis.get(legacyKey));
+      if (!Array.isArray(legacy)) continue;
+      for (const rec of legacy) pushIfMatch(candidates, seen, rec, "", name, sid);
     }
 
     if (candidates.length === 1) {
