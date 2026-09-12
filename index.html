@@ -13,7 +13,6 @@
       (() => {
         let bypassOnce = false;
         let statsTimer = null;
-        let verifiedStudent = null;
 
         const normalizeName = (value = "") => String(value)
           .normalize("NFKC")
@@ -32,25 +31,6 @@
           if (setter) setter.call(input, value); else input.value = value;
           input.dispatchEvent(new Event("input", { bubbles: true }));
           input.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-
-        function setReactSelectValue(select, value) {
-          if (!select || value === undefined || value === null || value === "") return;
-          const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value")?.set;
-          const next = String(value);
-          if (setter) setter.call(select, next); else select.value = next;
-          select.dispatchEvent(new Event("change", { bubbles: true }));
-        }
-
-        function applyVerifiedStudentToForm() {
-          if (!verifiedStudent) return;
-          const grade = document.getElementById("gr");
-          const block = document.getElementById("bl");
-          const stream = document.getElementById("st");
-          if (!grade && !block && !stream) return;
-          setReactSelectValue(grade, verifiedStudent.grade);
-          setReactSelectValue(block, verifiedStudent.block);
-          setReactSelectValue(stream, verifiedStudent.stream || "A");
         }
 
         function showCompatError(message) {
@@ -81,9 +61,9 @@
               body: JSON.stringify({ name, sid })
             });
             const data = await r.json().catch(() => ({}));
-            if (r.ok && data?.ok && data?.fullName) return { ok: true, fullName: data.fullName, student: data.student || null };
+            if (r.ok && data?.ok && data?.fullName) return { ok: true, fullName: data.fullName };
             if (r.status === 409) return { ok: false, message: "يوجد أكثر من طالب مطابق. تحقّق من الرقم المدرسي أو راجع معلمك." };
-            if (r.status === 404) return { ok: false, message: "الاسم لا يطابق الطالب المسجّل لهذا الرقم. اكتب أول اسمين أو أكثر بالترتيب نفسه المسجّل في المنصة." };
+            if (r.status === 404) return { ok: false, message: "الاسم لا يطابق الطالب المسجّل لهذا الرقم. اكتب أول اسمين أو أول ثلاثة أسماء كما هي في المنصة." };
             return { ok: false, message: "تعذّر التحقق من بيانات الطالب الآن. حاول مرة أخرى." };
           } catch {
             return { ok: false, message: "تعذّر الاتصال بخدمة التحقق. حاول مرة أخرى." };
@@ -94,8 +74,8 @@
           const input = document.getElementById("nm");
           if (!input) return;
           const label = document.querySelector('label[for="nm"]');
-          if (label) label.textContent = "اسم الطالب (اسمين أو أكثر حتى الاسم الكامل)";
-          input.placeholder = "اكتب أول اسمين أو أكثر كما هي مسجّلة في المنصة";
+          if (label && label.textContent !== "اسم الطالب (ثنائي أو ثلاثي)") label.textContent = "اسم الطالب (ثنائي أو ثلاثي)";
+          if (input.placeholder !== "مثال: أحمد محمد أو أحمد محمد علي") input.placeholder = "مثال: أحمد محمد أو أحمد محمد علي";
         }
 
         function num(v) {
@@ -151,14 +131,12 @@
           requestAnimationFrame(() => {
             refreshQueued = false;
             refreshStudentNameLabel();
-            applyVerifiedStudentToForm();
           });
         });
         observer.observe(document.documentElement, { childList: true, subtree: true });
 
         document.addEventListener("DOMContentLoaded", () => {
           refreshStudentNameLabel();
-          applyVerifiedStudentToForm();
           refreshStats();
           statsTimer = setInterval(refreshStats, 30000);
         });
@@ -179,7 +157,7 @@
           const parts = nameParts(entered);
           const sid = sidInput.value;
 
-          if (parts.length < 2) return;
+          if (parts.length !== 2 && parts.length !== 3) return;
           if (!/^\d{6}$/.test(sid)) return;
 
           event.preventDefault();
@@ -192,21 +170,14 @@
           button.disabled = false;
 
           if (!result.ok) {
-            verifiedStudent = null;
             showCompatError(result.message);
             return;
           }
 
-          verifiedStudent = result.student || null;
-
-          // نمرّر الاسم الكامل المسجّل لواجهة React القديمة، ثم عند ظهور
-          // الخطوة الثانية نملأ الصف والبلوك والمسار من سجل الطالب نفسه.
-          const safeLoginName = String(result.fullName).trim();
-          setReactInputValue(input, safeLoginName);
+          setReactInputValue(input, result.fullName);
           setTimeout(() => {
             bypassOnce = true;
             button.click();
-            setTimeout(applyVerifiedStudentToForm, 80);
           }, 120);
         }, true);
       })();
