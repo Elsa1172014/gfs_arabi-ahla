@@ -1,10 +1,10 @@
 (() => {
-  const VERSION = "2026-09-12-course-content-v4";
+  const VERSION = "2026-09-12-course-content-v5-topic-specific";
   const MARKER_KEY = `gfs:course-content-upgrade:${VERSION}`;
   const COURSE_PREFIX = "gfs:rec:course:";
   const API = "/api/storage";
 
-  /* لا يغيّر هذا الملف أي جزء من نظام المنصة؛ يعدّل محتوى الكورس فقط. */
+  /* هذا الملف يغيّر محتوى الكورس فقط. لا يغيّر تسجيل الدخول أو الخروج أو النتائج أو الشهادات أو بنية المنصة. */
   const VIDEO_IDS = {
     "الهمزة المتوسطة": "N99RtSaAEj4",
     "الألف اللينة في آخر الأسماء": "3nbdyrRObf0",
@@ -16,6 +16,7 @@
     "التشبيه المؤكد": "JY0VJekdfuA",
     "التشبيه المجمل": "JY0VJekdfuA",
     "التشبيه المفصَّل": "JY0VJekdfuA",
+    "التشبيه المفصل": "JY0VJekdfuA",
     "التشبيه التمثيلي": "JY0VJekdfuA",
     "التشبيه الضمني": "JY0VJekdfuA",
     "همزة الوصل وهمزة القطع": "R6ZyWeqebdw",
@@ -124,63 +125,98 @@
     return out;
   }
 
+  function extractExamples(stages) {
+    const out = [];
+    for (const s of stages || []) {
+      if (Array.isArray(s?.items)) {
+        for (const item of s.items) {
+          const v = typeof item === "string" ? item : item?.w || item?.text || item?.sentence || item?.example;
+          if (v) out.push(String(v));
+        }
+      }
+      if (Array.isArray(s?.table?.rows)) {
+        for (const row of s.table.rows) if (Array.isArray(row) && row[0]) out.push(String(row[0]));
+      }
+      if (Array.isArray(s?.bullets)) {
+        for (const b of s.bullets) if (b && String(b).length < 120) out.push(String(b));
+      }
+    }
+    return [...new Set(out.map(x => x.trim()).filter(Boolean))].slice(0, 5);
+  }
+
   function extractInfo(course, stages) {
     const rule = stages.find(s => s?.t === "rule");
-    const summary = stages.find(s => s?.t === "summary");
     const discover = stages.find(s => s?.t === "discover");
     const worked = stages.find(s => s?.t === "worked");
-    const body = rule?.body || summary?.body || discover?.intro || worked?.intro || course.objective || `تعلّم مهارة ${course.title} من خلال الفهم ثم التطبيق.`;
-    let bullets = [];
-    if (Array.isArray(rule?.concepts)) bullets = rule.concepts.map(x => typeof x === "string" ? x : x?.label || x?.note).filter(Boolean);
-    if (!bullets.length && Array.isArray(summary?.bullets)) bullets = summary.bullets.filter(Boolean);
-    if (!bullets.length && Array.isArray(discover?.table?.rows)) bullets = discover.table.rows.slice(0, 4).map(r => r.join(" ← "));
-    if (!bullets.length) bullets = [body];
-    return { rule, summary, discover, worked, body, bullets: bullets.slice(0, 6) };
+    const summary = stages.find(s => s?.t === "summary" && !String(s?.title || "").includes("مقدمة وتمهيد"));
+    const body = rule?.body || discover?.reveal || worked?.intro || summary?.body || course.objective || `شرح ${course.title}`;
+    const concepts = [];
+    if (Array.isArray(rule?.concepts)) {
+      for (const c of rule.concepts) {
+        if (typeof c === "string") concepts.push({ label: c, note: "" });
+        else if (c?.label || c?.note) concepts.push({ label: c.label || c.note, note: c.note || "" });
+      }
+    }
+    if (!concepts.length && Array.isArray(summary?.bullets)) {
+      summary.bullets.forEach(b => concepts.push({ label: String(b), note: "" }));
+    }
+    if (!concepts.length && Array.isArray(discover?.table?.rows)) {
+      discover.table.rows.slice(0, 4).forEach(r => concepts.push({ label: String(r[0] || ""), note: String(r.slice(1).join(" — ")) }));
+    }
+    if (!concepts.length) concepts.push({ label: course.title, note: body });
+    const examples = extractExamples(stages);
+    return { rule, discover, worked, summary, body, concepts: concepts.slice(0, 6), examples };
   }
 
   function getLearningPool(stages, finalBank) {
     const finalSet = new Set((finalBank || []).map(x => norm(x?.q)));
     const checks = [];
     for (const s of stages || []) {
-      for (const q of s?.checks || []) {
-        if (!finalSet.has(norm(q?.q))) checks.push(q);
-      }
+      for (const q of s?.checks || []) if (!finalSet.has(norm(q?.q))) checks.push(q);
     }
-    return diverseQuestions(checks, 16);
+    return diverseQuestions(checks, 18);
+  }
+
+  function specificBullets(info) {
+    return info.concepts.slice(0, 4).map((c, i) => {
+      const icons = ["🔎", "🧩", "⚖️", "🎯"];
+      return `${icons[i]} ${c.label}${c.note && c.note !== c.label ? ` — ${c.note}` : ""}`;
+    });
   }
 
   function introStage(course, info) {
+    const example = info.examples[0];
+    const body = example
+      ? `تأمّل المثال الآتي من درس «${course.title}»: «${example}». حاول فقط أن تلاحظ ما يحدث فيه؛ لا نريد منك حل سؤال الآن.`
+      : `قبل مشاهدة الفيديو، اقرأ فكرة درس «${course.title}»: ${course.objective || info.body}`;
+    const bullets = specificBullets(info);
     return {
       t: "summary",
-      title: "مقدمة وتمهيد — شاهد الفكرة قبل أن تجيب",
-      strat: "تهيئة بصرية",
-      body: course.objective || info.body,
-      bullets: [
-        `🎯 هدفك: إتقان «${course.title}»`,
-        "👀 لاحظ المثال أو الصورة أولًا",
-        "🧠 افهم العلاقة أو النمط",
-        "✍️ بعد ذلك فقط تبدأ الأسئلة"
-      ],
+      title: `تهيئة «${course.title}» — ادخل الفكرة من المثال`,
+      strat: "تهيئة مرتبطة بالدرس",
+      body,
+      bullets: bullets.length ? bullets : [course.objective || info.body],
       art: ART[course.title] || [],
-      note: "لا أسئلة في التهيئة؛ الهدف أن تدخل الدرس وأنت تعرف ما الذي ستتعلمه.",
+      note: example ? `بعد قليل ستعود إلى «${example}» لتفسّره بعد أن تفهم الدرس.` : `هذه التهيئة خاصة بدرس «${course.title}» وليست مقدمة عامة.`,
       checks: [],
       __gfsUpgrade: VERSION
     };
   }
 
-  function videoStage(course, stages, pool) {
+  function videoStage(course, stages, pool, info) {
     const oldVideo = stages.find(s => s?.t === "video");
     const oldClips = Array.isArray(oldVideo?.clips) ? oldVideo.clips.filter(v => v?.id).slice(0, 2) : [];
     const mapped = VIDEO_IDS[course.title];
     const clips = oldClips.length ? oldClips : mapped ? [{ id: mapped, start: 0, label: `شرح ${course.title}` }] : [];
+    const focus = info.concepts.slice(0, 2).map(c => c.label).join("، ");
     return {
       t: "video",
-      title: "شاهد وافهم — فيديو قصير",
+      title: `فيديو «${course.title}» — شاهد ثم تحقّق`,
       strat: "التعلّم المدمج",
-      intro: "شاهد الفيديو بتركيز. بعد المشاهدة ستظهر أسئلة تحقق قصيرة مرتبطة بالفكرة نفسها.",
+      intro: `أثناء مشاهدة الفيديو ركّز تحديدًا على: ${focus || course.title}. بعد الفيديو ستجيب عن سؤالين من نفس المهارة قبل الانتقال.`,
       clips,
       videoQuery: clips.length ? undefined : `${course.title} شرح مبسط لغة عربية`,
-      checks: pool.splice(0, Math.min(2, pool.length)).map((q, i) => ({ ...q, sn: ["تحقق من المشاهدة", "التقط الفكرة"][i] })),
+      checks: pool.splice(0, Math.min(2, pool.length)).map((q, i) => ({ ...q, sn: ["تحقق من الفيديو", "التقط الفكرة الرئيسة"][i] })),
       __gfsUpgrade: VERSION
     };
   }
@@ -190,7 +226,7 @@
     if (src) {
       return {
         ...src,
-        title: "الشرح المبسّط — افهم كيف تعمل الفكرة",
+        title: `شرح «${course.title}» — نفهم المثال قبل القاعدة`,
         strat: "شرح قبل القاعدة",
         checks: [],
         __gfsUpgrade: VERSION
@@ -198,11 +234,11 @@
     }
     return {
       t: "summary",
-      title: "الشرح المبسّط — قبل القاعدة",
+      title: `شرح «${course.title}» — المثال أولًا`,
       strat: "مثال ثم تفسير",
-      body: info.body,
-      bullets: info.bullets.map((b, i) => `${i + 1}. ${b}`),
-      note: "اقرأ الشرح ببطء، ثم حاول أن تفسّر المثال بلغتك قبل الانتقال.",
+      body: info.examples[0] ? `نبدأ من المثال «${info.examples[0]}»، ثم نفهمه في ضوء الفكرة الآتية: ${info.body}` : info.body,
+      bullets: specificBullets(info),
+      note: "هنا نفهم الفكرة ومعناها قبل أن نقرأ القاعدة بصيغتها النهائية.",
       checks: [],
       __gfsUpgrade: VERSION
     };
@@ -212,13 +248,13 @@
     const q = pool.shift();
     return {
       t: "summary",
-      title: "إنفوجرافيك — الفكرة في صورة واحدة",
+      title: `إنفوجرافيك «${course.title}» — الصورة الكاملة`,
       strat: "التشفير البصري",
-      body: `حوّل درس «${course.title}» إلى نقاط قصيرة مترابطة.`,
-      bullets: info.bullets.map((b, i) => `${["🔎","🧩","⚖️","🎯","💡","✅"][i] || "•"} ${b}`),
+      body: `هذه خلاصة «${course.title}» في عناصر مترابطة، وكل عنصر مأخوذ من محتوى الدرس نفسه.`,
+      bullets: specificBullets(info),
       art: ART[course.title] || [],
-      note: "اقرأ العناصر بالترتيب، ثم أجب عن سؤال واحد للتأكد من أنك فهمت الصورة الكاملة.",
-      checks: q ? [{ ...q, sn: "سؤال على الإنفوجرافيك" }] : [],
+      note: info.examples[1] ? `جرّب أن تربط الخريطة بالمثال: «${info.examples[1]}».` : "اربط كل عنصر بما فهمته في الشرح السابق.",
+      checks: q ? [{ ...q, sn: `سؤال على إنفوجرافيك ${course.title}` }] : [],
       __gfsUpgrade: VERSION
     };
   }
@@ -227,12 +263,12 @@
     return {
       ...(info.rule || {}),
       t: "rule",
-      title: "القاعدة — ثبّت ما فهمته الآن",
+      title: `قاعدة «${course.title}» — الآن فقط ثبّت ما فهمته`,
       strat: "القاعدة بعد الشرح",
       body: info.body,
-      concepts: info.rule?.concepts?.length ? info.rule.concepts : info.bullets,
+      concepts: info.rule?.concepts?.length ? info.rule.concepts : info.concepts,
       art: ART[course.title] || [],
-      note: "القاعدة تأتي بعد الشرح؛ اربطها بالمثال والإنفوجرافيك ولا تحفظها وحدها.",
+      note: info.examples[0] ? `طبّق القاعدة ذهنيًا على المثال الذي بدأت به: «${info.examples[0]}».` : "اربط القاعدة بالشرح السابق، ولا تحفظها منفصلة عنه.",
       checks: [],
       __gfsUpgrade: VERSION
     };
@@ -240,50 +276,49 @@
 
   function mapStage(course, info, pool) {
     const q = pool.shift();
-    const steps = info.bullets.length > 1 ? info.bullets : ["ألاحظ المثال", "أحدد العلامة", "أطبق القاعدة", "أراجع النتيجة"];
+    const steps = info.concepts.slice(0, 5).map(c => c.label);
     return {
       t: "summary",
-      title: "خريطة مفاهيم — من الفكرة إلى التطبيق",
+      title: `خريطة مفاهيم «${course.title}» — كيف أصل إلى الإجابة؟`,
       strat: "الخريطة المفاهيمية",
-      body: `اتبع المسار التالي عند تطبيق «${course.title}».`,
-      bullets: steps.slice(0, 6).map((b, i) => `${i + 1}️⃣ ${b}`),
+      body: `اتبع هذا المسار الخاص بمهارة «${course.title}» عند التطبيق.`,
+      bullets: (steps.length ? steps : [info.body]).map((b, i) => `${i + 1}️⃣ ${b}`),
       art: ART[course.title] || [],
-      checks: q ? [{ ...q, sn: "طبّق الخريطة" }] : [],
+      checks: q ? [{ ...q, sn: `طبّق خريطة ${course.title}` }] : [],
       __gfsUpgrade: VERSION
     };
   }
 
-  function challengeStage(course, q, i) {
+  function challengeStage(course, q, i, info) {
     const labels = {
-      mcq: ["اختيار بصري", "اختر بعد التحليل"],
-      tf: ["قرار سريع", "صح أم خطأ مع تعليل"],
-      fill: ["أكمل بنفسك", "ابنِ الإجابة"],
+      mcq: ["اختيار بعد التحليل", "اختر الدليل الأدق"],
+      tf: ["قرار مع تعليل", "احكم على الفكرة"],
+      fill: ["ابنِ الإجابة", "أكمل من فهمك"],
       match: ["اربط العلاقات", "مطابقة ذكية"],
-      err: ["صيد الخطأ", "اكتشف موضع الخلل"],
+      err: ["صيد الخطأ", "صحّح الخلل"],
       sort: ["رتّب المسار", "أعد بناء الفكرة"]
     };
-    const title = (labels[q?.t] || ["تحدّي مختلف", "فكّر ثم قرّر"])[i % 2];
-    const cue = ["👁️ لاحظ", "🧠 حلّل", "🧩 اربط", "🎯 قرّر", "🔍 دقّق"][i % 5];
+    const title = (labels[q?.t] || ["تطبيق مختلف", "فكّر ثم قرّر"])[i % 2];
+    const example = info.examples[i % Math.max(1, info.examples.length)] || "";
     return {
       t: "summary",
-      title: `${cue} — ${title}`,
+      title: `${title} — ${course.title}`,
       strat: "تطبيق متدرّج",
-      body: "اقرأ المعطى البصري أو المثال، ثم أجب. لا تعتمد على الحفظ؛ طبّق الفكرة.",
-      bullets: [`📘 الدرس: ${course.title}`, "🔎 ابحث عن الدليل داخل المثال", "✅ اختر أو اكتب بعد التفكير"],
+      body: example ? `استدعِ المثال «${example}» وما تعلّمته منه، ثم انتقل إلى السؤال التالي.` : `طبّق قاعدة «${course.title}» على السؤال التالي؛ المطلوب فهم المهارة لا تكرار صيغة محفوظة.`,
+      bullets: specificBullets(info).slice(0, 2),
       art: ART[course.title] || [],
       checks: [{ ...q, sn: title }],
       __gfsUpgrade: VERSION
     };
   }
 
-  function practicalStages(stages, course) {
+  function practicalStages(stages) {
     const keep = ["template", "sort", "errors", "problem", "produce"];
     return (stages || [])
       .filter(s => keep.includes(s?.t))
       .slice(0, 3)
-      .map((s, i) => ({
+      .map((s) => ({
         ...s,
-        title: s.title || ["مختبر التطبيق", "محاكاة المهارة", "تحدّي الإنتاج"][i],
         checks: uniqueQuestions(s.checks || []).slice(0, 2),
         __gfsUpgrade: VERSION
       }));
@@ -298,13 +333,13 @@
 
     const newStages = [
       introStage(course, info),
-      videoStage(course, stages, pool),
+      videoStage(course, stages, pool, info),
       explanationStage(course, info),
       visualStage(course, info, pool),
       ruleStage(course, info),
       mapStage(course, info, pool),
-      ...practicalStages(stages, course),
-      ...pool.slice(0, 8).map((q, i) => challengeStage(course, q, i))
+      ...practicalStages(stages),
+      ...pool.slice(0, 8).map((q, i) => challengeStage(course, q, i, info))
     ];
 
     return {
@@ -331,7 +366,7 @@
       localStorage.setItem(MARKER_KEY, "done");
       if (changed) setTimeout(() => location.reload(), 250);
     } catch (e) {
-      console.error("Course content upgrade v4 failed", e);
+      console.error("Course content upgrade v5 failed", e);
     }
   }
 
