@@ -1,20 +1,23 @@
 (() => {
-  const VERSION = "2026-09-12-visual-learning-v3";
+  const VERSION = "2026-09-12-course-content-v4";
   const MARKER_KEY = `gfs:course-content-upgrade:${VERSION}`;
   const COURSE_PREFIX = "gfs:rec:course:";
   const API = "/api/storage";
 
+  /* لا يغيّر هذا الملف أي جزء من نظام المنصة؛ يعدّل محتوى الكورس فقط. */
   const VIDEO_IDS = {
     "الهمزة المتوسطة": "N99RtSaAEj4",
     "الألف اللينة في آخر الأسماء": "3nbdyrRObf0",
     "الاستعارة التصريحية": "Is4R7o4u9XU",
     "الاستعارة المكنية": "Is4R7o4u9XU",
     "الطباق": "G9RFzCQXZGo",
+    "المقابلة": "G9RFzCQXZGo",
     "التشبيه المرسل": "JY0VJekdfuA",
     "التشبيه المؤكد": "JY0VJekdfuA",
     "التشبيه المجمل": "JY0VJekdfuA",
     "التشبيه المفصَّل": "JY0VJekdfuA",
-    "المقابلة": "G9RFzCQXZGo",
+    "التشبيه التمثيلي": "JY0VJekdfuA",
+    "التشبيه الضمني": "JY0VJekdfuA",
     "همزة الوصل وهمزة القطع": "R6ZyWeqebdw",
     "التاء المربوطة والتاء المفتوحة": "dsJRyz-D0Fo",
     "المبتدأ والخبر": "8LpQNzz7AMI",
@@ -23,15 +26,18 @@
     "إنّ وأخواتها": "IdeZdpejhMw",
     "إن وأخواتها": "IdeZdpejhMw",
     "الحال": "962hd_-l8uM",
-    "التشبيه التمثيلي": "JY0VJekdfuA",
-    "التشبيه الضمني": "JY0VJekdfuA",
     "المفعول به": "b7CLeDUXUvE",
     "التمييز": "64f6tzdXsHg",
     "أقسام الكلام: اسم وفعل وحرف": "LXDtA9IZEWU",
     "الجملة الفعلية وأركانها": "yjPS3tn3DYo",
     "الأفعال الناصبة لمفعولين": "9MFEtrlfMcQ",
     "الأفعال التي تنصب مفعولين": "9MFEtrlfMcQ",
-    "الفاعل ونائب الفاعل": "2tLJA0MfiJA"
+    "الفاعل ونائب الفاعل": "2tLJA0MfiJA",
+    "المفعول فيه (ظرف الزمان والمكان)": "b7CLeDUXUvE",
+    "المفعول فيه «ظرف الزمان والمكان»": "b7CLeDUXUvE",
+    "المفعول معه": "b7CLeDUXUvE",
+    "المفعول المطلق": "b7CLeDUXUvE",
+    "المفعول لأجله": "b7CLeDUXUvE"
   };
 
   const ART = {
@@ -72,261 +78,263 @@
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim().toLowerCase();
 
-  function visualText(item, courseTitle) {
-    const q = String(item?.q || "");
-    const quote = q.match(/«([^»]{1,70})»/u)?.[1];
-    if (quote) return quote;
-    if (item?.t === "mcq" && Array.isArray(item.o) && Number.isInteger(item.a)) {
-      const correct = String(item.o[item.a] || "");
-      if (correct.length && correct.length <= 55) return correct;
-    }
-    if (item?.t === "fill" && Array.isArray(item.a) && item.a[0] && String(item.a[0]).length <= 40) return String(item.a[0]);
-    return courseTitle;
-  }
-
-  function enrichQuestion(item, courseTitle, index = 0) {
-    if (!item) return item;
+  function cleanQuestion(q) {
+    if (!q) return q;
     return {
-      ...item,
-      q: String(item.q || "").replace(/^تحدّي\s*\d+\s*:\s*/u, "").replace(/^موقف\s*\d+\s*:\s*/u, "").trim(),
-      img: item.img || visualText(item, courseTitle),
-      sn: item.sn || ["لاحظ الصورة ثم قرّر", "حلّل ثم اختر", "تحدّي بصري", "طبّق القاعدة", "فكّر ثم أجب"][index % 5]
+      ...q,
+      q: String(q.q || "")
+        .replace(/^تحدّي\s*\d+\s*:\s*/u, "")
+        .replace(/^موقف\s*\d+\s*:\s*/u, "")
+        .replace(/^حلّل ثم اختر\s*:\s*/u, "")
+        .trim()
     };
   }
 
-  function cleanBank(bank, title) {
+  function uniqueQuestions(items) {
     const out = [], seen = new Set();
-    for (const raw of Array.isArray(bank) ? bank : []) {
-      if (!raw) continue;
-      const q = String(raw.q || "").replace(/^تحدّي\s*\d+\s*:\s*/u, "").replace(/^موقف\s*\d+\s*:\s*/u, "").trim();
-      const key = norm(q || raw.sn);
+    for (const raw of items || []) {
+      const q = cleanQuestion(raw);
+      if (!q) continue;
+      const key = norm(q.q || q.sn || JSON.stringify(q));
       if (!key || seen.has(key)) continue;
       seen.add(key);
-      out.push(enrichQuestion({ ...raw, q }, title, out.length));
-      if (out.length === 25) break;
+      out.push(q);
     }
     return out;
   }
 
-  function extractRule(course, base) {
-    const rule = base.find(s => s?.t === "rule");
-    const summary = [...base].reverse().find(s => s?.t === "summary");
-    const body = rule?.body || summary?.body || course.objective || `تعلّم مهارة ${course.title} من خلال الفهم والتطبيق.`;
+  function diverseQuestions(items, limit = 25) {
+    const source = uniqueQuestions(items);
+    const groups = {};
+    for (const q of source) (groups[q.t || "other"] ||= []).push(q);
+    const order = ["mcq", "tf", "fill", "match", "err", "sort", "other"];
+    const out = [];
+    let moved = true;
+    while (out.length < limit && moved) {
+      moved = false;
+      for (const t of order) {
+        const g = groups[t];
+        if (g?.length) {
+          out.push(g.shift());
+          moved = true;
+          if (out.length === limit) break;
+        }
+      }
+    }
+    return out;
+  }
+
+  function extractInfo(course, stages) {
+    const rule = stages.find(s => s?.t === "rule");
+    const summary = stages.find(s => s?.t === "summary");
+    const discover = stages.find(s => s?.t === "discover");
+    const worked = stages.find(s => s?.t === "worked");
+    const body = rule?.body || summary?.body || discover?.intro || worked?.intro || course.objective || `تعلّم مهارة ${course.title} من خلال الفهم ثم التطبيق.`;
     let bullets = [];
-    if (Array.isArray(rule?.concepts)) bullets = rule.concepts.map(x => typeof x === "string" ? x : x?.label).filter(Boolean);
+    if (Array.isArray(rule?.concepts)) bullets = rule.concepts.map(x => typeof x === "string" ? x : x?.label || x?.note).filter(Boolean);
     if (!bullets.length && Array.isArray(summary?.bullets)) bullets = summary.bullets.filter(Boolean);
+    if (!bullets.length && Array.isArray(discover?.table?.rows)) bullets = discover.table.rows.slice(0, 4).map(r => r.join(" ← "));
     if (!bullets.length) bullets = [body];
-    return { rule, body, bullets: bullets.slice(0, 6) };
+    return { rule, summary, discover, worked, body, bullets: bullets.slice(0, 6) };
   }
 
-  function withoutChecks(stage, title) {
-    if (!stage) return null;
-    const copy = { ...stage, title: title || stage.title, checks: [], __gfsUpgrade: VERSION };
-    return copy;
+  function getLearningPool(stages, finalBank) {
+    const finalSet = new Set((finalBank || []).map(x => norm(x?.q)));
+    const checks = [];
+    for (const s of stages || []) {
+      for (const q of s?.checks || []) {
+        if (!finalSet.has(norm(q?.q))) checks.push(q);
+      }
+    }
+    return diverseQuestions(checks, 16);
   }
 
-  function buildIntro(course, info) {
+  function introStage(course, info) {
     return {
       t: "summary",
-      title: "مقدمة وتمهيد — افهم الفكرة أولًا",
+      title: "مقدمة وتمهيد — شاهد الفكرة قبل أن تجيب",
       strat: "تهيئة بصرية",
       body: course.objective || info.body,
       bullets: [
-        `🎯 ما المهارة التي سأتعلمها؟ ${course.title}`,
-        "👀 لاحظ المثال قبل أن تحفظ القاعدة",
-        "🧠 ابحث عن النمط أو العلاقة",
-        "✍️ طبّق الفكرة على مثال جديد"
+        `🎯 هدفك: إتقان «${course.title}»`,
+        "👀 لاحظ المثال أو الصورة أولًا",
+        "🧠 افهم العلاقة أو النمط",
+        "✍️ بعد ذلك فقط تبدأ الأسئلة"
       ],
       art: ART[course.title] || [],
-      note: "في هذه المرحلة لا توجد درجات. الهدف أن ترى الفكرة وتفهمها قبل القاعدة والأسئلة.",
+      note: "لا أسئلة في التهيئة؛ الهدف أن تدخل الدرس وأنت تعرف ما الذي ستتعلمه.",
+      checks: [],
       __gfsUpgrade: VERSION
     };
   }
 
-  function buildVideo(course, oldStages, bank) {
-    const oldVideo = oldStages.find(s => s?.t === "video");
-    const oldClips = Array.isArray(oldVideo?.clips) ? oldVideo.clips.filter(x => x?.id).slice(0, 2) : [];
+  function videoStage(course, stages, pool) {
+    const oldVideo = stages.find(s => s?.t === "video");
+    const oldClips = Array.isArray(oldVideo?.clips) ? oldVideo.clips.filter(v => v?.id).slice(0, 2) : [];
     const mapped = VIDEO_IDS[course.title];
-    const clips = oldClips.length ? oldClips : mapped ? [{ id: mapped, start: 0, label: `شرح مبسّط: ${course.title}` }] : [];
-    const checks = bank.slice(0, 2).map((q, i) => enrichQuestion(q, course.title, i));
+    const clips = oldClips.length ? oldClips : mapped ? [{ id: mapped, start: 0, label: `شرح ${course.title}` }] : [];
     return {
       t: "video",
-      title: "شاهد وافهم — فيديو ثم سؤالان فقط",
+      title: "شاهد وافهم — فيديو قصير",
       strat: "التعلّم المدمج",
-      intro: "شاهد الفيديو بتركيز. بعده ستجيب عن سؤالين قصيرين مرتبطين مباشرة بما شاهدته.",
+      intro: "شاهد الفيديو بتركيز. بعد المشاهدة ستظهر أسئلة تحقق قصيرة مرتبطة بالفكرة نفسها.",
       clips,
       videoQuery: clips.length ? undefined : `${course.title} شرح مبسط لغة عربية`,
-      checks,
+      checks: pool.splice(0, Math.min(2, pool.length)).map((q, i) => ({ ...q, sn: ["تحقق من المشاهدة", "التقط الفكرة"][i] })),
       __gfsUpgrade: VERSION
     };
   }
 
-  function buildExplanation(course, base, info) {
-    const discover = base.find(s => s?.t === "discover");
-    const worked = base.find(s => s?.t === "worked");
-    const src = discover || worked;
-    if (src) return withoutChecks(src, "الشرح المبسّط — شاهد كيف تعمل الفكرة");
+  function explanationStage(course, info) {
+    const src = info.discover || info.worked;
+    if (src) {
+      return {
+        ...src,
+        title: "الشرح المبسّط — افهم كيف تعمل الفكرة",
+        strat: "شرح قبل القاعدة",
+        checks: [],
+        __gfsUpgrade: VERSION
+      };
+    }
     return {
       t: "summary",
       title: "الشرح المبسّط — قبل القاعدة",
       strat: "مثال ثم تفسير",
       body: info.body,
-      bullets: info.bullets.map((b, i) => `${i + 1}. ${typeof b === "string" ? b : String(b)}`),
-      note: "اقرأ المثال وفسّره بلغتك، ثم انتقل إلى القاعدة.",
+      bullets: info.bullets.map((b, i) => `${i + 1}. ${b}`),
+      note: "اقرأ الشرح ببطء، ثم حاول أن تفسّر المثال بلغتك قبل الانتقال.",
+      checks: [],
       __gfsUpgrade: VERSION
     };
   }
 
-  function buildRule(course, info) {
+  function visualStage(course, info, pool) {
+    const q = pool.shift();
+    return {
+      t: "summary",
+      title: "إنفوجرافيك — الفكرة في صورة واحدة",
+      strat: "التشفير البصري",
+      body: `حوّل درس «${course.title}» إلى نقاط قصيرة مترابطة.`,
+      bullets: info.bullets.map((b, i) => `${["🔎","🧩","⚖️","🎯","💡","✅"][i] || "•"} ${b}`),
+      art: ART[course.title] || [],
+      note: "اقرأ العناصر بالترتيب، ثم أجب عن سؤال واحد للتأكد من أنك فهمت الصورة الكاملة.",
+      checks: q ? [{ ...q, sn: "سؤال على الإنفوجرافيك" }] : [],
+      __gfsUpgrade: VERSION
+    };
+  }
+
+  function ruleStage(course, info) {
     return {
       ...(info.rule || {}),
       t: "rule",
-      title: "القاعدة — الآن فقط ثبّت ما فهمته",
-      strat: "قاعدة بعد الفهم",
+      title: "القاعدة — ثبّت ما فهمته الآن",
+      strat: "القاعدة بعد الشرح",
       body: info.body,
       concepts: info.rule?.concepts?.length ? info.rule.concepts : info.bullets,
       art: ART[course.title] || [],
+      note: "القاعدة تأتي بعد الشرح؛ اربطها بالمثال والإنفوجرافيك ولا تحفظها وحدها.",
       checks: [],
-      note: "لا تحفظ الصياغة وحدها؛ اربطها بالمثال الذي شاهدته قبل قليل.",
       __gfsUpgrade: VERSION
     };
   }
 
-  function buildMap(course, info, bank) {
-    const q = bank[2] ? enrichQuestion(bank[2], course.title, 2) : null;
+  function mapStage(course, info, pool) {
+    const q = pool.shift();
+    const steps = info.bullets.length > 1 ? info.bullets : ["ألاحظ المثال", "أحدد العلامة", "أطبق القاعدة", "أراجع النتيجة"];
     return {
       t: "summary",
-      title: "إنفوجرافيك وخريطة مفاهيم — الدرس في نظرة واحدة",
-      strat: "التشفير البصري",
-      body: `حوّل مهارة «${course.title}» إلى خطوات قصيرة يمكن تطبيقها بسرعة.`,
-      bullets: info.bullets,
+      title: "خريطة مفاهيم — من الفكرة إلى التطبيق",
+      strat: "الخريطة المفاهيمية",
+      body: `اتبع المسار التالي عند تطبيق «${course.title}».`,
+      bullets: steps.slice(0, 6).map((b, i) => `${i + 1}️⃣ ${b}`),
       art: ART[course.title] || [],
-      checks: q ? [q] : [],
-      note: "اقرأ الخريطة من اليمين إلى اليسار، ثم حاول شرحها بصوتك في عشرين ثانية.",
+      checks: q ? [{ ...q, sn: "طبّق الخريطة" }] : [],
       __gfsUpgrade: VERSION
     };
   }
 
-  function buildChallenges(course, bank, start = 3) {
-    const qs = bank.slice(start, start + 8);
-    const chunks = [];
-    for (let i = 0; i < qs.length; i += 2) {
-      const pair = qs.slice(i, i + 2).map((q, k) => enrichQuestion(q, course.title, start + i + k));
-      chunks.push({
-        t: "summary",
-        title: ["تحدّي بصري — اكتشف", "تحدّي تطبيقي — حلّل", "تحدّي ذكي — قرّر", "تحدّي إتقان — علّل"][chunks.length % 4],
-        strat: ["الملاحظة", "التحليل", "اتخاذ القرار", "التعليل"][chunks.length % 4],
-        body: "كل سؤال هنا يختبر فكرة مختلفة. اقرأ البطاقة البصرية أولًا، ثم أجب.",
-        bullets: ["👁️ لاحظ", "🧠 فكّر", "✅ أجب", "🔁 صحّح إن لزم"],
-        checks: pair,
-        __gfsUpgrade: VERSION
-      });
-    }
-    return chunks;
-  }
-
-  function practicalStages(base, course) {
-    const allowed = ["template", "sort", "errors", "problem", "produce"];
-    return base.filter(s => allowed.includes(s?.t)).slice(0, 3).map((s, idx) => ({
-      ...s,
-      title: s.title || ["مختبر التطبيق", "نشاط المحاكاة", "تحدّي الإنتاج"][idx],
-      checks: (s.checks || []).slice(0, 2).map((q, i) => enrichQuestion(q, course.title, i)),
+  function challengeStage(course, q, i) {
+    const labels = {
+      mcq: ["اختيار بصري", "اختر بعد التحليل"],
+      tf: ["قرار سريع", "صح أم خطأ مع تعليل"],
+      fill: ["أكمل بنفسك", "ابنِ الإجابة"],
+      match: ["اربط العلاقات", "مطابقة ذكية"],
+      err: ["صيد الخطأ", "اكتشف موضع الخلل"],
+      sort: ["رتّب المسار", "أعد بناء الفكرة"]
+    };
+    const title = (labels[q?.t] || ["تحدّي مختلف", "فكّر ثم قرّر"])[i % 2];
+    const cue = ["👁️ لاحظ", "🧠 حلّل", "🧩 اربط", "🎯 قرّر", "🔍 دقّق"][i % 5];
+    return {
+      t: "summary",
+      title: `${cue} — ${title}`,
+      strat: "تطبيق متدرّج",
+      body: "اقرأ المعطى البصري أو المثال، ثم أجب. لا تعتمد على الحفظ؛ طبّق الفكرة.",
+      bullets: [`📘 الدرس: ${course.title}`, "🔎 ابحث عن الدليل داخل المثال", "✅ اختر أو اكتب بعد التفكير"],
+      art: ART[course.title] || [],
+      checks: [{ ...q, sn: title }],
       __gfsUpgrade: VERSION
-    }));
+    };
   }
 
-  const HAMZA_BANK = [
-    {t:"mcq",q:"في «سُئِلَ» ما الحركة الأقوى؟",o:["الكسرة","الضمة","الفتحة","السكون"],a:0,e:"الهمزة مكسورة؛ والكسرة أقوى."},
-    {t:"tf",q:"في كلمة «مؤمن» تناسب الضمةُ الواوَ.",a:true,e:"صحيح."},
-    {t:"fill",q:"اكتب كرسي الهمزة المناسب في «مَسْـ…ـلَة». ",a:["أ"],e:"الفتحة أقوى من السكون."},
-    {t:"mcq",q:"أي كتابة صحيحة لكلمة «فئة»؟",o:["فأة","فؤة","فئة","فءة"],a:2,e:"الكسرة تحسم الرسم على نبرة."},
-    {t:"tf",q:"في «رؤية» كُتبت الهمزة على واو لأن الضمة هي الأقوى.",a:true,e:"صحيح."},
-    {t:"fill",q:"أكمل «بِـ…ـر» بالكرسي المناسب.",a:["ئ"],e:"الكسرة أقوى من السكون."},
-    {t:"mcq",q:"في «رئاسة» ما الكرسي الصحيح للهمزة؟",o:["ألف","واو","نبرة","سطر"],a:2,e:"الكسرة أقوى."},
-    {t:"tf",q:"في «شؤون» تظهر الهمزة على واو.",a:true,e:"صحيح."},
-    {t:"fill",q:"أكمل «مِـ…ـذنة» بالهمزة الصحيحة.",a:["ئ"],e:"ما قبلها مكسور."},
-    {t:"mcq",q:"في «فأس» ما صورة الهمزة؟",o:["أ","ؤ","ئ","ء"],a:0,e:"الفتحة أقوى من السكون."},
-    {t:"tf",q:"في «كأس» تكتب الهمزة على ألف.",a:true,e:"صحيح."},
-    {t:"fill",q:"صحح كتابة «يأس» إذا أريد الفعل يَئِسَ.",a:["يئس","يَئِسَ"],e:"الهمزة مكسورة؛ فتكتب على نبرة."},
-    {t:"mcq",q:"في «سأل» ما الحركة التي حسمت الكرسي؟",o:["الكسرة","الضمة","الفتحة","السكون"],a:2,e:"الفتحة."},
-    {t:"tf",q:"في «يؤدي» تظهر الهمزة على واو.",a:true,e:"صحيح."},
-    {t:"fill",q:"اكتب الكلمة صحيحة: «مءسسة».",a:["مؤسسة"],e:"تكتب على واو."},
-    {t:"mcq",q:"أي رسم صحيح في «لؤلؤ»؟",o:["لألأ","لؤلؤ","لئلئ","لءلء"],a:1,e:"الرسم الصحيح لؤلؤ."},
-    {t:"tf",q:"في «مروءة» تظهر إحدى الهمزات على السطر.",a:true,e:"صحيح."},
-    {t:"fill",q:"اكتب الكلمة صحيحة: «قرائة».",a:["قراءة"],e:"الهمزة على السطر بعد الألف."},
-    {t:"mcq",q:"أي كتابة صحيحة؟",o:["عبائة","عباءة","عبائةً","عبؤة"],a:1,e:"الصواب عباءة."},
-    {t:"tf",q:"في «ضوئية» تكتب الهمزة على نبرة.",a:true,e:"صحيح."},
-    {t:"fill",q:"اكتب الكلمة صحيحة: «مطمأن».",a:["مطمئن"],e:"الكسرة أقوى."},
-    {t:"mcq",q:"أي كلمة صحيحة؟",o:["ناشأة","ناشؤة","ناشئة","ناشءة"],a:2,e:"الصواب ناشئة."},
-    {t:"tf",q:"في «رئة» الهمزة على نبرة.",a:true,e:"صحيح."},
-    {t:"fill",q:"اكتب الكلمة الصحيحة: «تئثير».",a:["تأثير"],e:"الصواب تأثير."},
-    {t:"mcq",q:"أي كتابة صحيحة؟",o:["مئساة","مؤساة","مأساة","مءساة"],a:2,e:"الصواب مأساة."}
-  ].map((q,i)=>enrichQuestion(q,"الهمزة المتوسطة",i));
-
-  const HAMZA_STAGES = [
-    {t:"summary",title:"مقدمة وتمهيد — شاهد الفكرة قبل السؤال",strat:"تهيئة بصرية",body:"الهمزة المتوسطة لا تُرسم عشوائيًا. سننظر إلى حركة الهمزة وحركة الحرف الذي قبلها، ثم نقارن القوتين.",bullets:["بِئْر ← ئ","مُؤْمِن ← ؤ","مَسْأَلَة ← أ","قِرَاءَة ← ء"],art:["hamza-anatomy"],note:"لا سؤال الآن. فقط لاحظ اختلاف صورة الهمزة.",__gfsUpgrade:VERSION},
-    {t:"video",title:"شاهد وافهم — فيديو واحد مركز",strat:"التعلّم المدمج",intro:"شاهد الفيديو أولًا، ثم أجب عن سؤالين فقط.",clips:[{id:"N99RtSaAEj4",start:0,label:"شرح الهمزة المتوسطة"}],checks:[enrichQuestion({t:"mcq",q:"ما الحركتان اللتان نقارنهما؟",o:["الهمزة وما قبلها","أول الكلمة وآخرها","ما بعدها فقط","عدد الحروف"],a:0,e:"نقارن حركة الهمزة وحركة ما قبلها."},"الهمزة المتوسطة",0),enrichQuestion({t:"tf",q:"الكسرة أقوى من الضمة.",a:true,e:"صحيح."},"الهمزة المتوسطة",1)],__gfsUpgrade:VERSION},
-    {t:"worked",title:"الشرح المبسّط — كيف أتخذ القرار؟",strat:"النمذجة المتدرّجة",intro:"شاهد خطوات الحل قبل القاعدة.",items:[{w:"سُئِلَ",steps:["حركة الهمزة: كسرة","حركة ما قبلها: ضمة","الكسرة أقوى","إذن تكتب على نبرة: ئ"]},{w:"مُؤْمِن",steps:["الهمزة ساكنة","ما قبلها مضموم","الضمة أقوى من السكون","إذن تكتب على واو: ؤ"]}],checks:[],__gfsUpgrade:VERSION},
-    {t:"rule",title:"القاعدة — بعد أن فهمت المثال",strat:"قاعدة بعد الفهم",body:"رتّب قوة الحركات: الكسرة ثم الضمة ثم الفتحة ثم السكون. قارن حركة الهمزة بحركة ما قبلها، والحركة الأقوى تحدد الكرسي: الكسرة ← ئ، الضمة ← ؤ، الفتحة ← أ.",concepts:["الكسرة ← ئ","الضمة ← ؤ","الفتحة ← أ","السكون هو الأضعف"],art:["hamza-scale"],checks:[],note:"القاعدة الآن تلخّص ما شاهدته في المثال.",__gfsUpgrade:VERSION},
-    {t:"summary",title:"إنفوجرافيك — سلم قوة الحركات",strat:"التشفير البصري",body:"كلما ارتفعت قوة الحركة ارتفع تأثيرها في كرسي الهمزة.",bullets:["🥇 الكسرة ِ ← ئ","🥈 الضمة ُ ← ؤ","🥉 الفتحة َ ← أ","السكون ْ ← الأضعف"],art:["hamza-scale"],checks:[HAMZA_BANK[0]],__gfsUpgrade:VERSION},
-    {t:"worked",title:"على الألف — عندما تفوز الفتحة",strat:"مثال مرئي",intro:"طبّق على مثالين مختلفين.",items:[{w:"سَأَلَ",steps:["الهمزة مفتوحة","ما قبلها مفتوح","الفتحة هي الأقوى","الكرسي: أ"]},{w:"مَسْأَلَة",steps:["الهمزة مفتوحة","ما قبلها ساكن","الفتحة أقوى","الكرسي: أ"]}],checks:[HAMZA_BANK[2],HAMZA_BANK[9]],__gfsUpgrade:VERSION},
-    {t:"worked",title:"على الواو — عندما تفوز الضمة",strat:"مثال مرئي",intro:"لاحظ الضمة وهي تحسم القرار.",items:[{w:"مُؤْمِن",steps:["الهمزة ساكنة","ما قبلها مضموم","الضمة أقوى","الكرسي: ؤ"]},{w:"رُؤْيَة",steps:["الهمزة ساكنة","ما قبلها مضموم","الكرسي: ؤ"]}],checks:[HAMZA_BANK[1],HAMZA_BANK[13]],__gfsUpgrade:VERSION},
-    {t:"worked",title:"على النبرة — عندما تفوز الكسرة",strat:"مثال مرئي",intro:"الكسرة هي الأقوى؛ لذلك تظهر النبرة كثيرًا.",items:[{w:"بِئْر",steps:["الهمزة ساكنة","ما قبلها مكسور","الكسرة أقوى","الكرسي: ئ"]},{w:"فِئَة",steps:["الهمزة مفتوحة","ما قبلها مكسور","الكسرة أقوى","الكرسي: ئ"]}],checks:[HAMZA_BANK[3],HAMZA_BANK[5]],__gfsUpgrade:VERSION},
-    {t:"summary",title:"حالات خاصة — عندما يظهر السطر",strat:"الانتباه إلى البنية",body:"بعض الكلمات تحتاج النظر إلى حرف المد وبنية الكلمة، مثل: قراءة، عباءة، مروءة.",bullets:["قراءة","عباءة","مروءة","افحص الكلمة كاملة"],checks:[HAMZA_BANK[16],HAMZA_BANK[17]],__gfsUpgrade:VERSION},
-    {t:"summary",title:"خريطة المفاهيم — القرار في أربع خطوات",strat:"الخريطة المفاهيمية",body:"حدّد → قارن → اختر → علّل.",bullets:["1️⃣ حركة الهمزة","2️⃣ حركة ما قبلها","3️⃣ الأقوى","4️⃣ الكرسي المناسب"],art:["hamza-anatomy","hamza-scale"],checks:[HAMZA_BANK[20]],__gfsUpgrade:VERSION},
-    {t:"template",title:"مختبر الهمزة — حلّل الكلمات بنفسك",strat:"التعلّم بالقالب",cols:["الكلمة","حركة الهمزة","حركة ما قبلها","الأقوى","الرسم"],rows:[["يَئِسَ","كسرة","فتحة","الكسرة","ئ"],["رُؤُوس","ضمة","ضمة","الضمة","ؤ"],["مَأْذَنَة","سكون","فتحة","الفتحة","أ"],["مَرُوءَة","فتحة","واو ساكنة","حالة خاصة","ء"]],opts:{1:["كسرة","ضمة","فتحة","سكون"],2:["كسرة","ضمة","فتحة","سكون","واو ساكنة"],3:["الكسرة","الضمة","الفتحة","السكون","حالة خاصة"],4:["ئ","ؤ","أ","ء"]},__gfsUpgrade:VERSION}
-  ];
+  function practicalStages(stages, course) {
+    const keep = ["template", "sort", "errors", "problem", "produce"];
+    return (stages || [])
+      .filter(s => keep.includes(s?.t))
+      .slice(0, 3)
+      .map((s, i) => ({
+        ...s,
+        title: s.title || ["مختبر التطبيق", "محاكاة المهارة", "تحدّي الإنتاج"][i],
+        checks: uniqueQuestions(s.checks || []).slice(0, 2),
+        __gfsUpgrade: VERSION
+      }));
+  }
 
   function upgradeCourse(course) {
-    if (!course || !course.id) return course;
-    if (course.title === "الهمزة المتوسطة") {
-      return { ...course, q:25, stages:HAMZA_STAGES, bank:HAMZA_BANK, contentVersion:VERSION };
-    }
+    if (!course?.id) return course;
+    const stages = Array.isArray(course.stages) ? course.stages : [];
+    const bank = diverseQuestions(course.bank || [], 25);
+    const info = extractInfo(course, stages);
+    const pool = getLearningPool(stages, bank);
 
-    const oldStages = Array.isArray(course.stages) ? course.stages : [];
-    const base = oldStages.filter(s => !s?.__gfsUpgrade);
-    const info = extractRule(course, base.length ? base : oldStages);
-    const bank = cleanBank(course.bank, course.title);
-    const stages = [];
-    stages.push(buildIntro(course, info));
-    stages.push(buildVideo(course, oldStages, bank));
-    stages.push(buildExplanation(course, base.length ? base : oldStages, info));
-    stages.push(buildRule(course, info));
-    stages.push(buildMap(course, info, bank));
-    stages.push(...practicalStages(base.length ? base : oldStages, course));
-    stages.push(...buildChallenges(course, bank, 3));
-    stages.push({t:"summary",title:"الخلاصة — راجع قبل الاختبار",strat:"مراجعة ذكية",body:info.body,bullets:info.bullets,note:"بعد إكمال رحلة التعلم يُفتح الاختبار النهائي. الاختبار وحده يحدد النجاح.",__gfsUpgrade:VERSION});
-    return { ...course, q:25, stages, bank, contentVersion:VERSION };
+    const newStages = [
+      introStage(course, info),
+      videoStage(course, stages, pool),
+      explanationStage(course, info),
+      visualStage(course, info, pool),
+      ruleStage(course, info),
+      mapStage(course, info, pool),
+      ...practicalStages(stages, course),
+      ...pool.slice(0, 8).map((q, i) => challengeStage(course, q, i))
+    ];
+
+    return {
+      ...course,
+      stages: newStages,
+      bank: bank.length ? bank : course.bank,
+      q: 25,
+      __contentVersion: VERSION
+    };
   }
 
   async function run() {
     try {
-      const marker = await getKey(MARKER_KEY);
-      if (marker?.done) return;
-      let keys = [];
-      for (let i=0;i<6;i++) {
-        keys = await listKeys(COURSE_PREFIX);
-        if (keys.length) break;
-        await new Promise(r=>setTimeout(r,1200));
-      }
-      if (!keys.length) return;
+      if (localStorage.getItem(MARKER_KEY) === "done") return;
+      const keys = await listKeys(COURSE_PREFIX);
       let changed = 0;
       for (const key of keys) {
-        try {
-          const course = await getKey(key);
-          if (!course || course.contentVersion === VERSION) continue;
-          await setKey(key, upgradeCourse(course));
-          changed++;
-        } catch (e) { console.warn("course upgrade skipped", key, e); }
+        const course = await getKey(key);
+        if (!course?.id) continue;
+        const next = upgradeCourse(course);
+        await setKey(key, next);
+        changed++;
       }
-      await setKey(MARKER_KEY,{done:true,version:VERSION,changed,total:keys.length,at:new Date().toISOString()});
-      if (changed) {
-        const rk=`gfs:upgrade-reloaded:${VERSION}`;
-        if(!sessionStorage.getItem(rk)){sessionStorage.setItem(rk,"1");setTimeout(()=>location.reload(),500);}
-      }
-    } catch(e){console.warn("course upgrade failed",e);}
+      localStorage.setItem(MARKER_KEY, "done");
+      if (changed) setTimeout(() => location.reload(), 250);
+    } catch (e) {
+      console.error("Course content upgrade v4 failed", e);
+    }
   }
 
-  if(document.readyState==="complete")setTimeout(run,1200);
-  else window.addEventListener("load",()=>setTimeout(run,1200),{once:true});
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", run, { once: true });
+  else run();
 })();
