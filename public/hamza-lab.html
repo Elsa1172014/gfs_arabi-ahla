@@ -3,135 +3,94 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>مختبر الهمزة المتوسطة</title>
+<title>الهمزة المتوسطة | GFS بالعربي أحلى</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f4f7f6;color:#15343a}.wrap{max-width:1120px;margin:auto;padding:20px}.hero{background:linear-gradient(135deg,#102a43,#14746f);color:#fff;border-radius:28px;padding:28px;box-shadow:0 18px 45px #0002}.hero-row{display:flex;justify-content:space-between;gap:24px;align-items:center;flex-wrap:wrap}.hero h1{font-size:48px;margin:6px 0 8px}.sub{font-size:18px;opacity:.94}.progress-box{display:flex;align-items:center;gap:18px;background:#ffffff12;border:1px solid #ffffff35;border-radius:20px;padding:16px 20px}.ring{position:relative;width:118px;height:118px}.ring svg{width:118px;height:118px;transform:rotate(-90deg)}.ring circle{fill:none;stroke-width:10}.ring .track{stroke:#ffffff2b}.ring .value{stroke:#ffd166;stroke-linecap:round;transition:stroke-dashoffset .4s}.ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:27px}.attempt{font-size:16px;line-height:1.9}.steps{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.pill{padding:8px 12px;border-radius:999px;background:#ffffff18;border:1px solid #ffffff36;font-size:13px}.pill.on{background:#ffd166;color:#173;border-color:#ffd166}.card{background:#fff;border:1px solid #dfe8e5;border-radius:22px;padding:24px;margin-top:20px;box-shadow:0 10px 28px #1231;min-height:260px}.cta{border:0;border-radius:13px;padding:12px 20px;background:#14746f;color:#fff;font-weight:800;cursor:pointer;font-size:15px}.cta:disabled{opacity:.4;cursor:not-allowed}.ghost{background:#e7f2ef;color:#123}.concept{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.concept>div{padding:18px;border-radius:18px;text-align:center;background:#eef6f4}.big{font-size:48px;font-weight:900}.moves{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.move{padding:16px;border:2px solid #dce7e4;border-radius:16px;background:white;font-size:30px;cursor:pointer}.move.on{border-color:#14746f;background:#e7f5f2}.note{padding:14px;border-radius:14px;background:#fff8e8;margin-top:14px}.sim{display:flex;justify-content:center;align-items:center;gap:18px;flex-wrap:wrap;font-size:30px;background:#eef6f4;border-radius:18px;padding:24px}.q{padding:17px;border:1px solid #dfe8e5;border-radius:16px;margin:12px 0}.op{display:block;width:100%;text-align:right;padding:11px 12px;margin:7px 0;border:1px solid #dbe4e1;border-radius:11px;background:#fff;cursor:pointer}.op.sel{border-color:#14746f;background:#e8f6f3}.feedback{padding:10px;border-radius:10px;background:#f3f6f5;margin-top:8px}.result{padding:18px;border-radius:16px;background:#eef6f4;margin-top:16px}.video{aspect-ratio:16/9;background:#0b1720;border-radius:18px;overflow:hidden}.video iframe{width:100%;height:100%;border:0}.check{display:flex;gap:9px;align-items:center;margin:14px 0}.discover{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:18px 0}.discover div{border-radius:18px;padding:18px;text-align:center;background:linear-gradient(180deg,#f7fbfa,#eaf5f2);border:1px solid #d9e9e5}.discover b{font-size:24px}.mini{font-size:13px;color:#5d7478}.meter{display:flex;gap:12px;align-items:center;justify-content:center;flex-wrap:wrap}.meter .box{padding:18px;border-radius:16px;background:#eef6f4;min-width:180px;text-align:center}.meter .arrow{font-size:32px}@media(max-width:760px){.concept,.moves,.discover{grid-template-columns:1fr 1fr}.hero h1{font-size:36px}.progress-box{width:100%;justify-content:center}.wrap{padding:12px}.ring{width:102px;height:102px}.ring svg{width:102px;height:102px}.ring-label{font-size:23px}}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f7f9f8;color:#12353b}.page{max-width:1280px;margin:auto;padding:18px}.topline{height:6px;background:linear-gradient(90deg,#8e1d3c,#28357c,#0a3f89);border-radius:999px;margin-bottom:14px}.head{background:#fff;border:1px solid #dfe7e4;border-radius:22px;padding:24px;box-shadow:0 10px 26px #1231}.headgrid{display:grid;grid-template-columns:1fr 260px;gap:28px;align-items:center}.course h1{font-size:34px;margin:0 0 6px;color:#102f42}.meta{line-height:2;color:#38555b}.objective{font-size:20px;margin-top:18px}.ringwrap{text-align:center}.ring{width:140px;height:140px;margin:auto;position:relative}.ring svg{width:140px;height:140px;transform:rotate(-90deg)}.ring circle{fill:none;stroke-width:12}.track{stroke:#e7ecea}.value{stroke:#14746f;stroke-linecap:round;transition:.4s}.pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:900;color:#0c3440}.ringcap{font-weight:800;margin-top:6px}.small{font-size:13px;color:#647b80}.headbar{height:10px;background:#e7ece9;border-radius:999px;overflow:hidden;margin-top:20px}.headbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#14746f,#1e88a8);transition:.4s}.layout{display:grid;grid-template-columns:260px 1fr;gap:18px;margin-top:18px}.side{background:#fff;border:1px solid #dfe7e4;border-radius:20px;padding:16px;align-self:start;position:sticky;top:12px}.brand{background:linear-gradient(135deg,#0e2f54,#0b6f73);color:#fff;border-radius:16px;padding:14px;font-size:19px;font-weight:900;margin-bottom:12px}.navitem{display:flex;gap:10px;align-items:center;padding:12px;border-radius:13px;margin:7px 0;background:#f7f9f8;color:#62777b}.navitem.on{background:#e5f3ef;color:#0b5d58;font-weight:800}.navitem.done{background:#eef8f3;color:#17684d}.dot{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#dfe7e4;font-weight:800}.navitem.on .dot,.navitem.done .dot{background:#14746f;color:#fff}.lock{margin-right:auto}.main{min-width:0}.card{background:#fff;border:1px solid #dfe7e4;border-radius:20px;padding:24px;box-shadow:0 8px 20px #1230;margin-bottom:18px}.eyebrow{display:inline-block;background:#e8f3f0;color:#0a665f;padding:6px 11px;border-radius:999px;font-size:13px;font-weight:800}.title{font-size:28px;color:#113d53;margin:12px 0}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}.visual{border-radius:18px;padding:18px;background:linear-gradient(180deg,#f6fbfa,#edf6f3);border:1px solid #dceae6}.visual h3{margin-top:0;color:#0e5160}.wordcards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.word{background:#fff;border:1px solid #dfe7e4;border-radius:16px;padding:16px;text-align:center}.word b{font-size:28px}.strength{display:flex;align-items:flex-end;gap:10px;justify-content:center;height:180px}.barv{width:70px;border-radius:16px 16px 6px 6px;display:flex;align-items:flex-end;justify-content:center;padding:10px;color:#fff;font-weight:900}.b4{height:160px;background:#0f766e}.b3{height:125px;background:#1687a7}.b2{height:90px;background:#b27b2b}.b1{height:55px;background:#9aa8a6}.question{margin-top:18px;padding:18px;border:1px solid #d8e4e0;border-radius:16px;background:#fbfcfc}.qtitle{font-weight:900;margin-bottom:12px}.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}.opt,.tf,.chipbtn,.orderbtn{border:1px solid #d4dfdc;background:#fff;border-radius:12px;padding:11px;cursor:pointer;font-family:inherit;font-size:15px}.opt.sel,.tf.sel,.chipbtn.sel{border-color:#14746f;background:#e7f4f0}.feedback{margin-top:12px;padding:11px;border-radius:12px;display:none}.feedback.ok{display:block;background:#eaf7ef;color:#17633f}.feedback.no{display:block;background:#fff1ee;color:#8f382e}.next{margin-top:14px;border:0;background:#14746f;color:#fff;padding:12px 20px;border-radius:12px;font-weight:900;cursor:pointer}.next:disabled{opacity:.35;cursor:not-allowed}.video{aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#10232a}.video iframe{width:100%;height:100%;border:0}.map{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.map div{padding:18px;border-radius:18px;text-align:center;background:#f2f7f5;border:1px solid #dce7e4}.map .big{font-size:40px;font-weight:900}.simbox{display:grid;grid-template-columns:1fr 1fr;gap:14px}.moves{display:flex;gap:8px;flex-wrap:wrap}.move{width:55px;height:55px;border:2px solid #d7e1de;background:#fff;border-radius:14px;font-size:24px;cursor:pointer}.move.on{border-color:#14746f;background:#e6f4ef}.seat{font-size:58px;font-weight:900;text-align:center;padding:24px;background:#eef7f4;border-radius:18px}.matchgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.matchcol{display:grid;gap:8px}.matchbtn{border:1px solid #d7e0de;background:#fff;padding:10px;border-radius:12px;cursor:pointer}.matchbtn.sel{border-color:#14746f;background:#eaf6f2}.orderline{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.orderbtn{background:#f8faf9}.quizbox{background:#fff;border:1px solid #dce5e2;border-radius:20px;padding:24px}.counter{text-align:center;color:#60777b;margin-bottom:12px}.dots{display:flex;justify-content:center;gap:6px;margin-top:18px;flex-wrap:wrap}.qd{width:10px;height:10px;border-radius:50%;background:#d8e1df}.qd.on{background:#14746f}.qd.done{background:#86bfb0}.input{width:100%;padding:12px;border:1px solid #d6e0dd;border-radius:12px;font-family:inherit;font-size:16px}.heroimg{display:flex;align-items:center;justify-content:center;min-height:230px;background:linear-gradient(135deg,#0f3156,#0e716f);border-radius:18px;color:#fff;position:relative;overflow:hidden}.heroimg:before{content:"ء";font-size:220px;position:absolute;opacity:.08;left:7%;top:-30px}.heroimg .inner{position:relative;text-align:center}.heroimg .inner b{font-size:44px}.minirow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.miniCard{padding:16px;border-radius:16px;text-align:center;border:1px solid #dce7e4;background:#fff}.miniCard span{font-size:34px}.summary{padding:18px;border-radius:16px;background:#eef7f4}.hidden{display:none!important}@media(max-width:900px){.layout{grid-template-columns:1fr}.side{position:static}.headgrid{grid-template-columns:1fr}.grid2,.simbox{grid-template-columns:1fr}.wordcards,.map{grid-template-columns:1fr 1fr}.opts{grid-template-columns:1fr}.ringwrap{order:-1}}@media(max-width:600px){.page{padding:10px}.wordcards,.map,.minirow{grid-template-columns:1fr}.head{padding:16px}.card{padding:16px}.course h1{font-size:28px}}
 </style>
 </head>
 <body>
-<main class="wrap">
-  <section class="hero">
-    <div class="hero-row">
-      <div>
-        <div>مختبر العربية التفاعلي</div>
+<div class="page">
+  <div class="topline"></div>
+  <section class="head">
+    <div class="headgrid">
+      <div class="course">
         <h1>الهمزة المتوسطة</h1>
-        <div class="sub">شاهد • اكتشف • حاكِ • طبّق • أتقن</div>
+        <div class="meta">إملاء ورسم · الصف 10<br>الأسئلة النهائية: 25<br>النجاح: 70%<br>المحاولات: <span id="attemptsText">0 من 4</span></div>
+        <div class="objective">أن يرسم الطالب الهمزة المتوسطة على صورتها الصحيحة معللًا اختياره بقاعدة أقوى الحركتين.</div>
       </div>
-      <div class="progress-box">
-        <div class="ring">
-          <svg viewBox="0 0 120 120" aria-label="نسبة الإنجاز">
-            <circle class="track" cx="60" cy="60" r="48"></circle>
-            <circle id="ringValue" class="value" cx="60" cy="60" r="48"></circle>
-          </svg>
-          <div id="ringLabel" class="ring-label">0%</div>
-        </div>
-        <div class="attempt">المحاولة <b id="attempt">1</b> من <b>4</b><br><span class="mini" style="color:#dbeaea">تتحدث النسبة مع تقدمك في مراحل الكورس</span></div>
+      <div class="ringwrap">
+        <div class="ring"><svg viewBox="0 0 120 120"><circle class="track" cx="60" cy="60" r="48"></circle><circle id="ringValue" class="value" cx="60" cy="60" r="48"></circle></svg><div id="pct" class="pct">0%</div></div>
+        <div class="ringcap">نسبة الحضور</div><div class="small">أكمل 100% ليفتح الاختبار</div>
       </div>
     </div>
-    <div id="steps" class="steps"></div>
+    <div class="headbar"><i id="headbar"></i></div>
   </section>
-  <section id="stage" class="card"></section>
-</main>
+
+  <div class="layout">
+    <aside class="side"><div class="brand">GFS بالعربي أحلى</div><div id="nav"></div></aside>
+    <main class="main"><div id="stage"></div></main>
+  </div>
+</div>
+
 <script>
 (function(){
-  const stages=['انطلق','شاهد','اكتشف','مختبر الحركات','الخريطة','تدرّب','المحاكاة','التحدي النهائي'];
-  let stage=0, attempt=1, videoDone=false, hm='ْ', pm='ُ', submitted=false;
-  let answers={};
-  const strength={'ِ':4,'ُ':3,'َ':2,'ْ':1};
-  const seat={4:'ئ',3:'ؤ',2:'أ',1:'ء'};
-  const Q=[
-    ['في كلمة «سُئِلَ»، ما الحركة الأقوى التي حكمت كتابة الهمزة؟',['الكسرة','الضمة','الفتحة','السكون'],0,'الهمزة مكسورة وما قبلها مضموم؛ والكسرة أقوى من الضمة.'],
-    ['اختر الكتابة الصحيحة لكلمة تدل على شخص يصدق ويطمئن قلبه.',['مُأْمِن','مُؤْمِن','مُئْمِن','مُءْمِن'],1,'الهمزة ساكنة وما قبلها مضموم؛ الضمة أقوى فتكتب على الواو.'],
-    ['أي كلمة كتبت همزتها على الألف لأن الفتحة هي الأقوى؟',['سَأَلَ','بِئْر','رُؤْيَة','فِئَة'],0,'في «سأل» الهمزة مفتوحة وما قبلها مفتوح.'],
-    ['أنت محرر صحيفة المدرسة. اختر الرسم الصحيح.',['مسئلة','مسؤلة','مسألة','مسءلة'],2,'الهمزة مفتوحة وما قبلها ساكن؛ الفتحة أقوى.'],
-    ['في «فِئَة»، ما القرار الصحيح؟',['الفتحة أقوى → أ','الكسرة أقوى → ئ','الضمة أقوى → ؤ','السكون أقوى → ء'],1,'ما قبل الهمزة مكسور والهمزة مفتوحة؛ الكسرة أقوى.'],
-    ['اختر الكلمة التي تنتمي إلى مجموعة الهمزة على الواو.',['رَأْس','ذِئْب','رُؤْيَة','سَائِل'],2,'في «رؤية» يناسب الضمة كرسي الواو.'],
-    ['أي تفسير أدق لكتابة الهمزة في «بِئْر»؟',['لأن الهمزة مفتوحة','لأن ما قبلها مكسور والكسرة أقوى','لأن ما قبلها مضموم','لأنها في أول الكلمة'],1,'الهمزة ساكنة وما قبلها مكسور؛ الكسرة أقوى.'],
-    ['أكمل كلمة «يَـ...ـس».',['أ','ؤ','ئ','ء'],0,'في «يأس» الهمزة ساكنة وما قبلها مفتوح.'],
-    ['صحح الكلمة «مُئَذِّن».',['مُؤَذِّن','مُأَذِّن','مُءَذِّن','مِئَذِّن'],0,'الهمزة مفتوحة وما قبلها مضموم؛ الضمة أقوى.'],
-    ['أي زوج يشترك في كتابة الهمزة على نبرة؟',['بئر – فئة','رأس – مأمن','رؤية – مؤمن','سأل – يأكل'],0,'في الكلمتين غلبت الكسرة.'],
-    ['ما ترتيب التفكير الصحيح قبل رسم الهمزة المتوسطة؟',['أختار الكرسي ثم أبحث عن الحركة','أحدد الحركتين ثم أقارن القوة ثم أختار الكرسي','أنظر إلى آخر الكلمة','أختار الشكل الأكثر شيوعًا'],1,'نحدد الحركتين ثم نقارن ثم نختار الكرسي.'],
-    ['في «مَسْأَلَة»، ما الحركة التي غلبت السكون؟',['الكسرة','الضمة','الفتحة','لا توجد حركة'],2,'الهمزة مفتوحة وما قبلها ساكن.'],
-    ['اختر الجملة الخالية من خطأ في الهمزة المتوسطة.',['رأيتُ ذءبًا بعيدًا.','هذه فأة نشيطة.','سُئِلَ الطالبُ عن رأيه.','المأمنُ يقرءُ الدرس.'],2,'«سُئِل» صحيحة.'],
-    ['إذا كانت الهمزة مضمومة وما قبلها مفتوحًا، فما الكرسي؟',['الألف','الواو','النبرة','السطر'],1,'الضمة أقوى من الفتحة.'],
-    ['إذا كانت الهمزة مفتوحة وما قبلها مكسورًا، فما القرار؟',['أ','ؤ','ئ','ء'],2,'الكسرة أقوى من الفتحة.'],
-    ['اختر الكلمة الدخيلة في مجموعة الكلمات المكتوبة على الألف.',['سأل','رأس','مأمن','بئر'],3,'«بئر» على نبرة.'],
-    ['طالب قال: أنظر إلى حركة الهمزة فقط. ما ردك؟',['صحيح دائمًا','خطأ؛ نقارن حركة الهمزة بحركة ما قبلها','صحيح في الكلمات الطويلة','لا توجد قاعدة'],1,'القاعدة تقوم على مقارنة الحركتين.'],
-    ['ما الكرسي المناسب للكسرة؟',['واو','ألف','نبرة/ياء','السطر'],2,'الكسرة تناسب النبرة.'],
-    ['ما الكرسي المناسب للضمة؟',['ؤ','أ','ئ','ء'],0,'الضمة تناسب الواو.'],
-    ['ما الكرسي المناسب للفتحة في القاعدة العامة؟',['ئ','ؤ','أ','ء'],2,'الفتحة تناسب الألف.'],
-    ['همزة ساكنة وحرف سابق مكسور: ما النتيجة؟',['ئ','ؤ','أ','ء'],0,'الكسرة أقوى من السكون.'],
-    ['همزة ساكنة وحرف سابق مضموم: ما النتيجة؟',['أ','ئ','ؤ','ء'],2,'الضمة أقوى من السكون.'],
-    ['همزة ساكنة وحرف سابق مفتوح: ما النتيجة؟',['أ','ؤ','ئ','ء'],0,'الفتحة أقوى من السكون.'],
-    ['أي عبارة تلخص ميزان الهمزة؟',['الأطول يفوز','الأقوى حركة يحدد الكرسي','الهمزة دائمًا على ألف','الحرف الأخير يحدد الكرسي'],1,'الأقوى حركة يحدد الكرسي.'],
-    ['أي كلمة مثال على تغلب الكسرة على الضمة؟',['سُئِلَ','سَأَلَ','مُؤْمِن','رَأْس'],0,'في «سُئِل» الكسرة أقوى من الضمة.']
-  ];
-  const circumference=2*Math.PI*48;
-  const ring=document.getElementById('ringValue');
-  ring.style.strokeDasharray=String(circumference);
-  ring.style.strokeDashoffset=String(circumference);
-  function progress(){return Math.round(stage/(stages.length-1)*100)}
-  function updateHeader(){
-    const p=progress();
-    document.getElementById('attempt').textContent=attempt;
-    document.getElementById('ringLabel').textContent=p+'%';
-    ring.style.strokeDashoffset=String(circumference*(1-p/100));
-    document.getElementById('steps').innerHTML=stages.map((s,i)=>'<span class="pill '+(i===stage?'on':'')+'">'+(i+1)+'. '+s+'</span>').join('');
-  }
-  function button(label,next,disabled){return '<button class="cta" '+(disabled?'disabled':'')+' data-next="'+next+'">'+label+'</button>'}
-  function render(){
-    updateHeader();
-    const x=document.getElementById('stage');
-    if(stage===0){
-      x.innerHTML='<h2>⚡ تحدّي البداية</h2><p>تأمل الكلمات: <b>سُئِلَ — سَأَلَ — بِئْر — مُؤْمِن</b></p><p>لماذا تغيّر كرسي الهمزة؟ في هذا الكورس ستكتشف القاعدة وتختبرها بالمحاكاة.</p>'+button('ابدأ الرحلة',1,false);
-    } else if(stage===1){
-      x.innerHTML='<h2>🎬 شاهد واكتشف</h2><div class="video"><iframe src="https://www.youtube.com/embed/N99RtSaAEj4" title="شرح الهمزة المتوسطة" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><label class="check"><input id="videoCheck" type="checkbox" '+(videoDone?'checked':'')+'> أكملت مشاهدة الفيديو</label>'+button('افتح الاكتشاف',2,!videoDone);
-    } else if(stage===2){
-      x.innerHTML='<h2>👁️ اكتشف النمط</h2><div class="discover"><div><b>بِئْر</b><div class="big">ئ</div><span class="mini">الكسرة تتصدر</span></div><div><b>مُؤْمِن</b><div class="big">ؤ</div><span class="mini">الضمة تتصدر</span></div><div><b>سَأَلَ</b><div class="big">أ</div><span class="mini">الفتحة تتصدر</span></div><div><b>قراءة</b><div class="big">ء</div><span class="mini">حالة خاصة</span></div></div><p>الفكرة الأساسية: نقارن <b>حركة الهمزة</b> و<b>حركة الحرف السابق</b>، والحركة الأقوى تقود القرار.</p>'+button('ادخل مختبر الحركات',3,false);
-    } else if(stage===3){
-      const ms=Object.keys(strength);
-      x.innerHTML='<h2>🔬 مختبر الحركات</h2><p>غيّر الحركتين وشاهد كرسي الهمزة يتغير أمامك.</p><h3>حركة الهمزة</h3><div class="moves" id="hmMoves"></div><h3>حركة ما قبل الهمزة</h3><div class="moves" id="pmMoves"></div><div class="note"><div class="big">الكرسي المتوقع: '+seat[Math.max(strength[hm],strength[pm])]+'</div></div><br>'+button('افتح خريطة القوة',4,false);
-      document.getElementById('hmMoves').innerHTML=ms.map(m=>'<button class="move '+(hm===m?'on':'')+'" data-hm="'+m+'">'+m+'</button>').join('');
-      document.getElementById('pmMoves').innerHTML=ms.map(m=>'<button class="move '+(pm===m?'on':'')+'" data-pm="'+m+'">'+m+'</button>').join('');
-    } else if(stage===4){
-      x.innerHTML='<h2>🗺️ خريطة قوة الحركات</h2><div class="concept"><div><div class="big">ِ</div><b>الكسرة</b><p>ئ</p></div><div><div class="big">ُ</div><b>الضمة</b><p>ؤ</p></div><div><div class="big">َ</div><b>الفتحة</b><p>أ</p></div><div><div class="big">ْ</div><b>السكون</b><p>الأضعف</p></div></div><div class="note"><b>خوارزمية القرار:</b> حدّد الحركتين ← قارن القوة ← اختر كرسي الحركة الأقوى ← راجع الحالات الخاصة.</div><br>'+button('تدرّب',5,false);
-    } else if(stage===5){
-      x.innerHTML='<h2>🧩 طبّق القاعدة</h2><div class="meter"><div class="box"><b>مُؤْمِن</b><p>الهمزة ساكنة<br>وما قبلها مضموم</p></div><div class="arrow">←</div><div class="box"><b>الضمة أقوى</b><div class="big">ؤ</div></div></div><div class="note">💡 لا تحفظ شكل الكلمة فقط؛ اسأل: ما حركة الهمزة؟ ما حركة ما قبلها؟ أيهما أقوى؟</div><br>'+button('شغّل المحاكاة',6,false);
-    } else if(stage===6){
-      x.innerHTML='<h2>🎮 محاكاة ميزان الهمزة</h2><div class="sim"><span>ما قبلها: <b>'+pm+'</b></span><span>⚖️</span><span>الهمزة: <b>'+hm+'</b></span><span>→</span><span class="big">'+seat[Math.max(strength[hm],strength[pm])]+'</span></div><p>ارجع إلى المختبر وغيّر الحركات، ثم حاول أن تتنبأ بالكرسي قبل ظهوره.</p>'+button('ابدأ 25 تحديًا',7,false);
-    } else {
-      let score=0; for(let i=0;i<Q.length;i++){if(answers[i]===Q[i][2]) score++}
-      let html='<h2>🏆 تحدّي الإتقان — 25 مهمة</h2><p>اختر إجابة كل مهمة، ثم أنهِ المحاولة لترى التغذية الراجعة.</p>';
-      for(let i=0;i<Q.length;i++){
-        html+='<div class="q"><b>'+(i+1)+'. '+Q[i][0]+'</b>';
-        for(let j=0;j<Q[i][1].length;j++){
-          html+='<button class="op '+(answers[i]===j?'sel':'')+'" data-q="'+i+'" data-a="'+j+'" '+(submitted?'disabled':'')+'>'+Q[i][1][j]+'</button>';
-        }
-        if(submitted){html+='<div class="feedback">'+(answers[i]===Q[i][2]?'✅ أحسنت':'❌ راجع قرارك')+' — '+Q[i][3]+'</div>'}
-        html+='</div>';
-      }
-      if(!submitted){
-        html+='<button id="finishBtn" class="cta" '+(Object.keys(answers).length<Q.length?'disabled':'')+'>إنهاء المحاولة</button>';
-      } else {
-        const pct=Math.round(score/Q.length*100);
-        html+='<div class="result"><h2>نتيجتك: '+score+'/'+Q.length+' — '+pct+'%</h2><p>'+(pct>=70?'🎉 أتقنت المهارة.':'تحتاج إلى مراجعة التغذية الراجعة ثم المحاولة مجددًا.')+'</p>';
-        if(attempt<4){html+='<button id="retryBtn" class="cta">محاولة جديدة ('+(4-attempt)+' متبقية)</button>'}else{html+='<b>استخدمت المحاولات الأربع.</b>'}
-        html+='</div>';
-      }
-      x.innerHTML=html;
-    }
-    bind();
-  }
-  function bind(){
-    document.querySelectorAll('[data-next]').forEach(btn=>btn.addEventListener('click',()=>{stage=Number(btn.dataset.next);render();window.scrollTo({top:0,behavior:'smooth'})}));
-    const vc=document.getElementById('videoCheck'); if(vc) vc.addEventListener('change',e=>{videoDone=e.target.checked;render()});
-    document.querySelectorAll('[data-hm]').forEach(btn=>btn.addEventListener('click',()=>{hm=btn.dataset.hm;render()}));
-    document.querySelectorAll('[data-pm]').forEach(btn=>btn.addEventListener('click',()=>{pm=btn.dataset.pm;render()}));
-    document.querySelectorAll('[data-q]').forEach(btn=>btn.addEventListener('click',()=>{answers[Number(btn.dataset.q)]=Number(btn.dataset.a);render()}));
-    const finish=document.getElementById('finishBtn'); if(finish) finish.addEventListener('click',()=>{submitted=true;render()});
-    const retry=document.getElementById('retryBtn'); if(retry) retry.addEventListener('click',()=>{attempt++;answers={};submitted=false;videoDone=false;stage=1;render();window.scrollTo({top:0,behavior:'smooth'})});
-  }
-  render();
+const stages=[
+ {n:'مقدمة وتمهيد',icon:'1'}, {n:'الفيديو والفهم',icon:'2'}, {n:'أقوى الحركتين',icon:'3'}, {n:'على الألف',icon:'4'}, {n:'على الواو',icon:'5'}, {n:'على الياء',icon:'6'}, {n:'حالات خاصة',icon:'7'}, {n:'خريطة المفاهيم',icon:'8'}, {n:'محاكاة وتطبيق',icon:'9'}, {n:'الاختبار النهائي',icon:'10'}
+];
+let stage=0, attempts=0, unlocked=0, quizIndex=0, quizScore=0, selected=null;
+let hm='ْ',pm='ُ';
+const strength={'ِ':4,'ُ':3,'َ':2,'ْ':1}, seat={4:'ئ',3:'ؤ',2:'أ',1:'ء'};
+const state={};
+function progress(){return Math.round((stage/9)*100)}
+function top(){const p=progress(),c=2*Math.PI*48;document.getElementById('pct').textContent=p+'%';const r=document.getElementById('ringValue');r.style.strokeDasharray=c;r.style.strokeDashoffset=c*(1-p/100);document.getElementById('headbar').style.width=p+'%';document.getElementById('attemptsText').textContent=attempts+' من 4';document.getElementById('nav').innerHTML=stages.map((s,i)=>`<div class="navitem ${i===stage?'on':''} ${i<stage?'done':''}"><span class="dot">${i<stage?'✓':s.icon}</span><span>${s.n}</span><span class="lock">${i>stage?'🔒':''}</span></div>`).join('')}
+function fb(ok,msg,id='fb'){const e=document.getElementById(id);e.className='feedback '+(ok?'ok':'no');e.textContent=msg}
+function advance(){if(stage<9){stage++;unlocked=Math.max(unlocked,stage);selected=null;render();scrollTo({top:0,behavior:'smooth'})}}
+function gateMCQ(correct,msg){return `<div class="question"><div class="qtitle">${msg}</div><div class="opts" id="opts"></div><div id="fb" class="feedback"></div><button id="next" class="next" disabled>تحقق وانتقل</button></div>`}
+function setupMCQ(options,correct,why){const o=document.getElementById('opts'),n=document.getElementById('next');o.innerHTML=options.map((x,i)=>`<button class="opt" data-i="${i}">${x}</button>`).join('');o.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{o.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');selected=+b.dataset.i;n.disabled=false});n.onclick=()=>{if(selected===correct){fb(true,'✅ '+why);setTimeout(advance,650)}else{fb(false,'❌ حاول مرة أخرى. '+why)}}}
+function render(){top();const x=document.getElementById('stage');
+if(stage===0){x.innerHTML=`<section class="card"><span class="eyebrow">1. مقدمة وتمهيد</span><h2 class="title">لماذا تتغير صورة الهمزة؟</h2><div class="grid2"><div class="visual"><h3>لاحظ هذه الكلمات</h3><div class="wordcards"><div class="word"><b>سُئِل</b><div>ئ</div></div><div class="word"><b>سَأَل</b><div>أ</div></div><div class="word"><b>مُؤْمِن</b><div>ؤ</div></div><div class="word"><b>قراءة</b><div>ء</div></div></div><p>الفكرة البسيطة: شكل الهمزة لا يتغير عشوائيًا؛ بل تحكمه حركة الهمزة وحركة الحرف قبلها.</p></div><div class="heroimg"><div class="inner"><div>مهمتك اليوم</div><b>افهم القرار قبل أن تحفظ الشكل</b><p>لاحظ ← قارن ← اختر ← علّل</p></div></div></div>${gateMCQ(1,'سؤال تمهيدي: ما الذي سنقارنه قبل رسم الهمزة المتوسطة؟')}</section>`;setupMCQ(['عدد حروف الكلمة','حركة الهمزة وحركة ما قبلها','آخر حرف في الكلمة','طول الكلمة'],1,'نقارن الحركتين لأن الأقوى منهما يحدد كرسي الهمزة.')}
+if(stage===1){x.innerHTML=`<section class="card"><span class="eyebrow">2. شاهد ثم تحقق</span><h2 class="title">فيديو قصير + تحقق مباشر</h2><div class="video"><iframe src="https://www.youtube.com/embed/N99RtSaAEj4" allowfullscreen></iframe></div><div class="minirow" style="margin-top:14px"><div class="miniCard"><span>👀</span><b>لاحظ</b><div>موضع الهمزة</div></div><div class="miniCard"><span>⚖️</span><b>قارن</b><div>قوة الحركتين</div></div><div class="miniCard"><span>✍️</span><b>طبّق</b><div>اختر الكرسي</div></div></div>${gateMCQ(2,'بعد الفيديو: أي حركة هي الأقوى؟')}</section>`;setupMCQ(['الفتحة','الضمة','الكسرة','السكون'],2,'ترتيب القوة يبدأ بالكسرة، ثم الضمة، ثم الفتحة، ثم السكون.')}
+if(stage===2){x.innerHTML=`<section class="card"><span class="eyebrow">3. أقوى الحركتين</span><h2 class="title">إنفوجرافيك: سلّم القوة</h2><div class="grid2"><div class="visual"><div class="strength"><div class="barv b4">الكسرة</div><div class="barv b3">الضمة</div><div class="barv b2">الفتحة</div><div class="barv b1">السكون</div></div></div><div class="visual"><h3>خريطة القرار</h3><p>1) أحدد حركة الهمزة.</p><p>2) أحدد حركة الحرف السابق.</p><p>3) أقارن القوتين.</p><p>4) أختار كرسي الحركة الأقوى.</p></div></div><div class="question"><div class="qtitle">رتّب الخطوات من البداية إلى النهاية.</div><div class="orderline"><button class="orderbtn" data-v="3">أختار الكرسي</button><button class="orderbtn" data-v="1">أحدد حركة الهمزة</button><button class="orderbtn" data-v="4">أراجع الكلمة</button><button class="orderbtn" data-v="2">أحدد حركة ما قبلها</button></div><div class="small">اضغط الأزرار بالترتيب الصحيح.</div><div id="orderOut" class="summary" style="margin-top:10px">اختياراتك: —</div><div id="fb" class="feedback"></div></div></section>`;let seq=[];document.querySelectorAll('.orderbtn').forEach(b=>b.onclick=()=>{seq.push(+b.dataset.v);document.getElementById('orderOut').textContent='اختياراتك: '+seq.join(' ← ');if(seq.length===4){if(seq.join()==='1,2,3,4'){fb(true,'✅ ممتاز. الآن أنت جاهز للتطبيق.');setTimeout(advance,650)}else{fb(false,'❌ الترتيب غير صحيح. ابدأ من جديد.');seq=[];setTimeout(()=>document.getElementById('orderOut').textContent='اختياراتك: —',450)}}})}
+if(stage===3){x.innerHTML=`<section class="card"><span class="eyebrow">4. الهمزة على الألف</span><h2 class="title">متى نكتبها على الألف؟</h2><div class="grid2"><div class="visual"><h3>مثال بصري</h3><div style="font-size:64px;text-align:center">سَ<span style="color:#a6402f">أَ</span>لَ</div><p>الهمزة مفتوحة وما قبلها مفتوح → الفتحة هي الأقوى → كرسيها الألف.</p></div><div class="visual"><h3>صورة ذهنية</h3><div style="font-size:70px;text-align:center">🪑 + َ = أ</div><p>إذا فازت الفتحة، تخيّل أنها تختار «كرسي الألف».</p></div></div>${gateMCQ(0,'اختر الكلمة التي كتبت همزتها على الألف كتابة صحيحة.')}</section>`;setupMCQ(['مَسْأَلَة','مُئْمِن','بِؤْر','سُأِل'],0,'في «مسألة» الهمزة مفتوحة وما قبلها ساكن؛ الفتحة أقوى من السكون.')}
+if(stage===4){x.innerHTML=`<section class="card"><span class="eyebrow">5. الهمزة على الواو</span><h2 class="title">حين تفوز الضمة</h2><div class="grid2"><div class="visual"><div style="font-size:64px;text-align:center">مُ<span style="color:#14746f">ؤْ</span>مِن</div><p>الهمزة ساكنة وما قبلها مضموم → الضمة أقوى → نكتبها على الواو.</p></div><div class="visual"><h3>صح أم خطأ؟</h3><p>«في كلمة مُؤْمِن كتبت الهمزة على الواو لأن الضمة أقوى من السكون.»</p><div class="opts"><button class="tf" data-v="1">صح</button><button class="tf" data-v="0">خطأ</button></div><div id="fb" class="feedback"></div></div></div></section>`;document.querySelectorAll('.tf').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tf').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(b.dataset.v==='1'){fb(true,'✅ صحيح. الضمة أقوى من السكون.');setTimeout(advance,650)}else fb(false,'❌ راجع سلم القوة.')})}
+if(stage===5){x.innerHTML=`<section class="card"><span class="eyebrow">6. الهمزة على الياء</span><h2 class="title">حين تظهر الكسرة</h2><div class="grid2"><div class="visual"><div style="font-size:64px;text-align:center">بِ<span style="color:#1e6fa8">ئْ</span>ر</div><p>ما قبل الهمزة مكسور والهمزة ساكنة → الكسرة أقوى → تكتب على نبرة.</p></div><div class="visual"><h3>مطابقة سريعة</h3><div class="matchgrid"><div class="matchcol"><button class="matchbtn" data-a="ئ">الكسرة</button><button class="matchbtn" data-a="ؤ">الضمة</button><button class="matchbtn" data-a="أ">الفتحة</button></div><div class="matchcol"><button class="matchbtn target" data-b="أ">أ</button><button class="matchbtn target" data-b="ئ">ئ</button><button class="matchbtn target" data-b="ؤ">ؤ</button></div></div><div id="fb" class="feedback"></div></div></div></section>`;let left=null,right=null,matched=0;document.querySelectorAll('.matchbtn[data-a]').forEach(b=>b.onclick=()=>{left=b.dataset.a;document.querySelectorAll('.matchbtn[data-a]').forEach(x=>x.classList.remove('sel'));b.classList.add('sel')});document.querySelectorAll('.target').forEach(b=>b.onclick=()=>{right=b.dataset.b;if(left&&left===right){b.disabled=true;b.classList.add('sel');document.querySelector(`.matchbtn[data-a="${left}"]`).disabled=true;matched++;left=null;if(matched===3){fb(true,'✅ اكتملت المطابقة بنجاح.');setTimeout(advance,650)}}else fb(false,'❌ هذه المطابقة غير صحيحة.')})}
+if(stage===6){x.innerHTML=`<section class="card"><span class="eyebrow">7. حالات خاصة</span><h2 class="title">لا تحفظ القاعدة وحدها</h2><div class="map"><div><div class="big">ء</div><b>على السطر</b><p>مثل: قراءة</p></div><div><div class="big">ئ</div><b>على نبرة</b><p>مثل: بيئة</p></div><div><div class="big">ؤ</div><b>على واو</b><p>مثل: رؤوف</p></div><div><div class="big">أ</div><b>على ألف</b><p>مثل: مأمن</p></div></div><div class="question"><div class="qtitle">لغز: أي كلمة تختلف في رسم الهمزة عن الثلاث الأخرى؟</div><div class="opts"><button class="opt" data-v="0">سأل</button><button class="opt" data-v="1">رأس</button><button class="opt" data-v="2">مأمن</button><button class="opt" data-v="3">بئر</button></div><div id="fb" class="feedback"></div></div></section>`;document.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{if(b.dataset.v==='3'){fb(true,'✅ صحيح. «بئر» على نبرة، والبقية على الألف.');setTimeout(advance,650)}else fb(false,'❌ ابحث عن الكلمة التي لا تجلس همزتها على الألف.')})}
+if(stage===7){x.innerHTML=`<section class="card"><span class="eyebrow">8. خريطة المفاهيم</span><h2 class="title">الخريطة الكاملة في شاشة واحدة</h2><div class="map"><div><div class="big">ِ</div><b>الكسرة</b><p>الأقوى → ئ</p></div><div><div class="big">ُ</div><b>الضمة</b><p>→ ؤ</p></div><div><div class="big">َ</div><b>الفتحة</b><p>→ أ</p></div><div><div class="big">ْ</div><b>السكون</b><p>الأضعف</p></div></div><div class="summary"><b>قاعدة ذهبية:</b> لا تسأل أولًا «على ماذا كتبت الهمزة؟» بل اسأل «من الأقوى: حركة الهمزة أم حركة ما قبلها؟»</div>${gateMCQ(1,'تحقق أخير قبل المحاكاة: همزة مفتوحة وما قبلها مكسور. أين تكتب؟')}</section>`;setupMCQ(['أ','ئ','ؤ','ء'],1,'الكسرة أقوى من الفتحة؛ إذن تكتب على نبرة.')}
+if(stage===8){x.innerHTML=`<section class="card"><span class="eyebrow">9. محاكاة وتطبيق</span><h2 class="title">مختبر «ميزان الهمزة»</h2><div class="simbox"><div class="visual"><h3>حركة الهمزة</h3><div class="moves" id="hm">${Object.keys(strength).map(m=>`<button class="move ${hm===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div><h3>حركة ما قبلها</h3><div class="moves" id="pm">${Object.keys(strength).map(m=>`<button class="move ${pm===m?'on':''}" data-m="${m}">${m}</button>`).join('')}</div></div><div class="visual"><div class="seat" id="seat">${seat[Math.max(strength[hm],strength[pm])]}</div><p style="text-align:center">غيّر الحركتين وشاهد الكرسي المتوقع.</p></div></div><div class="question"><div class="qtitle">اكتب الشكل الصحيح لكلمة: «سُ_ِلَ»</div><input id="typed" class="input" placeholder="اكتب الكلمة كاملة"><div id="fb" class="feedback"></div><button id="checkTyped" class="next">تحقق</button></div></section>`;document.querySelectorAll('#hm .move').forEach(b=>b.onclick=()=>{hm=b.dataset.m;render()});document.querySelectorAll('#pm .move').forEach(b=>b.onclick=()=>{pm=b.dataset.m;render()});document.getElementById('checkTyped').onclick=()=>{const v=document.getElementById('typed').value.trim().replace(/ـ/g,'');if(v==='سُئِلَ'||v==='سئل'||v==='سُئِل'){fb(true,'✅ ممتاز. اكتملت مرحلة التعلم وفتح الاختبار النهائي.');setTimeout(advance,700)}else fb(false,'❌ تذكّر: الهمزة مكسورة وما قبلها مضموم، والكسرة أقوى.')};}
+if(stage===9){renderQuiz(x)}
+}
+const quiz=[
+ {t:'mcq',p:'في «سُئِلَ»، ما الحركة الأقوى؟',o:['الكسرة','الضمة','الفتحة','السكون'],a:0},
+ {t:'tf',p:'الضمة أقوى من الكسرة.',a:false},
+ {t:'mcq',p:'اختر الرسم الصحيح.',o:['مُأْمِن','مُؤْمِن','مُئْمِن','مُءْمِن'],a:1},
+ {t:'text',p:'اكتب كلمة «بئر» كتابة صحيحة.',a:'بئر'},
+ {t:'mcq',p:'إذا كانت الهمزة مفتوحة وما قبلها ساكنًا، فما الكرسي غالبًا؟',o:['أ','ؤ','ئ','ء'],a:0},
+ {t:'tf',p:'في كلمة «فئة» أثرت الكسرة في رسم الهمزة.',a:true},
+ {t:'mcq',p:'أي كلمة همزتها على الواو؟',o:['رأس','فئة','رؤية','بئر'],a:2},
+ {t:'text',p:'صحح: مُئَذِّن',a:'مؤذن'},
+ {t:'mcq',p:'أيها لا ينتمي؟',o:['سأل','مأمن','رأس','بئر'],a:3},
+ {t:'tf',p:'السكون أقوى الحركات.',a:false},
+ {t:'mcq',p:'ما ترتيب القوة؟',o:['كسرة-ضمة-فتحة-سكون','ضمة-كسرة-فتحة-سكون','فتحة-ضمة-كسرة-سكون','سكون-فتحة-ضمة-كسرة'],a:0},
+ {t:'text',p:'اكتب الشكل الصحيح: سُ_ِل',a:'سئل'},
+ {t:'mcq',p:'الكسرة تناسب أي كرسي؟',o:['أ','ؤ','ئ','ء'],a:2},
+ {t:'tf',p:'نقارن حركة الهمزة بحركة ما قبلها.',a:true},
+ {t:'mcq',p:'الضمة تناسب أي كرسي؟',o:['أ','ؤ','ئ','ء'],a:1},
+ {t:'mcq',p:'الفتحة تناسب أي كرسي؟',o:['أ','ؤ','ئ','ء'],a:0},
+ {t:'text',p:'اكتب كلمة «مؤمن» دون تشكيل.',a:'مؤمن'},
+ {t:'tf',p:'في «بئر» الهمزة على نبرة.',a:true},
+ {t:'mcq',p:'همزة ساكنة وما قبلها مضموم. النتيجة؟',o:['أ','ؤ','ئ','ء'],a:1},
+ {t:'mcq',p:'همزة ساكنة وما قبلها مكسور. النتيجة؟',o:['أ','ؤ','ئ','ء'],a:2},
+ {t:'text',p:'صحح: مسئلة',a:'مسألة'},
+ {t:'tf',p:'يمكن رسم الهمزة المتوسطة دون النظر إلى ما قبلها.',a:false},
+ {t:'mcq',p:'أي عبارة أدق؟',o:['الأطول يفوز','الأقوى حركة يحدد الكرسي','الهمزة دائمًا على ألف','آخر حرف يحدد الرسم'],a:1},
+ {t:'mcq',p:'اختر الكلمة الصحيحة.',o:['فأة','فؤة','فئة','فءة'],a:2},
+ {t:'text',p:'اكتب مثالًا صحيحًا على همزة متوسطة على الواو.',a:['مؤمن','رؤية','رؤوف']}
+];
+function normalize(s){return (s||'').replace(/[ًٌٍَُِّْـ]/g,'').trim()}
+function renderQuiz(x){const q=quiz[quizIndex];x.innerHTML=`<section class="quizbox"><div class="counter">السؤال ${quizIndex+1} من ${quiz.length}</div><h2 class="title" style="text-align:center">${q.p}</h2><div id="qa"></div><div id="qfb" class="feedback"></div><div class="dots">${quiz.map((_,i)=>`<span class="qd ${i===quizIndex?'on':''} ${i<quizIndex?'done':''}"></span>`).join('')}</div></section>`;const qa=document.getElementById('qa');if(q.t==='mcq'){qa.innerHTML=`<div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}">${o}</button>`).join('')}</div>`;qa.querySelectorAll('.opt').forEach(b=>b.onclick=()=>finishQuizAnswer(+b.dataset.i===q.a))}else if(q.t==='tf'){qa.innerHTML=`<div class="opts"><button class="tf" data-v="1">صح</button><button class="tf" data-v="0">خطأ</button></div>`;qa.querySelectorAll('.tf').forEach(b=>b.onclick=()=>finishQuizAnswer((b.dataset.v==='1')===q.a))}else{qa.innerHTML=`<input id="qtext" class="input" placeholder="اكتب إجابتك"><button id="qcheck" class="next">تحقق</button>`;document.getElementById('qcheck').onclick=()=>{const val=normalize(document.getElementById('qtext').value);let ok=Array.isArray(q.a)?q.a.map(normalize).includes(val):normalize(q.a)===val;finishQuizAnswer(ok)}}}
+function finishQuizAnswer(ok){if(ok)quizScore++;const f=document.getElementById('qfb');f.className='feedback '+(ok?'ok':'no');f.textContent=ok?'✅ إجابة صحيحة':'❌ إجابة غير صحيحة';setTimeout(()=>{quizIndex++;if(quizIndex>=quiz.length){attempts++;showResult()}else render()},550)}
+function showResult(){const x=document.getElementById('stage'),pct=Math.round(quizScore/quiz.length*100);x.innerHTML=`<section class="card"><h2 class="title">نتيجتك: ${pct}%</h2><div class="summary">أجبت إجابة صحيحة عن ${quizScore} من ${quiz.length}.</div>${pct>=70?'<p>🎉 أتقنت المهارة بنجاح.</p>':attempts<4?`<p>يمكنك إعادة المحاولة. المتبقي ${4-attempts}.</p><button id="retry" class="next">محاولة جديدة</button>`:'<p>استخدمت المحاولات الأربع.</p>'}</section>`;top();const r=document.getElementById('retry');if(r)r.onclick=()=>{quizIndex=0;quizScore=0;render()}}
+render();
 })();
 </script>
 </body>
