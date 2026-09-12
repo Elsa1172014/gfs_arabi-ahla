@@ -63,7 +63,7 @@
             const data = await r.json().catch(() => ({}));
             if (r.ok && data?.ok && data?.fullName) return { ok: true, fullName: data.fullName };
             if (r.status === 409) return { ok: false, message: "يوجد أكثر من طالب مطابق. تحقّق من الرقم المدرسي أو راجع معلمك." };
-            if (r.status === 404) return { ok: false, message: "الاسم لا يطابق الطالب المسجّل لهذا الرقم. اكتب أول اسمين أو أول ثلاثة أسماء كما هي في المنصة." };
+            if (r.status === 404) return { ok: false, message: "الاسم لا يطابق الطالب المسجّل لهذا الرقم. اكتب الاسم كما هو في المنصة أو أول اسمين/ثلاثة أسماء." };
             return { ok: false, message: "تعذّر التحقق من بيانات الطالب الآن. حاول مرة أخرى." };
           } catch {
             return { ok: false, message: "تعذّر الاتصال بخدمة التحقق. حاول مرة أخرى." };
@@ -74,8 +74,8 @@
           const input = document.getElementById("nm");
           if (!input) return;
           const label = document.querySelector('label[for="nm"]');
-          if (label && label.textContent !== "اسم الطالب (ثنائي أو ثلاثي)") label.textContent = "اسم الطالب (ثنائي أو ثلاثي)";
-          if (input.placeholder !== "مثال: أحمد محمد أو أحمد محمد علي") input.placeholder = "مثال: أحمد محمد أو أحمد محمد علي";
+          if (label) label.textContent = "اسم الطالب (الاسم الكامل أو أول اسمين/ثلاثة أسماء)";
+          input.placeholder = "اكتب الاسم كما هو مسجّل في المنصة";
         }
 
         function num(v) {
@@ -157,7 +157,7 @@
           const parts = nameParts(entered);
           const sid = sidInput.value;
 
-          if (parts.length !== 2 && parts.length !== 3) return;
+          if (parts.length < 2) return;
           if (!/^\d{6}$/.test(sid)) return;
 
           event.preventDefault();
@@ -174,7 +174,11 @@
             return;
           }
 
-          setReactInputValue(input, result.fullName);
+          // App.jsx يقبل أول اسمين/ثلاثة أسماء بعد التحقق. نمرّر أول ثلاثة
+          // من الاسم الحقيقي الذي أعادته الخادومة، لا من إدخال المستخدم.
+          const verifiedParts = String(result.fullName).trim().split(/\s+/).filter(Boolean);
+          const safeLoginName = verifiedParts.slice(0, Math.min(3, verifiedParts.length)).join(" ");
+          setReactInputValue(input, safeLoginName);
           setTimeout(() => {
             bypassOnce = true;
             button.click();
