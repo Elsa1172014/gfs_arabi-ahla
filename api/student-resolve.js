@@ -15,7 +15,6 @@ function normalizeName(value = "") {
 function nameMatches(entered, stored) {
   const a = normalizeName(entered).split(" ").filter(Boolean);
   const b = normalizeName(stored).split(" ").filter(Boolean);
-  // الطالب يستطيع كتابة أول اسمين، أول ثلاثة أسماء، أو الاسم الكامل المسجل.
   if (a.length < 2 || b.length < a.length) return false;
   return a.every((part, i) => part === b[i]);
 }
@@ -26,6 +25,12 @@ function parseRecord(value) {
   try { return JSON.parse(value); } catch { return null; }
 }
 
+function lastSix(rec, key = "") {
+  const raw = String(rec?.schoolId ?? rec?.sid ?? rec?.studentId ?? rec?.key ?? key ?? "");
+  const digits = raw.replace(/\D/g, "");
+  return digits.slice(-6).padStart(6, "0");
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
@@ -34,7 +39,7 @@ export default async function handler(req, res) {
 
   try {
     const name = String(req.body?.name || "").trim();
-    const sid = String(req.body?.sid || "").replace(/\D/g, "");
+    const sid = String(req.body?.sid || "").replace(/\D/g, "").slice(-6).padStart(6, "0");
     if (!name || !/^\d{6}$/.test(sid)) {
       return res.status(400).json({ ok: false, error: "invalid input" });
     }
@@ -45,27 +50,49 @@ export default async function handler(req, res) {
     }
 
     const redis = getRedis();
-    const keys = await redis.keys(`gfs:rec:student:*-${sid}`);
     const candidates = [];
+    const seen = new Set();
 
+    // Do not depend on the Redis key format. Read all student records and
+    // compare the last six digits of the stored ID with the entered ID.
+    const keys = await redis.keys("gfs:rec:student:*");
     for (const key of keys || []) {
       const rec = parseRecord(await redis.get(key));
-      if (rec && rec.name && nameMatches(name, rec.name)) candidates.push(rec);
+      if (!rec || !rec.name) continue;
+      if (lastSix(rec, key) !== sid) continue;
+      if (!nameMatches(name, rec.name)) continue;
+      const unique = rec.key || `${rec.name}-${sid}`;
+      if (!seen.has(unique)) { seen.add(unique); candidates.push(rec); }
     }
 
-    // Fallback for older deployments that still keep the combined students array.
+    // Legacy combined students array fallback.
     if (!candidates.length) {
       const legacy = parseRecord(await redis.get("gfs:students:v5"));
       if (Array.isArray(legacy)) {
         for (const rec of legacy) {
-          const recSid = String(rec?.schoolId || rec?.key?.split("-")?.pop() || "").replace(/\D/g, "").slice(-6);
-          if (recSid === sid && rec?.name && nameMatches(name, rec.name)) candidates.push(rec);
+          if (!rec?.name || lastSix(rec) !== sid || !nameMatches(name, rec.name)) continue;
+          const unique = rec.key || `${rec.name}-${sid}`;
+          if (!seen.has(unique)) { seen.add(unique); candidates.push(rec); }
         }
       }
     }
 
     if (candidates.length === 1) {
-      return res.status(200).json({ ok: true, fullName: candidates[0].name });
+      const s = candidates[0];
+      return res.status(200).json({
+        ok: true,
+        fullName: s.name,
+        student: {
+          key: s.key || "",
+          name: s.name,
+          grade: s.grade,
+          block: s.block,
+          stream: s.stream || "A",
+          email: s.email || "",
+          parentEmail: s.parentEmail || "",
+          teacherEmail: s.teacherEmail || ""
+        }
+      });
     }
     if (candidates.length > 1) {
       return res.status(409).json({ ok: false, error: "ambiguous" });
