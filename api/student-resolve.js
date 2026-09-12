@@ -12,11 +12,11 @@ function normalizeName(value = "") {
     .toLowerCase();
 }
 
-function prefixMatches(entered, stored) {
+function nameMatches(entered, stored) {
   const a = normalizeName(entered).split(" ").filter(Boolean);
   const b = normalizeName(stored).split(" ").filter(Boolean);
-  if (a.length !== 2 && a.length !== 3) return false;
-  if (b.length < a.length) return false;
+  // الطالب يستطيع كتابة أول اسمين، أول ثلاثة أسماء، أو الاسم الكامل المسجل.
+  if (a.length < 2 || b.length < a.length) return false;
   return a.every((part, i) => part === b[i]);
 }
 
@@ -40,8 +40,8 @@ export default async function handler(req, res) {
     }
 
     const parts = normalizeName(name).split(" ").filter(Boolean);
-    if (parts.length !== 2 && parts.length !== 3) {
-      return res.status(400).json({ ok: false, error: "name must contain 2 or 3 parts" });
+    if (parts.length < 2) {
+      return res.status(400).json({ ok: false, error: "name must contain at least 2 parts" });
     }
 
     const redis = getRedis();
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
 
     for (const key of keys || []) {
       const rec = parseRecord(await redis.get(key));
-      if (rec && rec.name && prefixMatches(name, rec.name)) candidates.push(rec);
+      if (rec && rec.name && nameMatches(name, rec.name)) candidates.push(rec);
     }
 
     // Fallback for older deployments that still keep the combined students array.
@@ -59,7 +59,7 @@ export default async function handler(req, res) {
       if (Array.isArray(legacy)) {
         for (const rec of legacy) {
           const recSid = String(rec?.schoolId || rec?.key?.split("-")?.pop() || "").replace(/\D/g, "").slice(-6);
-          if (recSid === sid && rec?.name && prefixMatches(name, rec.name)) candidates.push(rec);
+          if (recSid === sid && rec?.name && nameMatches(name, rec.name)) candidates.push(rec);
         }
       }
     }
