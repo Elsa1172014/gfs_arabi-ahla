@@ -1,346 +1,215 @@
 (() => {
-  const VERSION = "2026-09-12-content-v1";
+  const VERSION = "2026-09-12-content-v2";
   const MARKER_KEY = `gfs:course-content-upgrade:${VERSION}`;
   const COURSE_PREFIX = "gfs:rec:course:";
   const API = "/api/storage";
 
-  const EXACT_VIDEO = {
+  /* فيديوهات تمت مراجعة موضوعها يدويًا. لا نضع فيديو غير متعلق بالدرس. */
+  const VIDEO_IDS = {
     "الهمزة المتوسطة": "Zu6W9eO6B8Q",
     "الفاعل ونائب الفاعل": "2tLJA0MfiJA",
     "الألف اللينة في آخر الأسماء": "3nbdyrRObf0",
+    "الاستعارة التصريحية": "Is4R7o4u9XU",
+    "الاستعارة المكنية": "Is4R7o4u9XU",
+    "التشبيه المرسل": "JY0VJekdfuA",
+    "التشبيه المؤكد": "JY0VJekdfuA",
+    "التشبيه المجمل": "JY0VJekdfuA",
+    "التشبيه المفصَّل": "JY0VJekdfuA",
+    "التشبيه التمثيلي": "JY0VJekdfuA",
+    "التشبيه الضمني": "JY0VJekdfuA",
     "همزة الوصل وهمزة القطع": "R6ZyWeqebdw",
-    "كان وأخواتها": "Wckqa9spv5k",
+    "الهمزة المتطرفة": "CnASFuLa51Q",
+    "المبتدأ والخبر": "8LpQNzz7AMI",
+    "أقسام الكلام: اسم وفعل وحرف": "LXDtA9IZEWU",
+    "المفعول به": "b7CLeDUXUvE",
+    "المفعول فيه (ظرف الزمان والمكان)": "b7CLeDUXUvE",
+    "المفعول معه": "b7CLeDUXUvE",
+    "المفعول المطلق": "b7CLeDUXUvE",
+    "المفعول لأجله": "b7CLeDUXUvE",
     "المقابلة": "G9RFzCQXZGo"
   };
 
-  const RULES = {
-    "الهمزة المتوسطة": {
-      rule: "انظر إلى حركة الهمزة وحركة الحرف الذي قبلها، ثم اختر أقوى الحركتين: الكسرة ثم الضمة ثم الفتحة ثم السكون. الكسرة تناسبها النبرة، والضمة الواو، والفتحة الألف، والسكون السطر في مواضعه.",
-      bullets: ["👁️ حدّد حركة الهمزة", "🔎 حدّد حركة ما قبلها", "⚖️ اختر الأقوى", "✍️ ارسم الهمزة على كرسيها المناسب"]
-    },
-    "الفاعل ونائب الفاعل": {
-      rule: "الفاعل اسم مرفوع قام بالفعل. وعند بناء الفعل للمجهول يُحذف الفاعل، ويتحوّل المفعول به إلى نائب فاعل مرفوع.",
-      bullets: ["🟦 معلوم: ابحث عمّن قام بالفعل", "🔄 مجهول: غيّر ضبط الفعل", "⬆️ ارفع نائب الفاعل", "🧠 لا تخلط بين الفاعل والمفعول"]
-    },
-    "الألف اللينة في آخر الأسماء": {
-      rule: "في الاسم الثلاثي نعرف أصل الألف بالتثنية أو الجمع: إن ظهر أصلها واوًا كتبت قائمة، وإن ظهر ياء كتبت مقصورة. وفوق الثلاثي تكتب مقصورة غالبًا، إلا إذا سبقتها ياء فتكتب قائمة.",
-      bullets: ["3️⃣ ثلاثي؟ ابحث عن الأصل", "واو ← ا", "ياء ← ى", "➕ فوق الثلاثي: ى إلا بعد ياء"]
-    },
-    "الاستعارة التصريحية": {
-      rule: "الاستعارة التصريحية تشبيه حُذف منه المشبَّه وصُرِّح بالمشبَّه به، وتوجد قرينة تمنع إرادة المعنى الحقيقي.",
-      bullets: ["🫥 المشبَّه محذوف", "🎯 المشبَّه به مذكور", "🔍 ابحث عن القرينة", "💡 فسّر الصورة البلاغية"]
-    },
-    "الاستعارة المكنية": {
-      rule: "في الاستعارة المكنية نذكر المشبَّه ونحذف المشبَّه به، ثم نذكر شيئًا من لوازمه يدل عليه.",
-      bullets: ["👤 المشبَّه موجود", "🫥 المشبَّه به محذوف", "🧩 لازمة تكشف المحذوف", "🎨 الصورة تمنح المعنى حياة"]
-    },
-    "الطباق": {
-      rule: "الطباق هو الجمع بين لفظين متضادين في المعنى. إن كانا مثبتين فهو طباق إيجاب، وإن كان أحدهما منفيًا والآخر مثبتًا فهو طباق سلب.",
-      bullets: ["↔️ ابحث عن التضاد", "➕ إيجاب: الطرفان مثبتان", "➖ سلب: نفي وإثبات", "✨ الأثر: إبراز المعنى"]
-    },
-    "التشبيه المرسل": {
-      rule: "التشبيه المرسل هو التشبيه الذي ذُكرت فيه أداة التشبيه مثل: الكاف، مثل، كأنّ، يشبه.",
-      bullets: ["👤 مشبَّه", "🔗 أداة ظاهرة", "🌟 مشبَّه به", "🎯 حدّد وجه الشبه إن وجد"]
-    },
-    "التشبيه المؤكد": {
-      rule: "التشبيه المؤكد هو ما حُذفت منه أداة التشبيه، فيبدو الاتصال بين المشبَّه والمشبَّه به أقوى.",
-      bullets: ["👤 مشبَّه", "🚫 لا أداة", "🌟 مشبَّه به", "💪 الحذف يقوّي الصورة"]
-    },
-    "التشبيه المجمل": {
-      rule: "التشبيه المجمل هو ما حُذف منه وجه الشبه، فيستنتجه القارئ من السياق.",
-      bullets: ["👤 مشبَّه", "🌟 مشبَّه به", "❓ وجه الشبه محذوف", "🧠 استنتجه من المعنى"]
-    },
-    "التشبيه المفصَّل": {
-      rule: "التشبيه المفصَّل هو ما ذُكر فيه وجه الشبه صراحة، لذلك يكون المعنى المقصود أوضح.",
-      bullets: ["👤 مشبَّه", "🌟 مشبَّه به", "🎯 وجه الشبه مذكور", "🔎 حدّده بدقة"]
-    },
-    "المقابلة": {
-      rule: "المقابلة أن نأتي بمعنيين أو أكثر ثم نأتي بما يقابلها من المعاني المضادة بالترتيب نفسه.",
-      bullets: ["1️⃣ حدّد المجموعة الأولى", "2️⃣ ابحث عن أضدادها", "🔁 راقب الترتيب", "✨ بيّن أثر المقابلة"]
-    },
-    "همزة الوصل وهمزة القطع": {
-      rule: "همزة القطع تُنطق في البدء والوصل وتُرسم همزة، أما همزة الوصل فتُنطق في البدء وتسقط في درج الكلام وتُرسم ألفًا بلا رأس همزة.",
-      bullets: ["🔊 انطق في أول الكلام", "🔗 صِل بما قبلها", "✂️ القطع ثابتة النطق", "🌉 الوصل تسقط في الوصل"]
-    },
-    "التاء المربوطة والتاء المفتوحة": {
-      rule: "التاء المربوطة تُنطق هاء عند الوقف وتاء عند الوصل، أما التاء المفتوحة فتبقى تاء في الوقف والوصل.",
-      bullets: ["⏸️ قف على الكلمة", "ـة ← هاء عند الوقف", "ت ← تبقى تاء", "✍️ راقب نوع الكلمة"]
-    },
-    "المبتدأ والخبر": {
-      rule: "الجملة الاسمية تبدأ غالبًا بمبتدأ مرفوع، ويأتي الخبر ليتمم المعنى وهو مرفوع أيضًا، وقد يكون مفردًا أو جملة أو شبه جملة.",
-      bullets: ["🏁 ابدأ بالمبتدأ", "💬 الخبر يتمم المعنى", "⬆️ كلاهما مرفوع", "🧩 حدّد نوع الخبر"]
-    },
-    "كان وأخواتها": {
-      rule: "كان وأخواتها تدخل على الجملة الاسمية، فترفع المبتدأ ويسمى اسمها، وتنصب الخبر ويسمى خبرها.",
-      bullets: ["🚪 تدخل على جملة اسمية", "⬆️ اسمها مرفوع", "⬇️ خبرها منصوب", "🕒 لكل فعل دلالة"]
-    },
-    "الهمزة المتطرفة": {
-      rule: "رسم الهمزة المتطرفة يعتمد على حركة الحرف الذي قبلها فقط: الكسرة نبرة، الضمة واو، الفتحة ألف، والسكون سطر.",
-      bullets: ["👀 انظر لما قبل الهمزة", "ِ ← ئ", "ُ ← ؤ", "َ ← أ، السكون ← ء"]
-    },
-    "إنّ وأخواتها": {
-      rule: "إنّ وأخواتها حروف ناسخة تدخل على الجملة الاسمية، فتنصب المبتدأ ويسمى اسمها، وترفع الخبر ويسمى خبرها.",
-      bullets: ["🚪 تدخل على الجملة الاسمية", "⬇️ اسمها منصوب", "⬆️ خبرها مرفوع", "🎯 لكل حرف معنى"]
-    },
-    "النعت": {
-      rule: "النعت تابع يصف اسمًا قبله يسمى المنعوت، ويتبعه في الإعراب والتعريف والتنكير والتذكير والتأنيث والعدد.",
-      bullets: ["🔎 حدّد المنعوت", "🎨 ابحث عن الوصف", "🪞 طابق الإعراب", "🪞 طابق النوع والعدد"]
-    },
-    "الحال": {
-      rule: "الحال وصف نكرة منصوب يبيّن هيئة صاحبه وقت وقوع الفعل، وغالبًا نصل إليه بسؤال: كيف؟",
-      bullets: ["❓ اسأل: كيف؟", "🎭 يصف الهيئة", "🔓 غالبًا نكرة", "⬇️ منصوب"]
-    },
-    "التشبيه التمثيلي": {
-      rule: "التشبيه التمثيلي يكون وجه الشبه فيه صورة مركبة منتزعة من عدة عناصر، لا صفة مفردة فقط.",
-      bullets: ["🖼️ صورة كاملة", "🔗 قارن موقفين", "🧩 وجه شبه مركب", "🎯 لا تبحث عن كلمة واحدة"]
-    },
-    "التشبيه الضمني": {
-      rule: "التشبيه الضمني لا يأتي في صورة تشبيه صريح، بل يُفهم من معنى جملتين؛ الثانية تقدم دليلًا أو صورة تؤكد إمكان معنى الأولى.",
-      bullets: ["🧠 لا أداة صريحة", "1️⃣ حكم أو فكرة", "2️⃣ صورة تؤكدها", "🔍 استنتج العلاقة"]
-    },
-    "حذف الألف وزيادتها": {
-      rule: "هناك كلمات تُحذف منها الألف أو تُزاد فيها بحسب الرسم الإملائي المعياري، ويعتمد إتقانها على ملاحظة النمط وكثرة الاستعمال.",
-      bullets: ["👁️ لاحظ الرسم", "🧠 اربط بالكلمة الصحيحة", "🚫 لا تعتمد على النطق وحده", "✍️ ثبّت الصورة بالكتابة"]
-    },
-    "كتابة الأعداد": {
-      rule: "تتغير أحكام العدد بحسب فئته؛ فالأعداد من 3 إلى 10 تخالف المعدود غالبًا، و11 و12 لهما أحكام خاصة، والعقود ألفاظ ثابتة ويتبعها معدود مفرد منصوب.",
-      bullets: ["🔢 حدّد فئة العدد", "⚧️ راقب جنس المعدود", "🧩 طبّق قاعدة الفئة", "✍️ اضبط المعدود"]
-    },
-    "الأسلوب الخبري والإنشائي": {
-      rule: "الخبر يحتمل الصدق أو الكذب لذاته، أما الإنشاء فلا يحتمل ذلك عند إنشائه، ومنه الأمر والنهي والاستفهام والنداء والتمني والتعجب.",
-      bullets: ["📰 خبر: يمكن تصديقه أو تكذيبه", "❓ استفهام", "📣 أمر/نهي/نداء", "✨ تعجب أو تمنٍّ"]
-    },
-    "المفعول به": {
-      rule: "المفعول به اسم منصوب وقع عليه فعل الفاعل، وقد يكون اسمًا ظاهرًا أو ضميرًا، وقد يتعدى بعض الأفعال إلى مفعولين.",
-      bullets: ["🎬 حدّد الفعل", "👤 حدّد الفاعل", "🎯 اسأل: وقع الفعل على مَن/ماذا؟", "⬇️ المفعول منصوب"]
-    },
-    "الإضافة": {
-      rule: "الإضافة تركيب من اسمين: الأول مضاف والثاني مضاف إليه مجرور. المضاف لا يقبل التنوين ولا أل إذا كانت الإضافة محضة.",
-      bullets: ["1️⃣ المضاف أولًا", "2️⃣ المضاف إليه ثانيًا", "⬇️ الثاني مجرور", "🚫 المضاف بلا تنوين"]
-    },
-    "التمييز": {
-      rule: "التمييز اسم نكرة يزيل إبهامًا قبله؛ قد يوضح ذاتًا مثل المقادير والأعداد، أو يوضح نسبة في الجملة.",
-      bullets: ["🌫️ ابحث عن إبهام", "🔦 التمييز يوضحه", "🧱 ذات أو نسبة", "⬇️ غالبًا منصوب"]
-    },
-    "أقسام الكلام: اسم وفعل وحرف": {
-      rule: "الكلمة العربية ثلاثة أقسام: اسم يدل على معنى بلا زمن، وفعل يدل على حدث وزمن، وحرف لا يظهر معناه كاملًا إلا مع غيره.",
-      bullets: ["🏷️ اسم", "⏱️ فعل", "🔗 حرف", "🧪 اختبر علامات كل قسم"]
-    },
-    "الجملة الفعلية وأركانها": {
-      rule: "الجملة الفعلية تبدأ بفعل، ثم يأتي الفاعل مرفوعًا، وقد يأتي بعدها مفعول به منصوب إذا كان الفعل متعديًا.",
-      bullets: ["🎬 فعل", "👤 فاعل مرفوع", "🎯 مفعول به عند الحاجة", "🧩 رتّب الأركان"]
-    },
-    "الأفعال الناصبة لمفعولين": {
-      rule: "بعض الأفعال تنصب مفعولين، مثل أفعال القلوب والتحويل والعطاء، ويختلف أصل المفعولين بحسب نوع الفعل.",
-      bullets: ["🧠 أفعال القلوب", "🔄 أفعال التحويل", "🎁 أفعال العطاء", "⬇️ مفعولان منصوبان"]
-    },
-    "المفعول فيه (ظرف الزمان والمكان)": {
-      rule: "المفعول فيه اسم منصوب يبيّن زمان الفعل أو مكانه، ويجيب عن سؤال: متى؟ أو أين؟",
-      bullets: ["⏰ متى؟ ظرف زمان", "📍 أين؟ ظرف مكان", "⬇️ منصوب", "🎬 مرتبط بالفعل"]
-    },
-    "المفعول معه": {
-      rule: "المفعول معه اسم منصوب يأتي بعد واو بمعنى «مع» ليدل على المصاحبة، ويختلف عن المعطوف الذي يشارك ما قبله في الحكم.",
-      bullets: ["➕ واو", "🤝 معناها: مع", "⬇️ ما بعدها منصوب", "⚖️ ميّزها عن واو العطف"]
-    },
-    "المفعول المطلق": {
-      rule: "المفعول المطلق مصدر منصوب من لفظ الفعل غالبًا، يأتي لتوكيد الفعل أو بيان نوعه أو عدده.",
-      bullets: ["🔁 مصدر من لفظ الفعل", "✅ توكيد", "🎨 بيان النوع", "🔢 بيان العدد"]
-    },
-    "المفعول لأجله": {
-      rule: "المفعول لأجله مصدر منصوب يبيّن سبب وقوع الفعل ويجيب عن سؤال: لماذا؟",
-      bullets: ["❓ لماذا؟", "❤️ سبب أو دافع", "🧱 مصدر", "⬇️ منصوب"]
-    }
+  const ART_BY_TITLE = {
+    "الهمزة المتوسطة": ["hamza-anatomy", "hamza-scale"],
+    "الفاعل ونائب الفاعل": ["passive-flow"],
+    "الألف اللينة في آخر الأسماء": ["alif-tree"]
   };
 
-  const DOMAIN_FALLBACK = {
-    SP: { rule: "اقرأ المثال ببطء، حدّد العلامة الإملائية المستهدفة، ثم طبّق القاعدة على كلمة جديدة قبل أن تنتقل.", bullets: ["👁️ لاحظ", "🧠 استنتج", "✍️ طبّق", "✅ راجع"] },
-    GR: { rule: "ابدأ بالفعل أو الاسم الرئيس في الجملة، حدّد وظيفة كل كلمة، ثم استعمل علامة الإعراب المناسبة.", bullets: ["🔎 حدّد العنصر الرئيس", "🧩 حدّد الوظيفة", "⬆️⬇️ اضبط الإعراب", "✅ اختبر بجملة جديدة"] },
-    RH: { rule: "اقرأ الصورة البلاغية كاملة، حدّد طرفيها أو العلاقة بين الألفاظ، ثم فسّر أثرها في المعنى.", bullets: ["👁️ اقرأ الصورة", "🔍 حدّد العلاقة", "💡 فسّر", "✨ بيّن الأثر"] },
-    RD: { rule: "اقرأ الفكرة في سياقها، ابحث عن الدليل، ثم استنتج المعنى قبل اختيار الإجابة.", bullets: ["📖 اقرأ", "🔎 استخرج الدليل", "🧠 استنتج", "✅ تحقّق"] },
-    VC: { rule: "افهم الكلمة من السياق، جرّب مرادفًا أو ضدًا مناسبًا، ثم أعد قراءة الجملة للتأكد.", bullets: ["📖 سياق", "🔁 مرادف", "↔️ ضد", "✅ تحقق"] },
-    WR: { rule: "حدّد الفكرة والجمهور والغرض، رتّب أفكارك، ثم اكتب وراجع اللغة والتنظيم.", bullets: ["🎯 غرض", "🗂️ تنظيم", "✍️ كتابة", "🔎 مراجعة"] }
-  };
+  const normalize = (s) => String(s || "")
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
+    .replace(/ـ/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim().toLowerCase();
 
-  function parseValue(v) {
-    if (v == null) return null;
-    if (typeof v === "object") return v;
-    try { return JSON.parse(v); } catch { return null; }
+  async function req(url, opts) {
+    const r = await fetch(url, opts);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
   }
-
+  async function listKeys(prefix) {
+    const r = await req(`${API}?action=list&prefix=${encodeURIComponent(prefix)}`);
+    return r?.keys || [];
+  }
   async function getKey(key) {
-    const r = await fetch(`${API}?key=${encodeURIComponent(key)}&t=${Date.now()}`, { cache: "no-store" });
-    if (!r.ok) return null;
-    const j = await r.json();
-    return parseValue(j.value);
+    try {
+      const r = await req(`${API}?key=${encodeURIComponent(key)}`);
+      if (!r?.value) return null;
+      return typeof r.value === "string" ? JSON.parse(r.value) : r.value;
+    } catch { return null; }
   }
-
   async function setKey(key, value) {
-    const r = await fetch(API, {
+    return req(API, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key, value: JSON.stringify(value) })
     });
-    if (!r.ok) throw new Error(`write failed: ${key}`);
   }
 
-  async function listKeys(prefix) {
-    const r = await fetch(`${API}?action=list&prefix=${encodeURIComponent(prefix)}&t=${Date.now()}`, { cache: "no-store" });
-    if (!r.ok) return [];
-    const j = await r.json();
-    return Array.isArray(j.keys) ? j.keys : [];
+  function stripUpgradePrefix(q) {
+    return String(q || "")
+      .replace(/^تحدّي\s*\d+\s*:\s*/u, "")
+      .replace(/^موقف\s*\d+\s*:\s*/u, "")
+      .replace(/^حلّل ثم اختر\s*:\s*/u, "")
+      .trim();
   }
 
-  const normalize = s => String(s || "").replace(/[\u064B-\u0652\u0640]/g, "").replace(/[«»؟.،,:;!]/g, "").replace(/\s+/g, " ").trim().toLowerCase();
-
-  function videoUrlFor(course) {
-    const id = EXACT_VIDEO[course.title];
-    if (id) return `https://www.youtube.com/embed/${id}?rel=0`;
-    const q = `${course.title} شرح مبسط لغة عربية الصف ${course.grade || ""}`.trim();
-    return `https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}&rel=0`;
+  function cleanBank(bank) {
+    if (!Array.isArray(bank)) return [];
+    const out = [], seen = new Set();
+    for (const raw of bank) {
+      if (!raw) continue;
+      const q = stripUpgradePrefix(raw.q);
+      const key = normalize(q || raw.sn);
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      out.push({ ...raw, q });
+      if (out.length === 25) break;
+    }
+    return out;
   }
 
-  function courseRule(course) {
-    return RULES[course.title] || DOMAIN_FALLBACK[course.domain] || DOMAIN_FALLBACK.GR;
+  function getRuleInfo(course, oldStages, cleanStages) {
+    const upgradedRule = oldStages.find(s => s?.t === "rule" && s?.__gfsUpgrade);
+    const originalRule = cleanStages.find(s => s?.t === "rule");
+    const visual = oldStages.find(s => s?.__gfsUpgrade && Array.isArray(s?.bullets) && s.bullets.length);
+    const summary = [...cleanStages].reverse().find(s => s?.t === "summary");
+    const ruleText = upgradedRule?.body || originalRule?.body || summary?.body || course.objective || `تعلّم مهارة ${course.title} من خلال الملاحظة والتطبيق.`;
+    const bullets = visual?.bullets?.length ? visual.bullets :
+      summary?.bullets?.length ? summary.bullets :
+      originalRule?.concepts?.length ? originalRule.concepts :
+      [course.objective || ruleText];
+    return { ruleText, bullets, originalRule };
   }
 
-  function distractorsFor(course, rule) {
-    const pool = [
-      "الاعتماد على الحفظ فقط دون فهم أو تطبيق",
-      "تجاهل العلامات الموجودة في المثال",
-      "اختيار الإجابة قبل قراءة السياق كاملًا"
-    ];
-    return [rule.rule, ...pool];
-  }
-
-  function makeWarmup(course, rule) {
+  function warmupFor(course, ruleInfo) {
+    if (course.title === "الهمزة المتوسطة") {
+      return {
+        t: "rule", title: "تهيئة — فكّر قبل أن تشاهد", strat: "استدعاء المعرفة السابقة",
+        body: "أمامك كلمات تتغيّر فيها صورة الهمزة. لا تحفظ الرسم؛ ابحث أولًا عن الحركة الأقوى.",
+        art: ["hamza-anatomy"],
+        checks: [
+          { t: "mcq", q: "في كلمة «سُئِلَ»؛ ما حركة الهمزة؟", o: ["الكسرة", "الضمة", "الفتحة", "السكون"], a: 0, e: "الهمزة مكسورة، والكسرة أقوى الحركات." },
+          { t: "tf", q: "عند رسم الهمزة المتوسطة ننظر إلى حركة الهمزة وحركة الحرف الذي قبلها.", a: true, e: "صحيح؛ ثم نأخذ أقوى الحركتين." },
+          { t: "match", q: "صل كل حركة بما يناسبها من كرسي الهمزة.", pairs: [["الكسرة", "نبرة ئ"], ["الضمة", "واو ؤ"], ["الفتحة", "ألف أ"], ["السكون", "السطر ء"]], e: "هذه خريطة القرار الأساسية." }
+        ],
+        __gfsUpgrade: VERSION
+      };
+    }
+    const b = ruleInfo.bullets || [];
+    const first = b[0] || course.objective || ruleInfo.ruleText;
+    const second = b[1] || ruleInfo.ruleText;
     return {
-      t: "summary",
-      title: "تهيئة ذكية — اكتشف قبل أن تتعلم",
-      strat: "استدعاء المعرفة السابقة",
-      body: `قبل شرح «${course.title}»، جرّب أن تتوقع القاعدة من الفكرة العامة. لا تبحث عن الحفظ؛ ابحث عن النمط.`,
-      bullets: ["👀 ماذا تلاحظ؟", "💭 ماذا تتوقع؟", "🧩 ما القاعدة المحتملة؟", "🎯 ما الذي تريد أن تتأكد منه؟"],
-      note: "أجب عن التحقق القصير، ثم شاهد الفيديو لتقارن توقعك بالشرح.",
+      t: "rule", title: "تهيئة — ماذا تلاحظ؟", strat: "ملاحظة واستنتاج",
+      body: `ابدأ من عنوان الدرس «${course.title}». اقرأ الهدف، ثم توقّع القاعدة قبل مشاهدة الفيديو.`,
       checks: [
-        { t: "mcq", q: `ما أفضل طريقة لبدء تعلم «${course.title}»؟`, o: ["ملاحظة الأمثلة والبحث عن نمط", "حفظ الإجابات دون فهم", "تجاوز الشرح إلى الاختبار", "اختيار أي إجابة عشوائيًا"], a: 0, e: "التعلم يبدأ بالملاحظة والاستنتاج." },
-        { t: "tf", q: "التهيئة هدفها تنشيط معرفتي السابقة قبل مشاهدة الشرح.", a: true, e: "صحيح؛ التهيئة ليست اختبار نجاح أو رسوب." }
+        { t: "mcq", q: `أي خطوة ترتبط مباشرة بمهارة «${course.title}»؟`, o: [first, "تجاوز الأمثلة والبدء بالاختبار", "حفظ شكل الإجابة دون فهم", "اختيار إجابة عشوائية"], a: 0, e: `التركيز هنا على: ${first}` },
+        { t: "tf", q: second, a: true, e: ruleInfo.ruleText }
       ],
       __gfsUpgrade: VERSION
     };
   }
 
-  function makeVideo(course, rule, previousVideo) {
-    const opts = distractorsFor(course, rule);
-    return {
-      t: "video",
-      title: "شاهد ثم أثبت فهمك",
-      strat: "التعلّم المدمج",
-      intro: `شاهد الشرح المرتبط بـ«${course.title}». ركّز على الفكرة أو القاعدة الرئيسة لأن بعدها تحقق مباشر من الفهم.`,
-      clips: previousVideo?.clips?.length ? previousVideo.clips : [],
-      videoUrl: previousVideo?.clips?.length ? "" : (previousVideo?.videoUrl || videoUrlFor(course)),
-      videoQuery: previousVideo?.videoQuery || `${course.title} شرح مبسط`,
-      checks: [
-        { t: "mcq", q: "أي عبارة تلخص الفكرة الرئيسة التي يجب أن تخرج بها من الشرح؟", o: opts, a: 0, e: rule.rule },
-        { t: "tf", q: "المطلوب بعد الفيديو هو تطبيق الفكرة على مثال جديد، لا حفظ كلمات الفيديو كما هي.", a: true, e: "الفهم يظهر في التطبيق." }
-      ],
+  function videoFor(course, oldStages, ruleInfo) {
+    const previous = oldStages.find(s => s?.t === "video");
+    const preservedClips = Array.isArray(previous?.clips) ? previous.clips.filter(v => v?.id) : [];
+    const mapped = VIDEO_IDS[course.title];
+    const clips = preservedClips.length ? preservedClips : mapped ? [{ id: mapped, start: 0, label: `شرح ${course.title}` }] : [];
+    const stage = {
+      t: "video", title: "شاهد ثم طبّق", strat: "التعلّم المدمج",
+      intro: `شاهد الشرح الخاص بدرس «${course.title}» بتركيز. بعده ستجيب عن تحقق قصير قبل الانتقال.`,
+      clips,
+      videoQuery: clips.length ? undefined : `${course.title} شرح مبسط لغة عربية`,
       __gfsUpgrade: VERSION
     };
-  }
-
-  function makeVisualMap(course, rule) {
-    return {
-      t: "summary",
-      title: "خريطة بصرية — القاعدة في أربع خطوات",
-      strat: "التشفير البصري",
-      body: rule.rule,
-      bullets: rule.bullets,
-      note: "اقرأ الخريطة من اليمين إلى اليسار، ثم حاول شرحها بصوتك في عشرين ثانية.",
-      __gfsUpgrade: VERSION
-    };
-  }
-
-  function makeRuleStage(course, rule, originalRule) {
-    return {
-      ...(originalRule || {}),
-      t: "rule",
-      title: originalRule?.title || "القاعدة ببساطة",
-      strat: originalRule?.strat || "شرح مباشر مبسّط",
-      body: rule.rule,
-      concepts: Array.isArray(originalRule?.concepts) && originalRule.concepts.length ? originalRule.concepts : rule.bullets.map(x => x.replace(/^[^\p{L}\p{N}]+/u, "")),
-      note: originalRule?.note || "لا تحفظ القاعدة وحدها؛ اختبرها على مثال جديد.",
-      __gfsUpgrade: VERSION
-    };
-  }
-
-  function transformBank(bank) {
-    if (!Array.isArray(bank) || !bank.length) return bank || [];
-    const out = [];
-    const seenQ = new Set();
-    const seenAnswers = new Set();
-
-    for (let i = 0; i < bank.length && out.length < 25; i++) {
-      const src = { ...bank[i] };
-      const qKey = normalize(src.q || src.sn || `${i}`);
-      if (seenQ.has(qKey)) continue;
-      seenQ.add(qKey);
-
-      if (src.t === "mcq" && Array.isArray(src.o) && src.o.length >= 2 && Number.isInteger(src.a)) {
-        const correct = src.o[src.a];
-        const wrong = src.o.find((_, idx) => idx !== src.a);
-        const ansKey = normalize(correct);
-        const mode = out.length % 4;
-
-        if (mode === 1 && !seenAnswers.has(ansKey)) {
-          out.push({ t: "fill", sn: src.sn || "إجابة بلا خيارات", q: `اكتب الإجابة الصحيحة بنفسك: ${src.q}`, a: [String(correct)], e: src.e || "ارجع إلى القاعدة ثم أعد المحاولة." });
-        } else if (mode === 2 && wrong != null) {
-          out.push({ t: "tf", sn: src.sn || "حكم وتحليل", q: `«${wrong}» تمثل إجابة صحيحة عن الموقف الآتي: ${src.q}`, a: false, e: src.e || `الإجابة الصحيحة هي: ${correct}` });
-        } else if (mode === 3) {
-          const indexed = src.o.map((v, idx) => ({ v, idx }));
-          const rotated = [...indexed.slice(1), indexed[0]];
-          out.push({ ...src, q: `حلّل ثم اختر: ${src.q}`, o: rotated.map(x => x.v), a: rotated.findIndex(x => x.idx === src.a) });
-        } else {
-          out.push({ ...src, q: `تحدّي ${out.length + 1}: ${src.q}` });
-        }
-        seenAnswers.add(ansKey);
-      } else {
-        out.push({ ...src, q: src.q ? `تحدّي ${out.length + 1}: ${src.q}` : src.q });
-      }
+    if (course.title === "الهمزة المتوسطة") {
+      stage.checks = [
+        { t: "mcq", q: "بعد الشرح: ما ترتيب قوة الحركات من الأقوى إلى الأضعف؟", o: ["الكسرة، الضمة، الفتحة، السكون", "الضمة، الكسرة، السكون، الفتحة", "الفتحة، الضمة، الكسرة، السكون", "السكون، الفتحة، الضمة، الكسرة"], a: 0, e: "الكسرة ثم الضمة ثم الفتحة ثم السكون." },
+        { t: "tf", q: "إذا كانت الكسرة إحدى الحركتين فإنها تحسم رسم الهمزة على نبرة غالبًا.", a: true, e: "الكسرة أقوى الحركات." },
+        { t: "fill", q: "اكتب كلمة صحيحة فيها همزة متوسطة على واو.", a: ["مؤمن", "مسؤول", "رؤوس", "تفاؤل", "مُؤْمِن"], e: "أي مثال صحيح من هذه الأمثلة مقبول." }
+      ];
+    } else {
+      const b = ruleInfo.bullets || [];
+      stage.checks = [
+        { t: "tf", q: ruleInfo.ruleText, a: true, e: "هذه هي الفكرة الرئيسة في الدرس." },
+        { t: "mcq", q: "أي نقطة من الآتي ينبغي أن تستخدمها عند التطبيق؟", o: [b[1] || b[0] || course.objective, "أتجاهل القاعدة", "أحفظ الإجابة نفسها", "أختار بلا تعليل"], a: 0, e: b[1] || b[0] || ruleInfo.ruleText }
+      ];
     }
+    return stage;
+  }
 
-    // إذا كان البنك الأصلي أقل تنوعًا نكمل من عناصره الأصلية دون تكرار نص السؤال.
-    for (let i = 0; i < bank.length && out.length < 25; i++) {
-      const src = bank[i];
-      const key = normalize(src.q || src.sn || `${i}`) + `-${i}`;
-      if (!seenQ.has(key)) {
-        out.push({ ...src, q: src.q ? `موقف ${out.length + 1}: ${src.q}` : src.q });
-        seenQ.add(key);
-      }
-    }
-    return out.slice(0, 25);
+  function simpleRuleStage(course, ruleInfo) {
+    const art = ART_BY_TITLE[course.title] || [];
+    return {
+      ...(ruleInfo.originalRule || {}),
+      t: "rule", title: "القاعدة بأبسط صورة", strat: "شرح مباشر مبسّط",
+      body: ruleInfo.ruleText,
+      concepts: ruleInfo.originalRule?.concepts?.length ? ruleInfo.originalRule.concepts : ruleInfo.bullets,
+      art,
+      note: "افهم الفكرة أولًا، ثم طبّقها على مثال جديد. لا تعتمد على حفظ المثال.",
+      __gfsUpgrade: VERSION
+    };
+  }
+
+  function visualStage(course, ruleInfo) {
+    return {
+      t: "summary", title: "إنفوجرافيك — خريطة القرار", strat: "التشفير البصري",
+      body: `حوّل قاعدة «${course.title}» إلى خطوات قصيرة قابلة للتطبيق.`,
+      bullets: ruleInfo.bullets.slice(0, 6),
+      art: ART_BY_TITLE[course.title] || [],
+      note: "اشرح الخريطة بصوتك في عشرين ثانية، ثم انتقل إلى التطبيق.",
+      __gfsUpgrade: VERSION
+    };
   }
 
   function upgradeCourse(course) {
     if (!course || !course.id) return course;
-    const rule = courseRule(course);
     const oldStages = Array.isArray(course.stages) ? course.stages : [];
-    const cleaned = oldStages.filter(s => !s?.__gfsUpgrade);
-    const originalVideo = cleaned.find(s => s?.t === "video");
-    const originalRule = cleaned.find(s => s?.t === "rule");
-    const rest = cleaned.filter(s => s !== originalVideo && s !== originalRule);
+    const cleanStages = oldStages.filter(s => !s?.__gfsUpgrade);
+    const ruleInfo = getRuleInfo(course, oldStages, cleanStages);
 
-    // نحافظ على كل محتوى الكورس القديم، ونضيف فوقه رحلة أوضح فقط.
+    const discover = cleanStages.filter(s => s?.t === "discover");
+    const worked = cleanStages.filter(s => ["worked", "template", "sort", "errors", "problem", "produce"].includes(s?.t));
+    const summaries = cleanStages.filter(s => s?.t === "summary");
+    const other = cleanStages.filter(s => !["discover", "worked", "template", "sort", "errors", "problem", "produce", "summary", "video", "rule"].includes(s?.t));
+
     const stages = [
-      makeWarmup(course, rule),
-      makeVideo(course, rule, originalVideo),
-      makeRuleStage(course, rule, originalRule),
-      makeVisualMap(course, rule),
-      ...rest
+      warmupFor(course, ruleInfo),
+      videoFor(course, oldStages, ruleInfo),
+      ...discover,
+      simpleRuleStage(course, ruleInfo),
+      visualStage(course, ruleInfo),
+      ...worked,
+      ...other,
+      ...summaries
     ];
 
     return {
       ...course,
       q: 25,
       stages,
-      bank: transformBank(course.bank),
+      bank: cleanBank(course.bank),
       contentVersion: VERSION
     };
   }
@@ -349,32 +218,23 @@
     try {
       const marker = await getKey(MARKER_KEY);
       if (marker?.done) return;
-
       let keys = [];
-      for (let attempt = 0; attempt < 6; attempt++) {
+      for (let i = 0; i < 8; i++) {
         keys = await listKeys(COURSE_PREFIX);
         if (keys.length) break;
-        await new Promise(r => setTimeout(r, 1800));
+        await new Promise(r => setTimeout(r, 1200));
       }
       if (!keys.length) return;
 
       let changed = 0;
       for (const key of keys) {
-        try {
-          const course = await getKey(key);
-          if (!course || course.contentVersion === VERSION) continue;
-          const upgraded = upgradeCourse(course);
-          await setKey(key, upgraded);
-          changed++;
-        } catch (e) {
-          console.warn("Course content upgrade skipped", key, e);
-        }
+        const course = await getKey(key);
+        if (!course || course.contentVersion === VERSION) continue;
+        await setKey(key, upgradeCourse(course));
+        changed++;
       }
-
       await setKey(MARKER_KEY, { done: true, version: VERSION, changed, total: keys.length, at: new Date().toISOString() });
-      if (changed > 0) {
-        console.info(`[GFS] Course content upgraded: ${changed}/${keys.length}`);
-        // إعادة تحميل مرة واحدة حتى تقرأ React السجلات المطوّرة من التخزين المشترك.
+      if (changed) {
         const reloadKey = `gfs:upgrade-reloaded:${VERSION}`;
         if (!sessionStorage.getItem(reloadKey)) {
           sessionStorage.setItem(reloadKey, "1");
@@ -382,11 +242,10 @@
         }
       }
     } catch (e) {
-      console.warn("GFS course content upgrade failed", e);
+      console.warn("GFS course content v2 upgrade failed", e);
     }
   }
 
-  // ننتظر اكتمال تحميل التطبيق وتهيئة السجلات قبل تنفيذ الترقية مرة واحدة.
-  if (document.readyState === "complete") setTimeout(runUpgrade, 1200);
-  else window.addEventListener("load", () => setTimeout(runUpgrade, 1200), { once: true });
+  if (document.readyState === "complete") setTimeout(runUpgrade, 1000);
+  else window.addEventListener("load", () => setTimeout(runUpgrade, 1000), { once: true });
 })();
