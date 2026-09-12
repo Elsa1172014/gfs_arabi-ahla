@@ -1,9 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// Keep the student login source aligned with the platform requirement:
-// accept a two-part or three-part entered name. The registered full name is
-// still resolved against the stored student record before final entry.
+// Student login hardening:
+// - accept only a two-part or three-part entered name
+// - require an exact registered student key (grade + block + six-digit ID)
+// - compare the entered 2/3 name parts with the beginning of the stored full name
+// - never create or admit an unregistered student from the login form
 function studentLoginCompatibility() {
   return {
     name: "student-login-compatibility",
@@ -11,10 +13,17 @@ function studentLoginCompatibility() {
     transform(code, id) {
       if (!id.endsWith("/src/App.jsx") && !id.endsWith("\\src\\App.jsx")) return null;
       let next = code;
+
       next = next.replaceAll(
         'f.name.trim().split(/\\s+/).length < 3',
-        'f.name.trim().split(/\\s+/).length < 2'
+        '(f.name.trim().split(/\\s+/).length < 2 || f.name.trim().split(/\\s+/).length > 3)'
       );
+
+      next = next.replace(
+        'if (normalize(existing.name) !== normalize(f.name)) return setErr("الاسم المُدخَل لا يطابق الاسم المسجَّل لهذا الرقم التعريفي. تحقّق من كتابة اسمك كما هو مسجَّل بالضبط.");',
+        'const enteredParts = normalize(f.name).split(" ").filter(Boolean); const storedParts = normalize(existing.name).split(" ").filter(Boolean); if ((enteredParts.length !== 2 && enteredParts.length !== 3) || storedParts.length < enteredParts.length || enteredParts.some((part, i) => part !== storedParts[i])) return setErr("الاسم المُدخَل لا يطابق الاسم المسجَّل لهذا الرقم التعريفي. اكتب أول اسمين أو أول ثلاثة أسماء كما هي في قائمة الطلاب.");'
+      );
+
       next = next.replaceAll('الاسم الثلاثي', 'اسم الطالب (ثنائي أو ثلاثي)');
       next = next.replaceAll('placeholder="سالم أحمد الكعبي"', 'placeholder="مثال: أحمد محمد أو أحمد محمد علي"');
       return next === code ? null : { code: next, map: null };
