@@ -63,7 +63,7 @@
             const data = await r.json().catch(() => ({}));
             if (r.ok && data?.ok && data?.fullName) return { ok: true, fullName: data.fullName };
             if (r.status === 409) return { ok: false, message: "يوجد أكثر من طالب مطابق. تحقّق من الرقم المدرسي أو راجع معلمك." };
-            if (r.status === 404) return { ok: false, message: "الاسم لا يطابق الطالب المسجّل لهذا الرقم. اكتب الاسم كما هو في المنصة أو أول اسمين/ثلاثة أسماء." };
+            if (r.status === 404) return { ok: false, message: "الاسم لا يطابق الطالب المسجّل لهذا الرقم. اكتب أول اسمين أو أكثر بالترتيب نفسه المسجّل في المنصة." };
             return { ok: false, message: "تعذّر التحقق من بيانات الطالب الآن. حاول مرة أخرى." };
           } catch {
             return { ok: false, message: "تعذّر الاتصال بخدمة التحقق. حاول مرة أخرى." };
@@ -74,8 +74,8 @@
           const input = document.getElementById("nm");
           if (!input) return;
           const label = document.querySelector('label[for="nm"]');
-          if (label) label.textContent = "اسم الطالب (الاسم الكامل أو أول اسمين/ثلاثة أسماء)";
-          input.placeholder = "اكتب الاسم كما هو مسجّل في المنصة";
+          if (label) label.textContent = "اسم الطالب (اسمين أو أكثر حتى الاسم الكامل)";
+          input.placeholder = "اكتب أول اسمين أو أكثر كما هي مسجّلة في المنصة";
         }
 
         function num(v) {
@@ -174,10 +174,9 @@
             return;
           }
 
-          // App.jsx يقبل أول اسمين/ثلاثة أسماء بعد التحقق. نمرّر أول ثلاثة
-          // من الاسم الحقيقي الذي أعادته الخادومة، لا من إدخال المستخدم.
-          const verifiedParts = String(result.fullName).trim().split(/\s+/).filter(Boolean);
-          const safeLoginName = verifiedParts.slice(0, Math.min(3, verifiedParts.length)).join(" ");
+          // بعد التحقق من الاسم المختصر والرقم المدرسي، نمرّر الاسم الكامل
+          // المسجّل إلى واجهة React القديمة حتى لا ترفض الاسم الثنائي/الثلاثي.
+          const safeLoginName = String(result.fullName).trim();
           setReactInputValue(input, safeLoginName);
           setTimeout(() => {
             bypassOnce = true;
