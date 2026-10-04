@@ -151,7 +151,18 @@
 
           const input = document.getElementById("nm");
           const sidInput = document.getElementById("sid");
+
+          // Only intercept the actual student-login submit button.
+          // Other buttons in the panel (especially "رجوع") must keep their normal React behavior.
           if (!input || !sidInput || !button.closest(".lh-panel")) return;
+          const buttonText = (button.textContent || "").trim();
+          if (buttonText.includes("رجوع") || buttonText.includes("عودة") || buttonText.includes("Back")) {
+            clearCompatError();
+            return;
+          }
+          const form = input.closest("form");
+          const isSubmit = button.type === "submit" || (form && button.closest("form") === form);
+          if (!isSubmit) return;
 
           const entered = input.value;
           const parts = nameParts(entered);
