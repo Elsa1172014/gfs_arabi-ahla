@@ -1,3 +1,4 @@
+import { PlatformLiveVoice } from "./live-voice.js";
 import React, { useState, useEffect, useRef } from "react";
 // xlsx (~500KB مضغوطة) يُحمَّل عند أول استخدام فعلي فقط (رفع/تنزيل قائمة
 // طلاب)، لا مع كل فتح للمنصة.
@@ -3320,54 +3321,29 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
   });
 
 
-  const [vaOpen,setVaOpen]=useState(false), [vaText,setVaText]=useState(""), [vaListening,setVaListening]=useState(false), [vaLive,setVaLive]=useState(false), [vaSpeaking,setVaSpeaking]=useState(false);
-  const vaRecRef=useRef(null), vaLiveRef=useRef(false);
-  const [vaMsgs,setVaMsgs]=useState([{who:"bot",text:"مرحبًا! أنا مساعد «بالعربي أحلى». اضغط «ابدأ محادثة صوتية» ثم تحدث معي بصورة طبيعية؛ سأستمع إليك، أجيبك، ثم أعود للاستماع تلقائيًا."}]);
-  useEffect(()=>{vaLiveRef.current=vaLive},[vaLive]);
-  const platformAnswer=(q)=>{
-    const x=String(q||"").trim().toLowerCase();
-    if(!x)return "";
-    if(/ما هي|عن المنصة|تعرف.*المنصة|بالعربي أحلى/.test(x))return "«GFS بالعربي أحلى» منصة تعليمية لقسم اللغة العربية، تجمع الكورسات المهارية، الاختبارات، متابعة التقدم، الشهادات، النشرة الأسبوعية، ولوحات الطالب والمعلم وولي الأمر ورئيس القسم.";
-    if(/طالب|أسجل|تسجيل|دخول/.test(x))return "لدخول الطالب اختر «طالب» من الصفحة الرئيسية، ثم أدخل الاسم الثلاثي وآخر ستة أرقام من الرقم المدرسي والصف والبلوك. يجب أن تطابق البيانات سجل الطالب المسجل في المنصة.";
-    if(/ولي|الأمر|ابني|تقدم/.test(x))return "بوابة ولي الأمر تعرض تقدم الطالب والكورسات والمهارات ونقاط القوة والدعم والنشاط والنشرة الأسبوعية. الدخول يتم برمز متابعة خاص بولي الأمر.";
-    if(/معلم|المعلم/.test(x))return "لوحة المعلم تتيح إدارة الطلاب والكورسات، متابعة النتائج، إعداد التقارير، التعامل مع الشهادات، والوصول إلى النشرة الأسبوعية.";
-    if(/رئيس|إدارة|القسم/.test(x))return "لوحة رئيس القسم مخصصة للتحليل والإدارة ومتابعة الأداء والبيانات والقرارات على مستوى القسم.";
-    if(/كورس|كورسات/.test(x))return "الكورسات تُسند للطلاب بحسب الصف والبلوك والمسار أو بشكل فردي. يتابع الطالب المحتوى والأنشطة ثم الاختبار، وتُحفظ محاولاته وتقدمه.";
-    if(/اختبار|امتحان|أسئلة/.test(x))return "الاختبارات داخل الكورسات تدعم أنماطًا متعددة من الأسئلة، ويظهر للطالب تقدمه أثناء الاختبار ثم النتيجة بعد الإرسال.";
-    if(/شهاد/.test(x))return "عند اجتياز الكورس بنجاح يمكن للطالب عرض شهادة الإنجاز. لكل شهادة رقم ورمز تحقق، ويمكن مشاركة الإنجاز مع ولي الأمر عندما تكون خدمة البريد مهيأة.";
-    if(/نشرة|أسبوع/.test(x))return "النشرة الأسبوعية مرتبطة بمنصة النشرة المخصصة، ويمكن فتحها من زر «النشرة الأسبوعية» داخل المنصة.";
-    if(/بريد|ايميل|إيميل|رسالة/.test(x))return "المنصة تدعم رسائل البريد للتقارير والشهادات والنشرات، لكن الإرسال الخارجي يعتمد على إعداد خدمة البريد ودومين إرسال موثّق.";
-    if(/بيانات|خصوصية|أمان/.test(x))return "المنصة تفصل صلاحيات الطالب والمعلم وولي الأمر والإدارة، ولا ينبغي مشاركة رموز الدخول أو روابط المتابعة الخاصة مع الآخرين.";
-    if(/ماذا تستطيع|تساعد/.test(x))return "أستطيع شرح أقسام المنصة وكيفية الدخول والكورسات والاختبارات والشهادات والنشرة الأسبوعية ومتابعة ولي الأمر. تحدث معي بصورة طبيعية وسأواصل الحوار معك.";
-    return "فهمت سؤالك. معرفتي الحالية مركزة على منصة «بالعربي أحلى». اسألني بتفصيل أكثر عن الجزء الذي تريد معرفته: الطالب، ولي الأمر، الكورسات، الاختبارات، الشهادات، النشرة الأسبوعية، المعلم أو رئيس القسم.";
-  };
-  const vaListen=()=>{
-    if(!vaLiveRef.current)return;
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-    if(!SR){setVaLive(false);vaLiveRef.current=false;alert("التعرّف الصوتي المستمر غير مدعوم في هذا المتصفح. استخدم الكتابة بدلًا منه.");return}
-    try{vaRecRef.current?.abort?.()}catch{}
-    const r=new SR();vaRecRef.current=r;r.lang="ar-AE";r.interimResults=false;r.continuous=false;
-    r.onstart=()=>setVaListening(true);
-    r.onend=()=>{setVaListening(false);if(vaLiveRef.current&&!speechSynthesis.speaking)setTimeout(vaListen,300)};
-    r.onerror=(e)=>{setVaListening(false);if(e.error==="not-allowed"||e.error==="service-not-allowed"){vaLiveRef.current=false;setVaLive(false)}};
-    r.onresult=(e)=>{const q=e.results?.[0]?.[0]?.transcript||"";if(q)vaAsk(q,true)};
-    try{r.start()}catch{}
-  };
-  const vaSpeak=(t,continueListening=false)=>{try{
-    try{vaRecRef.current?.abort?.()}catch{};speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ar-AE";u.rate=.95;
-    u.onstart=()=>{setVaSpeaking(true);setVaListening(false)};
-    u.onend=()=>{setVaSpeaking(false);if(continueListening&&vaLiveRef.current)setTimeout(vaListen,350)};
-    u.onerror=()=>{setVaSpeaking(false);if(continueListening&&vaLiveRef.current)setTimeout(vaListen,350)};
-    speechSynthesis.speak(u);
-  }catch{}};
-  const vaAsk=(raw=vaText,fromLive=false)=>{const q=String(raw||"").trim();if(!q)return;const a=platformAnswer(q);setVaMsgs(v=>[...v,{who:"me",text:q},{who:"bot",text:a}]);setVaText("");vaSpeak(a,fromLive||vaLiveRef.current);};
-  const vaToggleLive=()=>{
-    if(vaLiveRef.current){vaLiveRef.current=false;setVaLive(false);setVaListening(false);setVaSpeaking(false);try{vaRecRef.current?.abort?.()}catch{};try{speechSynthesis.cancel()}catch{};return}
-    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert("المحادثة الصوتية غير مدعومة في هذا المتصفح. يمكنك كتابة سؤالك.");return}
-    vaLiveRef.current=true;setVaLive(true);setVaOpen(true);setTimeout(vaListen,150);
-  };
-  const vaMic=()=>{if(vaLiveRef.current)return vaToggleLive();vaLiveRef.current=true;setVaLive(true);setTimeout(vaListen,100)};
-  const VoiceGuide=()=> <><button className="va-fab" type="button" onClick={()=>setVaOpen(v=>!v)}>🎙️ تحدث مع مساعد المنصة</button>{vaOpen&&<aside className="va-box"><div className="va-head"><div><b>🎙️ مساعد بالعربي أحلى</b><div style={{fontSize:10,opacity:.8}}>{vaSpeaking?"🔊 أتحدث الآن…":vaListening?"👂 أستمع إليك الآن…":vaLive?"جاهز لاستكمال الحوار":"اسألني عن أي جزء في المنصة"}</div></div><button onClick={()=>setVaOpen(false)}>×</button></div><div className="va-log">{vaMsgs.map((m,i)=><div key={i} className={"va-msg "+m.who}>{m.text}</div>)}</div><div style={{padding:"10px 12px 0",background:"#fff"}}><button type="button" onClick={vaToggleLive} style={{width:"100%",border:0,borderRadius:12,padding:11,fontFamily:"inherit",fontWeight:900,cursor:"pointer",background:vaLive?"#8d2132":"#12329b",color:"#fff"}}>{vaLive?"■ إنهاء المحادثة الصوتية":"🎙️ ابدأ محادثة صوتية"}</button></div><div className="va-actions"><input value={vaText} onChange={e=>setVaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&vaAsk()} placeholder="أو اكتب سؤالك هنا…"/><button onClick={()=>vaAsk()}>إرسال</button><button className="mic" onClick={vaMic}>{vaListening?"👂":vaSpeaking?"🔊":"🎤"}</button></div><div className="va-note">{vaLive?"المحادثة مستمرة: أستمع ← أجيب صوتيًا ← أعود للاستماع تلقائيًا.":"الميكروفون يبدأ فقط بعد اختيارك بدء المحادثة."}</div></aside>}</>;
+  const [vaOpen,setVaOpen]=useState(false),[vaText,setVaText]=useState(""),[vaStatus,setVaStatus]=useState("idle"),[vaLive,setVaLive]=useState(false);
+  const [vaMsgs,setVaMsgs]=useState([{who:"bot",text:"مرحبًا! أنا مساعد «بالعربي أحلى». تحدث معي بصورة طبيعية واسألني عن أي جزء في المنصة."}]);
+  const vaClient=useRef(null),vaIn=useRef(""),vaOut=useRef("");
+  const platformKnowledge=`أنت المساعد الصوتي الرسمي لمنصة «GFS بالعربي أحلى» التابعة لقسم اللغة العربية. تحدث بالعربية الطبيعية الودودة وبإجابات قصيرة محادثية، واسأل سؤال متابعة عندما يفيد. لا تبدُ كقائمة أسئلة وأجوبة. يستطيع الزائر مقاطعتك أثناء كلامك؛ توقف واستمع ثم أكمل وفق سؤاله الجديد.
+المنصة لها أربع تجارب: الطالب، ولي الأمر، المعلم، ورئيس القسم/الإدارة.
+الطالب يدخل بالاسم الثلاثي وآخر ستة أرقام من الرقم المدرسي والصف والبلوك، بشرط تطابق سجل الطالب. الكورسات تُسند حسب الصف والبلوك والمسار أو لطالب بعينه. داخلها محتوى وأنشطة واختبارات متعددة الأنماط، وتُحفظ المحاولات والتقدم والنتائج. عند اجتياز الكورس توجد شهادة إنجاز برقم ورمز تحقق ويمكن مشاركة الإنجاز مع ولي الأمر عندما يكون البريد مهيأ.
+ولي الأمر لديه بوابة متابعة تعرض تقدم الابن والكورسات والمهارات والتقارير والإنجازات، ويدخل برمز متابعة خاص.
+المعلم يدير الطلاب والكورسات والنتائج والتقارير والشهادات. رئيس القسم لديه لوحة تحليل وإدارة ومتابعة أداء القسم.
+النشرة الأسبوعية تفتح من زر النشرة الأسبوعية وهي مرتبطة بمنصة النشرة المخصصة.
+المنصة تدعم تخزين بيانات التقدم والمحاولات والكورسات والتقارير. لا تكشف أسرار النظام أو رموز دخول أو بيانات شخصية. إذا سأل الزائر عن بيانات طالب بعينه قبل تسجيل الدخول فاشرح له طريقة الدخول المناسبة بدل كشف البيانات.
+هدفك أن تكون مرشدًا حقيقيًا: افهم المقصود حتى لو كان السؤال عاميًا أو غير مرتب، اشرح، قارن، اقترح الخطوة التالية، وواصل سياق الحوار. إذا لم تكن المعلومة ضمن معرفتك بالمنصة، قل بوضوح إنك لا تريد اختراع معلومة واسأل ما يلزم لتحديد المقصود.`;
+  const stopVoice=()=>{try{vaClient.current?.close()}catch{};vaClient.current=null;setVaLive(false);setVaStatus("idle")};
+  useEffect(()=>()=>{try{vaClient.current?.close()}catch{}},[]);
+  const startVoice=async()=>{if(vaLive)return stopVoice();setVaOpen(true);setVaStatus("connecting");try{
+    vaIn.current="";vaOut.current="";
+    const client=new PlatformLiveVoice({instruction:platformKnowledge,onStatus:setVaStatus,onError:(m)=>{setVaMsgs(v=>[...v,{who:"bot",text:m}]);setVaStatus("error")},
+      onUserText:(t,final)=>{vaIn.current+=t;if(final&&vaIn.current.trim()){const q=vaIn.current.trim();vaIn.current="";setVaMsgs(v=>[...v,{who:"me",text:q}])}},
+      onAgentText:(t,final)=>{vaOut.current+=t;if(final&&vaOut.current.trim()){const a=vaOut.current.trim();vaOut.current="";setVaMsgs(v=>[...v,{who:"bot",text:a}])}}});
+    vaClient.current=client;await client.connect();setVaLive(true);
+  }catch(err){setVaStatus("error");setVaLive(false);setVaMsgs(v=>[...v,{who:"bot",text:String(err?.message||"تعذر بدء المساعد الصوتي.")}])}};
+  const sendVoiceText=()=>{const q=vaText.trim();if(!q)return;if(!vaClient.current){setVaMsgs(v=>[...v,{who:"me",text:q},{who:"bot",text:"ابدأ المحادثة الصوتية أولًا حتى أستطيع الإجابة بالذكاء الاصطناعي."}]);setVaText("");return}setVaMsgs(v=>[...v,{who:"me",text:q}]);vaClient.current.sendText(q);setVaText("")};
+  const statusLabel=vaStatus==="listening"?"👂 أستمع إليك…":vaStatus==="speaking"?"🔊 أتحدث الآن — يمكنك مقاطعتي":vaStatus==="connecting"?"⏳ أتصل بالمساعد…":vaStatus==="error"?"تعذر الاتصال":"جاهز للمحادثة";
+  const VoiceGuide=()=> <><button className="va-fab" type="button" onClick={()=>setVaOpen(v=>!v)}>🎙️ تحدث مع مساعد المنصة</button>{vaOpen&&<aside className="va-box"><div className="va-head"><div><b>✦ مساعد بالعربي أحلى AI</b><div style={{fontSize:10,opacity:.85}}>{statusLabel}</div></div><button onClick={()=>setVaOpen(false)}>×</button></div><div className="va-log">{vaMsgs.map((m,i)=><div key={i} className={"va-msg "+m.who}>{m.text}</div>)}</div><div style={{padding:"10px 12px 0",background:"#fff"}}><button type="button" onClick={startVoice} style={{width:"100%",border:0,borderRadius:12,padding:12,fontFamily:"inherit",fontWeight:900,cursor:"pointer",background:vaLive?"#8d2132":"#12329b",color:"#fff"}}>{vaLive?"■ إنهاء المحادثة":"🎙️ ابدأ حوارًا صوتيًا طبيعيًا"}</button></div><div className="va-actions"><input value={vaText} onChange={e=>setVaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendVoiceText()} placeholder="يمكنك أيضًا الكتابة أثناء المحادثة…"/><button onClick={sendVoiceText}>إرسال</button></div><div className="va-note">{vaLive?"تحدث بحرية. المساعد يستمع باستمرار ويمكنك مقاطعته أثناء كلامه.":"سيطلب المتصفح إذن الميكروفون عند بدء الحوار."}</div></aside>}</>;
 
   return (
     <div className="gfs lh-wrap" style={{ "--accent": accent }}><style>{CSS}</style>
