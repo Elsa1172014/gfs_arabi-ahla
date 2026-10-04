@@ -6668,7 +6668,7 @@ export default function App() {
 
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get("parent");
-    if (!token || !students.length) return;
+    if (!token || !ready) return;
     (async () => {
       const normalized = token.trim().toUpperCase();
       let rec = parentTokens[normalized];
@@ -6677,11 +6677,21 @@ export default function App() {
         rec = stored && (stored.__val || stored);
       }
       if (!rec) return;
-      const student = students.find((s) => s.key === rec.studentKey);
+      // Keep the snapshot saved with the token useful even if the student
+      // roster was later cleared/re-imported. Prefer the current student record.
+      let student = students.find((s) => s.key === rec.studentKey);
+      if (!student && rec.student) student = rec.student;
+      if (!student && rec.studentKey) {
+        const storedStudent = await readRecord(REC.student, rec.studentKey);
+        student = storedStudent && (storedStudent.__val || storedStudent);
+      }
       if (!student) return;
-      setParentReport({ student, rows: buildReport(student, courses, progress, attempts) });
+      const rows = students.some((s) => s.key === student.key)
+        ? buildReport(student, courses, progress, attempts)
+        : (Array.isArray(rec.rows) ? rec.rows : buildReport(student, courses, progress, attempts));
+      setParentReport({ student, rows });
     })();
-  }, [students, courses, attempts, progress, parentTokens]);
+  }, [ready, students, courses, attempts, progress, parentTokens]);
 
   // كل دالة هنا تكتب سجلّها الخاص فقط، لا نسخة كاملة من المجموعة — فمعلمان
   // ينشران كورسين مختلفين في اللحظة نفسها لا يمحو أحدهما عمل الآخر.
@@ -6802,7 +6812,7 @@ export default function App() {
 
       const reportToken = "PR-" + uid().toUpperCase();
       const reportRows = buildReport(studentRec.key ? studentRec : user, courses, progress, [...attempts, a]);
-      const reportRec = { studentKey: user.key, rows: reportRows, at: new Date().toISOString() };
+      const reportRec = { studentKey: user.key, student: { ...studentRec, key: user.key, name: user.name, grade: user.grade, block: user.block, stream: user.stream }, rows: reportRows, at: new Date().toISOString() };
       setParentTokens((prev) => ({ ...prev, [reportToken]: reportRec }));
       putRecord(REC.parentTok, reportToken, { __key: reportToken, __val: reportRec });
       const reportUrl = `${window.location.origin}/?parent=${encodeURIComponent(reportToken)}`;
@@ -6872,9 +6882,17 @@ export default function App() {
         rec = stored && (stored.__val || stored);
       }
       if (!rec) return setErr("رمز غير صحيح أو منتهي.");
-      const student = students.find((s) => s.key === rec.studentKey);
-      if (!student) return setErr("تعذّر العثور على بيانات الطالب.");
-      setParentReport({ student, rows: buildReport(student, courses, progress, attempts) });
+      let student = students.find((s) => s.key === rec.studentKey);
+      if (!student && rec.student) student = rec.student;
+      if (!student && rec.studentKey) {
+        const storedStudent = await readRecord(REC.student, rec.studentKey);
+        student = storedStudent && (storedStudent.__val || storedStudent);
+      }
+      if (!student) return setErr("تعذّر العثور على بيانات الطالب المرتبطة بهذا الرمز.");
+      const rows = students.some((s) => s.key === student.key)
+        ? buildReport(student, courses, progress, attempts)
+        : (Array.isArray(rec.rows) ? rec.rows : buildReport(student, courses, progress, attempts));
+      setParentReport({ student, rows });
     }} codes={codes} students={students} courses={courses} attempts={attempts} />;
 
   const course = view.id && courses.find((c) => c.id === view.id);
@@ -7208,7 +7226,7 @@ export default function App() {
               }}
               onSendReport={async (student, token, payload) => {
                 const rows = buildReport(student, courses, progress, attempts);
-                const rec = { studentKey: student.key, rows, at: new Date().toISOString() };
+                const rec = { studentKey: student.key, student: { ...student }, rows, at: new Date().toISOString() };
                 setParentTokens((prev) => ({ ...prev, [token]: rec }));
                 await putRecord(REC.parentTok, token, { __key: token, __val: rec });
                 const reportUrl = `${window.location.origin}/?parent=${encodeURIComponent(token)}`;
