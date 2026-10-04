@@ -3625,7 +3625,7 @@ function NewsletterEditor({ teacherName, teacherEmail, students, newsletters, on
   </div>;
 }
 
-function StudentHome({ user, courses, progress, attempts, newsletters = [], onOpen, onCert }) {
+function StudentHome({ user, courses, progress, attempts, newsletters = [], onOpen, onCert, onSendCertToParent }) {
   const mine = courses.filter((c) => assignedTo(c, user));
   const ph = phaseFor(user.grade);
   const publishedNews = newsletters.filter(n => n.status === "published" && +n.grade === +user.grade && (n.blocks || []).map(normBlock).includes(normBlock(user.block))).sort((a,b)=>(b.publishedAt||"").localeCompare(a.publishedAt||""));
@@ -3696,7 +3696,15 @@ function StudentHome({ user, courses, progress, attempts, newsletters = [], onOp
 
       {page==="certificates" && <section>
         <div className="stu-page-head"><div><h1>📜 الشهادات</h1><p style={{margin:0,color:T.inkSoft}}>افتح شهادات إتمام الكورسات مباشرة.</p></div><Back/></div>
-        {passedAttempts.length===0?<div className="card" style={{padding:22,color:T.inkSoft}}>لا توجد شهادات حتى الآن.</div>:<div className="stu-achievements">{passedAttempts.map(a=>{const c=courses.find(x=>x.id===a.course);return <button key={a.id} className="stu-ach" style={{textAlign:"right",cursor:"pointer",fontFamily:"inherit"}} onClick={()=>onCert&&onCert(a.id)}><span>📜</span><b>{c?.title||"شهادة إتمام"}</b><small>{a.pct}% · اضغط لفتح الشهادة</small></button>})}</div>}
+        {passedAttempts.length===0?<div className="card" style={{padding:22,color:T.inkSoft}}>لا توجد شهادات حتى الآن.</div>:<div className="stu-achievements">{passedAttempts.map(a=>{const c=courses.find(x=>x.id===a.course);return <div key={a.id} className="stu-ach" style={{textAlign:"right",fontFamily:"inherit"}}>
+          <button style={{all:"unset",display:"block",width:"100%",cursor:"pointer"}} onClick={()=>onCert&&onCert(a.id)}><span>📜</span><b style={{display:"block"}}>{c?.title||"شهادة إتمام"}</b><small>{a.pct}% · اضغط لفتح الشهادة</small></button>
+          <button className="btn btn-p" style={{marginTop:10,width:"100%"}} onClick={async(e)=>{
+            const btn=e.currentTarget, old=btn.textContent; btn.disabled=true; btn.textContent="جارٍ الإرسال…";
+            const result=await onSendCertToParent?.(a,c);
+            btn.disabled=false; btn.textContent=result?.ok?"💚 تم إرسال إنجازك لولي أمرك":old;
+            if(!result?.ok) alert(result?.error || "تعذر إرسال الشهادة إلى ولي الأمر.");
+          }}>💌 شارك إنجازي مع ولي أمري</button>
+        </div>})}</div>}
       </section>}
 
       <footer className="adm-footer" style={{marginTop:32,borderRadius:18}}><div style={{position:"relative",zIndex:1,fontSize:11}}>منصة بالعربي أحلى — رحلة تعلم مستمرة</div><div className="adm-footer-main"><div className="adm-footer-tag">نزدهر • ننجح • ننمو</div><div style={{opacity:.72}}>GEMS Founders School Dubai — Inspiring Minds, Empowering Futures</div></div><div style={{position:"relative",zIndex:1,fontSize:11}}>قسم اللغة العربية</div></footer>
@@ -7304,7 +7312,21 @@ export default function App() {
         <div className="wrap noprint"><button className="btn btn-q" onClick={goBack}>→ رجوع</button></div>
         <CourseView user={user} course={course} progress={progress} attempts={attempts} onProgress={saveProgress} onStartExam={startExam} onCert={(id) => nav({ n: "cert", id })} />
       </>) : (
-        <StudentHome user={user} courses={courses} progress={progress} attempts={attempts} newsletters={newsletters} onOpen={(id) => nav({ n: "course", id })} onCert={(id) => nav({ n: "cert", id })} />
+        <StudentHome user={user} courses={courses} progress={progress} attempts={attempts} newsletters={newsletters} onOpen={(id) => nav({ n: "course", id })} onCert={(id) => nav({ n: "cert", id })}
+          onSendCertToParent={async (attemptRec, courseRec) => {
+            const studentRec = students.find((s) => s.key === user.key) || user;
+            const to = normEmail(studentRec.parentEmail || user.parentEmail || "");
+            if (!to) return { ok:false, error:"بريد ولي الأمر غير مسجل. اطلب من معلمك إضافته إلى بياناتك." };
+            const certificateUrl = `${window.location.origin}/api/send-email?certificate=${encodeURIComponent(attemptRec.token)}`;
+            const certificateData = { student:user.name, course:courseRec?.title || "الكورس", score:attemptRec.pct, date:dateAr(attemptRec.at), serial:attemptRec.serial, token:attemptRec.token };
+            await registerCertificateRecord(certificateData);
+            const result = await sendEmailTracked(to, `إنجاز جديد لـ ${user.name} — ${courseRec?.title || "الكورس"}`,
+              `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9"><p>عزيزي ولي الأمر،</p><p>💚 <strong>${user.name}</strong> اختار أن يشارككم إنجازه في منصة «بالعربي أحلى».</p><p>أتم كورس <strong>«${courseRec?.title || "الكورس"}»</strong> بنجاح بدرجة <strong>${attemptRec.pct}%</strong>.</p><p><a href="${certificateUrl}" target="_blank" style="display:inline-block;background:#14746F;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">🏆 شاهد شهادة إنجازي</a></p><p style="font-size:12px;color:#667085">رقم الشهادة: ${attemptRec.serial || "—"} · رمز التحقق: ${attemptRec.token}</p></div>`,
+              { certificateData });
+            if (result?.ok) log(user.name,"شارك شهادته مع ولي الأمر",`${courseRec?.title || "الكورس"} — ${to}`);
+            else log(user.name,"فشل مشاركة الشهادة مع ولي الأمر",`${courseRec?.title || "الكورس"} — ${result?.error || result?.status || "فشل"}`);
+            return result;
+          }} />
       )}
     </div>
   );
