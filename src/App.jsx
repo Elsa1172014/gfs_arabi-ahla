@@ -3320,8 +3320,10 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
   });
 
 
-  const [vaOpen,setVaOpen]=useState(false), [vaText,setVaText]=useState(""), [vaListening,setVaListening]=useState(false);
-  const [vaMsgs,setVaMsgs]=useState([{who:"bot",text:"مرحبًا! أنا مساعد «بالعربي أحلى». اسألني عن المنصة، الدخول، الكورسات، الاختبارات، الشهادات، النشرة الأسبوعية أو متابعة ولي الأمر."}]);
+  const [vaOpen,setVaOpen]=useState(false), [vaText,setVaText]=useState(""), [vaListening,setVaListening]=useState(false), [vaLive,setVaLive]=useState(false), [vaSpeaking,setVaSpeaking]=useState(false);
+  const vaRecRef=useRef(null), vaLiveRef=useRef(false);
+  const [vaMsgs,setVaMsgs]=useState([{who:"bot",text:"مرحبًا! أنا مساعد «بالعربي أحلى». اضغط «ابدأ محادثة صوتية» ثم تحدث معي بصورة طبيعية؛ سأستمع إليك، أجيبك، ثم أعود للاستماع تلقائيًا."}]);
+  useEffect(()=>{vaLiveRef.current=vaLive},[vaLive]);
   const platformAnswer=(q)=>{
     const x=String(q||"").trim().toLowerCase();
     if(!x)return "";
@@ -3333,16 +3335,39 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
     if(/كورس|كورسات/.test(x))return "الكورسات تُسند للطلاب بحسب الصف والبلوك والمسار أو بشكل فردي. يتابع الطالب المحتوى والأنشطة ثم الاختبار، وتُحفظ محاولاته وتقدمه.";
     if(/اختبار|امتحان|أسئلة/.test(x))return "الاختبارات داخل الكورسات تدعم أنماطًا متعددة من الأسئلة، ويظهر للطالب تقدمه أثناء الاختبار ثم النتيجة بعد الإرسال.";
     if(/شهاد/.test(x))return "عند اجتياز الكورس بنجاح يمكن للطالب عرض شهادة الإنجاز. لكل شهادة رقم ورمز تحقق، ويمكن مشاركة الإنجاز مع ولي الأمر عندما تكون خدمة البريد مهيأة.";
-    if(/نشرة|أسبوع/.test(x))return "النشرة الأسبوعية مرتبطة بمنصة النشرة المخصصة. يمكنك فتحها من زر «النشرة الأسبوعية» داخل المنصة.";
+    if(/نشرة|أسبوع/.test(x))return "النشرة الأسبوعية مرتبطة بمنصة النشرة المخصصة، ويمكن فتحها من زر «النشرة الأسبوعية» داخل المنصة.";
     if(/بريد|ايميل|إيميل|رسالة/.test(x))return "المنصة تدعم رسائل البريد للتقارير والشهادات والنشرات، لكن الإرسال الخارجي يعتمد على إعداد خدمة البريد ودومين إرسال موثّق.";
     if(/بيانات|خصوصية|أمان/.test(x))return "المنصة تفصل صلاحيات الطالب والمعلم وولي الأمر والإدارة، ولا ينبغي مشاركة رموز الدخول أو روابط المتابعة الخاصة مع الآخرين.";
-    if(/ماذا تستطيع|تساعد/.test(x))return "أستطيع شرح أقسام المنصة وكيفية الدخول والكورسات والاختبارات والشهادات والنشرة الأسبوعية ومتابعة ولي الأمر. اسألني بصوتك أو اكتب سؤالك.";
-    return "سؤالك مهم. في هذه النسخة أجيب من دليل المنصة المدمج. جرّب أن تسألني عن: تسجيل الطالب، ولي الأمر، الكورسات، الاختبارات، الشهادات، النشرة الأسبوعية، المعلم أو رئيس القسم.";
+    if(/ماذا تستطيع|تساعد/.test(x))return "أستطيع شرح أقسام المنصة وكيفية الدخول والكورسات والاختبارات والشهادات والنشرة الأسبوعية ومتابعة ولي الأمر. تحدث معي بصورة طبيعية وسأواصل الحوار معك.";
+    return "فهمت سؤالك. معرفتي الحالية مركزة على منصة «بالعربي أحلى». اسألني بتفصيل أكثر عن الجزء الذي تريد معرفته: الطالب، ولي الأمر، الكورسات، الاختبارات، الشهادات، النشرة الأسبوعية، المعلم أو رئيس القسم.";
   };
-  const vaSpeak=(t)=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ar-AE";u.rate=.95;speechSynthesis.speak(u)}catch{}};
-  const vaAsk=(raw=vaText)=>{const q=String(raw||"").trim();if(!q)return;const a=platformAnswer(q);setVaMsgs(v=>[...v,{who:"me",text:q},{who:"bot",text:a}]);setVaText("");vaSpeak(a);};
-  const vaMic=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert("التعرّف الصوتي غير مدعوم في هذا المتصفح. يمكنك كتابة سؤالك.");return}const r=new SR();r.lang="ar-AE";r.interimResults=false;r.onstart=()=>setVaListening(true);r.onend=()=>setVaListening(false);r.onerror=()=>setVaListening(false);r.onresult=(e)=>vaAsk(e.results?.[0]?.[0]?.transcript||"");r.start();};
-  const VoiceGuide=()=> <><button className="va-fab" type="button" onClick={()=>setVaOpen(v=>!v)}>🎙️ تحدث مع مساعد المنصة</button>{vaOpen&&<aside className="va-box"><div className="va-head"><div><b>🎙️ مساعد بالعربي أحلى</b><div style={{fontSize:10,opacity:.8}}>اسألني عن أي جزء في المنصة</div></div><button onClick={()=>setVaOpen(false)}>×</button></div><div className="va-log">{vaMsgs.map((m,i)=><div key={i} className={"va-msg "+m.who}>{m.text}</div>)}</div><div className="va-actions"><input value={vaText} onChange={e=>setVaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&vaAsk()} placeholder="اكتب سؤالك أو استخدم الميكروفون…"/><button onClick={()=>vaAsk()}>إرسال</button><button className="mic" onClick={vaMic}>{vaListening?"◼":"🎤"}</button></div><div className="va-note">يبدأ الميكروفون فقط بعد ضغطك عليه. يمكنك إيقاف الصوت من جهازك في أي وقت.</div></aside>}</>;
+  const vaListen=()=>{
+    if(!vaLiveRef.current)return;
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    if(!SR){setVaLive(false);vaLiveRef.current=false;alert("التعرّف الصوتي المستمر غير مدعوم في هذا المتصفح. استخدم الكتابة بدلًا منه.");return}
+    try{vaRecRef.current?.abort?.()}catch{}
+    const r=new SR();vaRecRef.current=r;r.lang="ar-AE";r.interimResults=false;r.continuous=false;
+    r.onstart=()=>setVaListening(true);
+    r.onend=()=>{setVaListening(false);if(vaLiveRef.current&&!speechSynthesis.speaking)setTimeout(vaListen,300)};
+    r.onerror=(e)=>{setVaListening(false);if(e.error==="not-allowed"||e.error==="service-not-allowed"){vaLiveRef.current=false;setVaLive(false)}};
+    r.onresult=(e)=>{const q=e.results?.[0]?.[0]?.transcript||"";if(q)vaAsk(q,true)};
+    try{r.start()}catch{}
+  };
+  const vaSpeak=(t,continueListening=false)=>{try{
+    try{vaRecRef.current?.abort?.()}catch{};speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ar-AE";u.rate=.95;
+    u.onstart=()=>{setVaSpeaking(true);setVaListening(false)};
+    u.onend=()=>{setVaSpeaking(false);if(continueListening&&vaLiveRef.current)setTimeout(vaListen,350)};
+    u.onerror=()=>{setVaSpeaking(false);if(continueListening&&vaLiveRef.current)setTimeout(vaListen,350)};
+    speechSynthesis.speak(u);
+  }catch{}};
+  const vaAsk=(raw=vaText,fromLive=false)=>{const q=String(raw||"").trim();if(!q)return;const a=platformAnswer(q);setVaMsgs(v=>[...v,{who:"me",text:q},{who:"bot",text:a}]);setVaText("");vaSpeak(a,fromLive||vaLiveRef.current);};
+  const vaToggleLive=()=>{
+    if(vaLiveRef.current){vaLiveRef.current=false;setVaLive(false);setVaListening(false);setVaSpeaking(false);try{vaRecRef.current?.abort?.()}catch{};try{speechSynthesis.cancel()}catch{};return}
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert("المحادثة الصوتية غير مدعومة في هذا المتصفح. يمكنك كتابة سؤالك.");return}
+    vaLiveRef.current=true;setVaLive(true);setVaOpen(true);setTimeout(vaListen,150);
+  };
+  const vaMic=()=>{if(vaLiveRef.current)return vaToggleLive();vaLiveRef.current=true;setVaLive(true);setTimeout(vaListen,100)};
+  const VoiceGuide=()=> <><button className="va-fab" type="button" onClick={()=>setVaOpen(v=>!v)}>🎙️ تحدث مع مساعد المنصة</button>{vaOpen&&<aside className="va-box"><div className="va-head"><div><b>🎙️ مساعد بالعربي أحلى</b><div style={{fontSize:10,opacity:.8}}>{vaSpeaking?"🔊 أتحدث الآن…":vaListening?"👂 أستمع إليك الآن…":vaLive?"جاهز لاستكمال الحوار":"اسألني عن أي جزء في المنصة"}</div></div><button onClick={()=>setVaOpen(false)}>×</button></div><div className="va-log">{vaMsgs.map((m,i)=><div key={i} className={"va-msg "+m.who}>{m.text}</div>)}</div><div style={{padding:"10px 12px 0",background:"#fff"}}><button type="button" onClick={vaToggleLive} style={{width:"100%",border:0,borderRadius:12,padding:11,fontFamily:"inherit",fontWeight:900,cursor:"pointer",background:vaLive?"#8d2132":"#12329b",color:"#fff"}}>{vaLive?"■ إنهاء المحادثة الصوتية":"🎙️ ابدأ محادثة صوتية"}</button></div><div className="va-actions"><input value={vaText} onChange={e=>setVaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&vaAsk()} placeholder="أو اكتب سؤالك هنا…"/><button onClick={()=>vaAsk()}>إرسال</button><button className="mic" onClick={vaMic}>{vaListening?"👂":vaSpeaking?"🔊":"🎤"}</button></div><div className="va-note">{vaLive?"المحادثة مستمرة: أستمع ← أجيب صوتيًا ← أعود للاستماع تلقائيًا.":"الميكروفون يبدأ فقط بعد اختيارك بدء المحادثة."}</div></aside>}</>;
 
   return (
     <div className="gfs lh-wrap" style={{ "--accent": accent }}><style>{CSS}</style>
