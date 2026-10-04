@@ -171,6 +171,14 @@ const CSS = `
 @media(max-width:1365px){.lh-wrap .wrap.lh-shell:has(.lx){padding:12px 14px 8px!important}.lx{grid-template-columns:minmax(0,1fr) 285px;column-gap:18px}.lx-main{grid-template-rows:78px 170px 250px minmax(145px,1fr)}.lx-top{grid-template-columns:250px 1fr auto}.lx-logo{width:250px;height:82px}.lx-logo img{height:58px}.lx-actions{gap:9px;padding-top:4px}.lx-lang,.lx-install{height:44px}.lx-lang button{min-width:78px;font-size:13px}.lx-install{padding:0 18px;font-size:14px}.lx-hero h1{font-size:42px!important}.lx-hello{font-size:18px}.lx-dept{font-size:17px}.lx-vision{font-size:21px}.lx-roles{width:min(760px,92%);gap:16px}.lx-role{height:235px}.lx-role-icon{width:70px;height:70px}.lx-role-icon svg{width:68px;height:68px}.lx-role b{font-size:23px}.lx-role small{font-size:12px}.lx-data{grid-template-columns:165px 1fr;gap:14px}.lx-active,.lx-tiers{height:158px}.lx-ring{width:86px;height:86px}.lx-ring:after{width:60px;height:60px}.lx-ring strong{font-size:21px}.lx-side{padding-top:76px;grid-template-rows:150px minmax(0,1fr);gap:12px}.lx-appbox{height:146px;width:130px}.lx-live-item:nth-child(n+4){display:none}.lx-trust{height:68px}}
 @media(max-width:900px){.lh-wrap:has(.lx){overflow:auto}.lh-wrap .wrap.lh-shell:has(.lx){height:auto!important;min-height:100vh;overflow:visible}.lx{height:auto;display:block}.lx-main{display:block}.lx-top{grid-template-columns:1fr;justify-items:center}.lx-logo{margin:auto}.lx-actions{justify-content:center;margin:10px 0}.lx-hero{margin:15px auto}.lx-roles{grid-template-columns:1fr}.lx-role{height:190px}.lx-data{grid-template-columns:1fr}.lx-side{padding:20px 0;display:grid;grid-template-columns:150px 1fr}.lx-trust{margin-top:10px}.lx-copy{margin-top:6px}.lx-lion{opacity:.18}.lx-crown{display:none}}
 
+
+/* ===== المساعد الصوتي التفاعلي للواجهة ===== */
+.va-fab{position:fixed;right:22px;bottom:22px;z-index:9999;border:0;border-radius:999px;padding:13px 18px;background:linear-gradient(135deg,#b4163e,#12329b);color:#fff;font-family:inherit;font-weight:900;box-shadow:0 14px 38px rgba(0,0,0,.32);cursor:pointer}
+.va-box{position:fixed;right:22px;bottom:82px;z-index:9999;width:min(390px,calc(100vw - 28px));max-height:70vh;overflow:hidden;border-radius:22px;background:#fff;color:#17233d;box-shadow:0 24px 70px rgba(0,0,0,.38);border:1px solid rgba(18,50,155,.16);display:flex;flex-direction:column;direction:rtl}
+.va-head{padding:14px 16px;background:linear-gradient(110deg,#7d1f31,#282966,#102f8f);color:#fff;display:flex;align-items:center;justify-content:space-between}.va-head button{border:0;background:transparent;color:#fff;font-size:20px;cursor:pointer}
+.va-log{padding:14px;overflow:auto;min-height:190px;max-height:360px;background:#f7f9fc}.va-msg{padding:10px 12px;border-radius:14px;margin:7px 0;line-height:1.65;font-size:13px}.va-msg.me{background:#e8efff;margin-left:28px}.va-msg.bot{background:#fff;border:1px solid #e3e8f2;margin-right:28px}
+.va-actions{padding:11px;background:#fff;border-top:1px solid #e7eaf0;display:flex;gap:8px}.va-actions input{flex:1;border:1px solid #d6dce8;border-radius:12px;padding:10px;font-family:inherit}.va-actions button{border:0;border-radius:12px;padding:9px 11px;background:#12329b;color:#fff;cursor:pointer;font-family:inherit;font-weight:800}.va-actions button.mic{background:#b4163e}.va-note{padding:0 14px 11px;font-size:10px;color:#667085;background:#fff}
+
 /* ===== لوحة قيادة رئيس القسم — GEMS Command Center ===== */
 .adm-shell{max-width:none!important;padding:0!important;background:#f6f8fb;min-height:100vh}
 .adm-hero{position:relative;overflow:hidden;padding:18px 32px 14px;color:#fff;
@@ -3311,6 +3319,31 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
     return {name:safeName,title:cr?.title||"كورس اللغة العربية",pct:+a.pct||0,passed:!!a.passed,mins};
   });
 
+
+  const [vaOpen,setVaOpen]=useState(false), [vaText,setVaText]=useState(""), [vaListening,setVaListening]=useState(false);
+  const [vaMsgs,setVaMsgs]=useState([{who:"bot",text:"مرحبًا! أنا مساعد «بالعربي أحلى». اسألني عن المنصة، الدخول، الكورسات، الاختبارات، الشهادات، النشرة الأسبوعية أو متابعة ولي الأمر."}]);
+  const platformAnswer=(q)=>{
+    const x=String(q||"").trim().toLowerCase();
+    if(!x)return "";
+    if(/ما هي|عن المنصة|تعرف.*المنصة|بالعربي أحلى/.test(x))return "«GFS بالعربي أحلى» منصة تعليمية لقسم اللغة العربية، تجمع الكورسات المهارية، الاختبارات، متابعة التقدم، الشهادات، النشرة الأسبوعية، ولوحات الطالب والمعلم وولي الأمر ورئيس القسم.";
+    if(/طالب|أسجل|تسجيل|دخول/.test(x))return "لدخول الطالب اختر «طالب» من الصفحة الرئيسية، ثم أدخل الاسم الثلاثي وآخر ستة أرقام من الرقم المدرسي والصف والبلوك. يجب أن تطابق البيانات سجل الطالب المسجل في المنصة.";
+    if(/ولي|الأمر|ابني|تقدم/.test(x))return "بوابة ولي الأمر تعرض تقدم الطالب والكورسات والمهارات ونقاط القوة والدعم والنشاط والنشرة الأسبوعية. الدخول يتم برمز متابعة خاص بولي الأمر.";
+    if(/معلم|المعلم/.test(x))return "لوحة المعلم تتيح إدارة الطلاب والكورسات، متابعة النتائج، إعداد التقارير، التعامل مع الشهادات، والوصول إلى النشرة الأسبوعية.";
+    if(/رئيس|إدارة|القسم/.test(x))return "لوحة رئيس القسم مخصصة للتحليل والإدارة ومتابعة الأداء والبيانات والقرارات على مستوى القسم.";
+    if(/كورس|كورسات/.test(x))return "الكورسات تُسند للطلاب بحسب الصف والبلوك والمسار أو بشكل فردي. يتابع الطالب المحتوى والأنشطة ثم الاختبار، وتُحفظ محاولاته وتقدمه.";
+    if(/اختبار|امتحان|أسئلة/.test(x))return "الاختبارات داخل الكورسات تدعم أنماطًا متعددة من الأسئلة، ويظهر للطالب تقدمه أثناء الاختبار ثم النتيجة بعد الإرسال.";
+    if(/شهاد/.test(x))return "عند اجتياز الكورس بنجاح يمكن للطالب عرض شهادة الإنجاز. لكل شهادة رقم ورمز تحقق، ويمكن مشاركة الإنجاز مع ولي الأمر عندما تكون خدمة البريد مهيأة.";
+    if(/نشرة|أسبوع/.test(x))return "النشرة الأسبوعية مرتبطة بمنصة النشرة المخصصة. يمكنك فتحها من زر «النشرة الأسبوعية» داخل المنصة.";
+    if(/بريد|ايميل|إيميل|رسالة/.test(x))return "المنصة تدعم رسائل البريد للتقارير والشهادات والنشرات، لكن الإرسال الخارجي يعتمد على إعداد خدمة البريد ودومين إرسال موثّق.";
+    if(/بيانات|خصوصية|أمان/.test(x))return "المنصة تفصل صلاحيات الطالب والمعلم وولي الأمر والإدارة، ولا ينبغي مشاركة رموز الدخول أو روابط المتابعة الخاصة مع الآخرين.";
+    if(/ماذا تستطيع|تساعد/.test(x))return "أستطيع شرح أقسام المنصة وكيفية الدخول والكورسات والاختبارات والشهادات والنشرة الأسبوعية ومتابعة ولي الأمر. اسألني بصوتك أو اكتب سؤالك.";
+    return "سؤالك مهم. في هذه النسخة أجيب من دليل المنصة المدمج. جرّب أن تسألني عن: تسجيل الطالب، ولي الأمر، الكورسات، الاختبارات، الشهادات، النشرة الأسبوعية، المعلم أو رئيس القسم.";
+  };
+  const vaSpeak=(t)=>{try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang="ar-AE";u.rate=.95;speechSynthesis.speak(u)}catch{}};
+  const vaAsk=(raw=vaText)=>{const q=String(raw||"").trim();if(!q)return;const a=platformAnswer(q);setVaMsgs(v=>[...v,{who:"me",text:q},{who:"bot",text:a}]);setVaText("");vaSpeak(a);};
+  const vaMic=()=>{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){alert("التعرّف الصوتي غير مدعوم في هذا المتصفح. يمكنك كتابة سؤالك.");return}const r=new SR();r.lang="ar-AE";r.interimResults=false;r.onstart=()=>setVaListening(true);r.onend=()=>setVaListening(false);r.onerror=()=>setVaListening(false);r.onresult=(e)=>vaAsk(e.results?.[0]?.[0]?.transcript||"");r.start();};
+  const VoiceGuide=()=> <><button className="va-fab" type="button" onClick={()=>setVaOpen(v=>!v)}>🎙️ تحدث مع مساعد المنصة</button>{vaOpen&&<aside className="va-box"><div className="va-head"><div><b>🎙️ مساعد بالعربي أحلى</b><div style={{fontSize:10,opacity:.8}}>اسألني عن أي جزء في المنصة</div></div><button onClick={()=>setVaOpen(false)}>×</button></div><div className="va-log">{vaMsgs.map((m,i)=><div key={i} className={"va-msg "+m.who}>{m.text}</div>)}</div><div className="va-actions"><input value={vaText} onChange={e=>setVaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&vaAsk()} placeholder="اكتب سؤالك أو استخدم الميكروفون…"/><button onClick={()=>vaAsk()}>إرسال</button><button className="mic" onClick={vaMic}>{vaListening?"◼":"🎤"}</button></div><div className="va-note">يبدأ الميكروفون فقط بعد ضغطك عليه. يمكنك إيقاف الصوت من جهازك في أي وقت.</div></aside>}</>;
+
   return (
     <div className="gfs lh-wrap" style={{ "--accent": accent }}><style>{CSS}</style>
       <div className="lh-bg" />
@@ -3320,6 +3353,8 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
         <text x="40" y="130">ع</text><text x="630" y="100">ل</text><text x="70" y="490">م</text>
         <text x="690" y="530">أ</text><text x="380" y="70">س</text><text x="360" y="570">ح</text>
       </svg>
+
+      <VoiceGuide/>
 
       <div className="wrap lh-shell">
         {stage === "welcome" && (
