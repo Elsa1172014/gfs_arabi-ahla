@@ -3761,30 +3761,40 @@ function Exam({ course, items, onSubmit, onCancel }) {
   const [ans, setAns] = useState({}); const [i, setI] = useState(0); const q = items[i];
   const answered = Object.keys(ans).filter((k) => { const v = ans[k]; return v !== undefined && v !== ""; }).length;
   const answeredPct = (answered / items.length) * 100;
+  const typeMeta = {
+    mcq: ["اختيار وتحليل", "اختر البديل الأدق بعد قراءة السياق"],
+    tf: ["قرار لغوي", "احكم على العبارة اعتمادًا على القاعدة"],
+    fill: ["إنتاج قصير", "اكتب الإجابة بنفسك دون تلميح"],
+    match: ["بناء العلاقات", "اربط كل عنصر بما يناسبه"],
+    err: ["محقق لغوي", "اكتشف موضع الخلل ثم قرّر"]
+  };
+  const meta = typeMeta[q.t] || ["تحدٍ لغوي", "فكّر ثم أجب"];
   return (
-    <div className="wrap" style={{ paddingBottom: 60, maxWidth: 780 }}><div className="card" style={{ padding: 22 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, flexWrap: "wrap", gap: 14 }}>
+    <div className="wrap" style={{ paddingBottom: 60, maxWidth: 900 }}>
+      <div style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <div>
-          <span style={{ fontSize: 13, color: T.inkSoft, display: "block", marginBottom: 6 }}>{course.title}</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <Chip>{QTYPE[q.t]}</Chip>
-            <span className="chip" style={{ background: T.ink, color: "#fff", fontWeight: 700 }}>السؤال {i + 1} من {items.length}</span>
-          </div>
+          <div style={{ fontSize: 12, color: T.inkSoft }}>{course.title}</div>
+          <strong style={{ fontSize: 16 }}>{meta[0]}</strong>
+          <span style={{ fontSize: 12, color: T.inkSoft, marginRight: 8 }}>{meta[1]}</span>
         </div>
-        <CircleProgress pct={answeredPct} size={72} stroke={7} tone={answeredPct === 100 ? T.green : T.gold} label="أُجبت عنه" />
+        <span className="chip" style={{ background: T.ink, color: "#fff", fontWeight: 700 }}>السؤال {i + 1} / {items.length}</span>
       </div>
       <Bar pct={((i + 1) / items.length) * 100} />
-      <h3 style={{ margin: "22px 0 16px", fontSize: 20 }}>{q.q}</h3>
-      {q.img && <WordCard text={q.img} tone={T.gold} />}
-      <QInput item={q} value={ans[i]} onChange={(v) => setAns({ ...ans, [i]: v })} />
-      <div style={{ display: "flex", gap: 8, marginTop: 18, flexWrap: "wrap" }}>
+      <div style={{ marginTop: 16, padding: "24px 0", borderTop: `1px solid ${T.ruleSoft}`, borderBottom: `1px solid ${T.ruleSoft}` }}>
+        <h2 style={{ margin: "0 0 18px", fontSize: 24, lineHeight: 1.7 }}>{q.q}</h2>
+        {q.img && <WordCard text={q.img} tone={T.gold} />}
+        <QInput item={q} value={ans[i]} onChange={(v) => setAns({ ...ans, [i]: v })} />
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 18, flexWrap: "wrap", alignItems: "center" }}>
         <button className="btn btn-q" disabled={i === 0} onClick={() => setI(i - 1)}>السابق</button>
         {i < items.length - 1 ? <button className="btn btn-p" onClick={() => setI(i + 1)}>التالي</button>
           : <button className="btn btn-p" disabled={answered < items.length} onClick={() => onSubmit(ans)}>{answered < items.length ? `بقي ${items.length - answered} سؤالًا` : "سلّم الاختبار"}</button>}
-        <button className="btn btn-q" style={{ marginRight: "auto", color: T.brick }} onClick={onCancel}>إلغاء</button></div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 16 }}>{items.map((_, k) => (
-        <button key={k} onClick={() => setI(k)} style={{ width: 26, height: 26, borderRadius: 6, border: `1px solid ${k === i ? T.green : T.rule}`, cursor: "pointer", background: ans[k] !== undefined && ans[k] !== "" ? T.greenSoft : "#fff", fontSize: 11, fontFamily: "inherit", color: T.ink }}>{k + 1}</button>))}</div>
-    </div></div>
+        <span style={{ fontSize: 12, color: T.inkSoft }}>{answered} من {items.length} تمت الإجابة عنها</span>
+        <button className="btn btn-q" style={{ marginRight: "auto", color: T.brick }} onClick={onCancel}>إلغاء</button>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 18, paddingTop: 14, borderTop: `1px solid ${T.ruleSoft}` }}>{items.map((_, k) => (
+        <button aria-label={`السؤال ${k + 1}`} key={k} onClick={() => setI(k)} style={{ minWidth: 30, height: 30, borderRadius: 15, border: `1px solid ${k === i ? T.green : T.rule}`, cursor: "pointer", background: ans[k] !== undefined && ans[k] !== "" ? T.greenSoft : "#fff", fontSize: 11, fontFamily: "inherit", color: T.ink, fontWeight: k === i ? 700 : 400 }}>{k + 1}</button>))}</div>
+    </div>
   );
 }
 function weakestSkill(studentKey, attempts) {
