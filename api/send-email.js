@@ -657,19 +657,33 @@ export default async function handler(req, res) {
       });
   }
 
-  if (!process.env.RESEND_API_KEY) {
-
-    return res
-      .status(500)
-      .json({
-
-        error:
-          "RESEND_API_KEY غير مضبوط في متغيرات البيئة على Vercel",
-
-      });
-  }
-
   try {
+
+    // Registering a certificate is a storage action, not an email action.
+    // Handle it before checking Resend credentials or requiring to/subject/html.
+    if (req.body?.action === "register-certificate") {
+      const data = req.body?.certificateData || {};
+      const token = String(data.token || "").trim();
+      if (!token) {
+        return res.status(400).json({ error: "missing certificate token" });
+      }
+      const redis = getRedis();
+      await redis.set(
+        `certificate:${token}`,
+        JSON.stringify({ ...data, token, createdAt: new Date().toISOString() }),
+        { ex: 60 * 60 * 24 * 365 * 2 }
+      );
+      return res.status(200).json({
+        ok: true,
+        certificateUrl: `${getBaseUrl(req)}/api/send-email?certificate=${encodeURIComponent(token)}`,
+      });
+    }
+
+    if (!process.env.RESEND_API_KEY) {
+      return res.status(500).json({
+        error: "RESEND_API_KEY غير مضبوط في متغيرات البيئة على Vercel",
+      });
+    }
 
     const {
       to,
