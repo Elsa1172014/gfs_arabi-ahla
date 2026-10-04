@@ -3652,7 +3652,7 @@ function StudentHome({ user, courses, progress, attempts, newsletters = [], onOp
   return <div className="stu-shell">
     <div className="stu-nav">
       <button className={page==="courses"?"on":""} onClick={()=>setPage("courses")}>🧠 كورساتي</button>
-      <button className={page==="newsletter"?"on":""} onClick={()=>setPage("newsletter")}>📰 النشرة الأسبوعية</button>
+      <button className={page==="newsletter"?"on":""} onClick={()=>{ window.location.href="https://newsletter-mu-five.vercel.app/"; }}>📰 النشرة الأسبوعية</button>
       <button className={page==="journey"?"on":""} onClick={()=>setPage("journey")}>🏅 إنجازاتي ورحلتي التعليمية</button>
       <button className={page==="certificates"?"on":""} onClick={()=>setPage("certificates")}>📜 الشهادات</button>
     </div>
@@ -5063,7 +5063,7 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
       <div className="teacher-nav-full">
         <div className="teacher-nav-inner">
           {[["d", "🏠 لوحتي"], ["s", "👨‍🎓 طلابي"], ["c", "📚 كورساتي"], ["nl", "📰 النشرة الأسبوعية"], ["res", "📊 النتائج"], ["ai", "🤖 المساعد الذكي"]].map(([k, l]) => (
-            <button key={k} className={`tabbtn ${tab === k ? "on" : ""}`} onClick={() => setTab(k)}>{l}</button>))}
+            <button key={k} className={`tabbtn ${tab === k ? "on" : ""}`} onClick={() => k==="nl" ? (window.location.href="https://newsletter-mu-five.vercel.app/") : setTab(k)}>{l}</button>))}
         </div>
       </div>
 
