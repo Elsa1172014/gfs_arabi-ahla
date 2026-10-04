@@ -5002,7 +5002,7 @@ function TeacherDashboard({ students, courses, attempts, progress, onNavigate })
 
 
 /* ==================== لوحة المعلم الكاملة ==================== */
-function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, newsletters = [], onSaveNewsletter, onDeleteNewsletter, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
+function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, students, newsletters = [], onSaveNewsletter, onDeleteNewsletter, onNew, onManual, onPaste, onPublish, onView, onEdit, onAssign, onArchive, onSendReport, onResendCertificate, onExport, onImportFile, onTemplate, onAddStudent, onRemoveStudent, onEditStudent, onClearStudents, onDuplicateCourse }) {
   const [tab, setTab] = useState("d");
   const [aiProvider, setAiProvider] = useState("claude");
   const [aiBusy, setAiBusy] = useState(null);
@@ -5144,6 +5144,25 @@ function TeacherHome({ teacherName, teacherEmail, courses, attempts, progress, s
             {expandStudent === r.key && <tr><td colSpan={13}>
               <div style={{ padding: 10 }}>
                 <button className="btn btn-p" onClick={() => setReportOpen(reportOpen === r.key ? null : r.key)}>{reportOpen === r.key ? "إخفاء نموذج التقرير" : "إرسال تقرير إلى ولي الأمر"}</button>
+                {(() => {
+                  const certs = attempts2.filter((a) => a.student === r.key && a.passed).sort((a,b)=>(b.at||"").localeCompare(a.at||""));
+                  return certs.length ? <div style={{marginTop:12}}>
+                    <div style={{fontWeight:800,marginBottom:8}}>📜 شهادات الطالب</div>
+                    <div className="grid">{certs.map((a) => {
+                      const cc = courses.find((x) => x.id === a.course);
+                      return <div key={a.id} className="card" style={{padding:12}}>
+                        <div style={{fontWeight:700}}>{cc?.title || "شهادة إتمام"}</div>
+                        <div className="mono" style={{fontSize:11,color:T.inkSoft,margin:"4px 0 8px"}}>{a.serial || a.token}</div>
+                        <button className="btn btn-o" onClick={async(e)=>{
+                          const btn=e.currentTarget; const old=btn.textContent; btn.disabled=true; btn.textContent="جارٍ الإرسال…";
+                          const result=await onResendCertificate(r,a,cc);
+                          btn.disabled=false; btn.textContent=result?.ok?"✅ تم الإرسال":old;
+                          if(!result?.ok) alert(result?.error || "تعذر إرسال الشهادة إلى ولي الأمر.");
+                        }}>📧 إرسال الشهادة لولي الأمر</button>
+                      </div>;
+                    })}</div>
+                  </div> : null;
+                })()}
                 {reportOpen === r.key && <SendReportModal student={r} courses={mine} progress={progress} attempts={attempts2}
                   onSend={(token, payload) => onSendReport(r, token, payload)} onClose={() => setReportOpen(null)} />}
               </div></td></tr>}
@@ -7223,6 +7242,27 @@ export default function App() {
                 const src = courses.find((c) => c.id === id); if (!src) return;
                 const copy = { ...src, id: uid(), title: src.title + " (نسخة)", status: "draft", students: [], publishedAt: null, dueDate: null, createdAt: new Date().toISOString() };
                 addCourse(copy); log(user.name, "نسخ كورس", id);
+              }}
+              onResendCertificate={async (student, attempt, courseRec) => {
+                const to = normEmail(student.parentEmail || "");
+                if (!to) {
+                  const result = { ok:false, status:0, error:"لا يوجد بريد صالح لولي الأمر في سجل الطالب. أضفه من تعديل بيانات الطالب أولًا." };
+                  log(user.name, "فشل إعادة إرسال شهادة", `${student.name} — لا يوجد بريد ولي أمر`);
+                  return result;
+                }
+                const certificateUrl = `${window.location.origin}/api/send-email?certificate=${encodeURIComponent(attempt.token)}`;
+                const certificateData = { student: student.name, course: courseRec?.title || "الكورس", score: attempt.pct, date: dateAr(attempt.at), serial: attempt.serial, token: attempt.token };
+                await registerCertificateRecord(certificateData);
+                const result = await sendEmailTracked(to, `شهادة إتقان — ${courseRec?.title || "الكورس"}`,
+                  `<div dir="rtl" style="font-family:Tahoma,Arial,sans-serif;line-height:1.9">
+                    <p>عزيزي ولي الأمر،</p>
+                    <p>نرسل إليكم مرة أخرى شهادة إتمام الطالب <strong>${student.name}</strong> لكورس <strong>«${courseRec?.title || "الكورس"}»</strong> بدرجة <strong>${attempt.pct}%</strong>.</p>
+                    <p>رقم الشهادة: <strong>${attempt.serial || "—"}</strong> — رمز التحقق: <strong>${attempt.token}</strong></p>
+                    <p><a href="${certificateUrl}" target="_blank" style="display:inline-block;background:#12329B;color:white;text-decoration:none;padding:11px 18px;border-radius:9px;font-weight:700">🏆 فتح شهادة الإتمام</a></p>
+                  </div>`, { certificateData });
+                if (result?.ok) log(user.name, "إعادة إرسال شهادة لولي الأمر", `${student.name} — ${to} — ${attempt.serial || attempt.token}`);
+                else log(user.name, "فشل إعادة إرسال شهادة", `${student.name} — ${to} — ${result?.error || result?.status || "فشل"}`);
+                return result;
               }}
               onSendReport={async (student, token, payload) => {
                 const rows = buildReport(student, courses, progress, attempts);
