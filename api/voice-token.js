@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-const MODEL=process.env.GEMINI_LIVE_MODEL||"gemini-2.5-flash-native-audio-preview-12-2025";
+const MODEL=process.env.GEMINI_LIVE_MODEL||"gemini-3.8-live";
 const buckets=new Map();
 function limited(ip){const n=Date.now(),a=(buckets.get(ip)||[]).filter(t=>n-t<60000);if(a.length>=8){buckets.set(ip,a);return true}a.push(n);buckets.set(ip,a);return false}
 export default async function handler(req,res){
