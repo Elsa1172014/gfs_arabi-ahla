@@ -3198,7 +3198,19 @@ function StageBody({ s }) {
 }
 
 /* ============================ الدخول ============================ */
-function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teachers = [], courses = [], attempts = [] }) {
+const NOTEBOOK_GUIDE = [
+  ["الفهرس ومعايير الأداء", "٣–٤", "اعثر على صفحات الدروس، ثم استخدم المعايير لتحديد مستواك وخطوتك التالية."],
+  ["التغذية الراجعة", "٥", "اقرأ نقطة التطوير، عدّل موضعًا محددًا من عملك، ثم اكتب ردك على المعلّم."],
+  ["تحليل النصوص", "٦–٢٦", "ابدأ بهدف الدرس، ثم اكتب فكرتك وأضف شاهدًا من النص واشرح علاقته بتحليلك."],
+  ["الكتابة الإبداعية الطويلة", "٢٧–٤٣", "راجع المعايير في ص٢٨، وشرح الاستجابة الأدبية من ص٢٩. خطّط لتحليلك، اكتب المسودة، ثم راجعها."],
+];
+
+const NOTEBOOK_KNOWLEDGE = `أنت مساعد صوتي لدفتر اللغة العربية للصف الثالث عشر في جيمس فاوندرز. أجب بلغة الطالب بالعربية أو الإنجليزية، واشرح بإيجاز واذكر رقم الصفحة المناسب. هذه خريطة الدفتر المعتمدة:
+• ص٢ المنصات الرقمية. ص٣ الفهرس. ص٤ معايير الأداء والتقدم. ص٥ دليل التصحيح والتغذية الراجعة.
+${NOTEBOOK_GUIDE.slice(2).map(([title, pages, detail]) => `• ${title}، ص${pages}. ${detail}`).join("\n")}
+ص٣٠ خريطة بناء الاستجابة الأدبية. إذا سأل الطالب عن نص لم يذكره، اطلب عنوانه أو شاهدًا قصيرًا منه. لا تخترع محتوى صفحات أو أرقامًا. قدّم مثالًا قصيرًا أو سؤالًا موجّهًا يساعد الطالب على كتابة إجابته بنفسه. لا تطلب بيانات شخصية أو أرقام دخول.`;
+
+function Login({ notebook = false, onStudent, onTeacher, onAdmin, onParent, codes, students, teachers = [], courses = [], attempts = [] }) {
   const [stage, setStage] = useState("welcome"); // welcome | pick | form
   const [role, setRole] = useState(null); // s | p | t | a
   const [step, setStep] = useState(1); // خطوة معالج الطالب
@@ -3321,8 +3333,8 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
   });
 
 
-  const [vaOpen,setVaOpen]=useState(false),[vaText,setVaText]=useState(""),[vaStatus,setVaStatus]=useState("idle"),[vaLive,setVaLive]=useState(false),[vaLevel,setVaLevel]=useState(0);
-  const [vaMsgs,setVaMsgs]=useState([{who:"bot",text:"مرحبًا! أنا مساعد «بالعربي أحلى». تحدث معي بصورة طبيعية واسألني عن أي جزء في المنصة."}]);
+  const [vaOpen,setVaOpen]=useState(notebook),[vaText,setVaText]=useState(""),[vaStatus,setVaStatus]=useState("idle"),[vaLive,setVaLive]=useState(false),[vaLevel,setVaLevel]=useState(0);
+  const [vaMsgs,setVaMsgs]=useState([{who:"bot",text:notebook ? "مرحبًا! اسألني كيف تبدأ تحليل النص، أو كيف تطوّر استجابتك الأدبية." : "مرحبًا! أنا مساعد «بالعربي أحلى». تحدث معي بصورة طبيعية واسألني عن أي جزء في المنصة."}]);
   const vaClient=useRef(null),vaIn=useRef(""),vaOut=useRef("");
   const platformKnowledge=`أنت المساعد الصوتي الرسمي لمنصة «GFS بالعربي أحلى» التابعة لقسم اللغة العربية. اكتشف لغة المتحدث تلقائيًا: إذا تحدث بالعربية فأجب بالعربية، وإذا تحدث بالإنجليزية فأجب بالإنجليزية، وإذا غيّر اللغة فغيّر لغتك معه فورًا. تحدث بصورة طبيعية ودودة وبإجابات قصيرة محادثية، واسأل سؤال متابعة عندما يفيد. لا تبدُ كقائمة أسئلة وأجوبة. يستطيع الزائر مقاطعتك أثناء كلامك؛ توقف واستمع ثم أكمل وفق سؤاله الجديد.
 المنصة لها أربع تجارب: الطالب، ولي الأمر، المعلم، ورئيس القسم/الإدارة.
@@ -3334,18 +3346,40 @@ function Login({ onStudent, onTeacher, onAdmin, onParent, codes, students, teach
 هدفك أن تكون مرشدًا حقيقيًا: افهم المقصود حتى لو كان السؤال عاميًا أو غير مرتب، اشرح، قارن، اقترح الخطوة التالية، وواصل سياق الحوار. إذا لم تكن المعلومة ضمن معرفتك بالمنصة، قل بوضوح إنك لا تريد اختراع معلومة واسأل ما يلزم لتحديد المقصود.`;
   const stopVoice=()=>{try{vaClient.current?.close()}catch{};vaClient.current=null;setVaLive(false);setVaStatus("idle")};
   useEffect(()=>()=>{try{vaClient.current?.close()}catch{}},[]);
-  const startVoice=async()=>{if(vaLive)return stopVoice();setVaOpen(true);setVaStatus("connecting");try{
+  const startVoice=async()=>{if(vaLive)return stopVoice();setVaOpen(true);setVaStatus("connecting");
+    let client;
+    try{
     vaIn.current="";vaOut.current="";
-    const client=new PlatformLiveVoice({instruction:platformKnowledge,onStatus:setVaStatus,onLevel:(v)=>setVaLevel(v),onError:(m)=>{setVaMsgs(v=>[...v,{who:"bot",text:m}]);setVaStatus("error")},
+    client=new PlatformLiveVoice({instruction:notebook ? NOTEBOOK_KNOWLEDGE : platformKnowledge,onStatus:setVaStatus,onLevel:(v)=>setVaLevel(v),onError:(m)=>{setVaMsgs(v=>[...v,{who:"bot",text:m}]);setVaStatus("error")},
       onUserText:(t,final)=>{vaIn.current+=t;if(final&&vaIn.current.trim()){const q=vaIn.current.trim();vaIn.current="";setVaMsgs(v=>[...v,{who:"me",text:q}])}},
       onAgentText:(t,final)=>{vaOut.current+=t;if(final&&vaOut.current.trim()){const a=vaOut.current.trim();vaOut.current="";setVaMsgs(v=>[...v,{who:"bot",text:a}])}}});
-    vaClient.current=client;await client.connect();setVaLive(true);
-  }catch(err){setVaStatus("error");setVaLive(false);setVaMsgs(v=>[...v,{who:"bot",text:String(err?.message||"تعذر بدء المساعد الصوتي.")}])}};
+    vaClient.current=client;await client.connect();if(vaClient.current!==client){client.close();return}setVaLive(true);
+  }catch(err){if(vaClient.current!==client)return;stopVoice();setVaStatus("error");setVaMsgs(v=>[...v,{who:"bot",text:String(err?.message||"تعذر بدء المساعد الصوتي.")}])}};
   const sendVoiceText=()=>{const q=vaText.trim();if(!q)return;if(!vaClient.current){setVaMsgs(v=>[...v,{who:"me",text:q},{who:"bot",text:"ابدأ المحادثة الصوتية أولًا حتى أستطيع الإجابة بالذكاء الاصطناعي."}]);setVaText("");return}setVaMsgs(v=>[...v,{who:"me",text:q}]);vaClient.current.sendText(q);setVaText("")};
   const statusLabel=vaStatus==="listening"?"👂 أستمع إليك…":vaStatus==="speaking"?"🔊 أتحدث الآن — يمكنك مقاطعتي":vaStatus==="connecting"?"⏳ أتصل بالمساعد…":vaStatus==="error"?"تعذر الاتصال":"جاهز للمحادثة";
   const openVoice=()=>{setVaOpen(true)};
 const closeVoice=()=>{setVaOpen(false);stopVoice()};
-const VoiceGuide=()=> <><button className="va-fab" type="button" onClick={openVoice} aria-label="تحدث مع مساعد المنصة"><span className="va-fab-orb" aria-hidden="true"></span><span><strong style={{display:"block"}}>تحدث مع مساعد المنصة</strong><small style={{display:"block",fontSize:9,opacity:.82,fontWeight:700}}>اكتشف GFS بالعربي أحلى بالصوت</small></span></button>{vaOpen&&<aside className="va-box"><div className="va-head"><div><b>✦ مساعد بالعربي أحلى AI</b><div style={{fontSize:10,opacity:.85}}>محادثة صوتية مباشرة • عربي / English</div></div><button type="button" aria-label="إغلاق المساعد" onClick={closeVoice}>×</button></div><div className="va-orb-wrap"><div className={"va-orb "+vaStatus} style={{transform:`scale(${1+vaLevel*.12})`,filter:`saturate(${1+vaLevel*.8}) brightness(${1+vaLevel*.15})`}} aria-hidden="true"><span className="va-orb-core"></span></div><div className="va-orb-label">{vaLive?statusLabel:"جاهز لبدء المحادثة"}</div><div className="va-wave" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/></div></div>{!vaLive&&vaStatus!=="connecting"&&<div style={{padding:"0 16px 16px",background:"#fff"}}><button type="button" onClick={startVoice} style={{width:"100%",border:0,borderRadius:16,padding:"14px 16px",fontFamily:"inherit",fontSize:15,fontWeight:900,cursor:"pointer",background:"linear-gradient(135deg,#12329b,#6f2b91,#b4163e)",color:"#fff",boxShadow:"0 9px 24px rgba(31,54,150,.22)"}}>🎙️ ابدأ المحادثة</button><div style={{fontSize:11,color:"#667085",textAlign:"center",marginTop:8}}>لن يتم تشغيل الميكروفون إلا بعد الضغط على الزر.</div></div>}{vaStatus==="connecting"&&<div style={{padding:"0 16px 16px",textAlign:"center",fontSize:12,fontWeight:800,color:"#5362a8"}}>جاري الاتصال بالمساعد…</div>}{vaLive&&<><div className="va-log">{vaMsgs.map((m,i)=><div key={i} className={"va-msg "+m.who}>{m.text}</div>)}</div><div className="va-actions"><input value={vaText} onChange={e=>setVaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendVoiceText()} placeholder="يمكنك أيضًا الكتابة أثناء المحادثة…"/><button onClick={sendVoiceText}>إرسال</button></div><div style={{padding:"0 12px 10px",background:"#fff"}}><button type="button" onClick={stopVoice} style={{width:"100%",border:"1px solid #ead8dd",borderRadius:12,padding:9,fontFamily:"inherit",fontWeight:900,cursor:"pointer",background:"#fff5f7",color:"#8d2132"}}>■ إنهاء المحادثة</button></div><div className="va-note">تحدث الآن بصورة طبيعية؛ المساعد يستمع ويمكنك مقاطعته أثناء كلامه.</div></>}</aside>}</>;
+const VoiceGuide=()=> <><button className="va-fab" type="button" onClick={openVoice} aria-label={notebook ? "تحدث مع مساعد الدفتر" : "تحدث مع مساعد المنصة"}><span className="va-fab-orb" aria-hidden="true"></span><span><strong style={{display:"block"}}>{notebook ? "تحدث مع مساعد الدفتر" : "تحدث مع مساعد المنصة"}</strong><small style={{display:"block",fontSize:9,opacity:.82,fontWeight:700}}>{notebook ? "دفتر الصف الثالث عشر" : "اكتشف GFS بالعربي أحلى بالصوت"}</small></span></button>{vaOpen&&<aside className="va-box"><div className="va-head"><div><b>{notebook ? "مساعد دفتر اللغة العربية" : "✦ مساعد بالعربي أحلى AI"}</b><div style={{fontSize:10,opacity:.85}}>محادثة صوتية مباشرة • عربي / English</div></div><button type="button" aria-label="إغلاق المساعد" onClick={closeVoice}>×</button></div><div className="va-orb-wrap"><div className={"va-orb "+vaStatus} style={{transform:`scale(${1+vaLevel*.12})`,filter:`saturate(${1+vaLevel*.8}) brightness(${1+vaLevel*.15})`}} aria-hidden="true"><span className="va-orb-core"></span></div><div className="va-orb-label">{vaLive?statusLabel:"جاهز لبدء المحادثة"}</div><div className="va-wave" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/></div></div>{!vaLive&&vaStatus!=="connecting"&&<div style={{padding:"0 16px 16px",background:"#fff"}}><button type="button" onClick={startVoice} style={{width:"100%",border:0,borderRadius:16,padding:"14px 16px",fontFamily:"inherit",fontSize:15,fontWeight:900,cursor:"pointer",background:"linear-gradient(135deg,#12329b,#6f2b91,#b4163e)",color:"#fff",boxShadow:"0 9px 24px rgba(31,54,150,.22)"}}>🎙️ ابدأ المحادثة</button>{vaStatus==="error"&&<p role="alert" style={{color:"#8d2132"}}>{vaMsgs.at(-1)?.text}</p>}<div style={{fontSize:11,color:"#667085",textAlign:"center",marginTop:8}}>لن يتم تشغيل الميكروفون إلا بعد الضغط على الزر.</div></div>}{vaStatus==="connecting"&&<div style={{padding:"0 16px 16px",textAlign:"center",fontSize:12,fontWeight:800,color:"#5362a8"}}>جاري الاتصال بالمساعد…</div>}{vaLive&&<><div className="va-log">{vaMsgs.map((m,i)=><div key={i} className={"va-msg "+m.who}>{m.text}</div>)}</div><div className="va-actions"><input value={vaText} onChange={e=>setVaText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendVoiceText()} placeholder="يمكنك أيضًا الكتابة أثناء المحادثة…"/><button onClick={sendVoiceText}>إرسال</button></div><div style={{padding:"0 12px 10px",background:"#fff"}}><button type="button" onClick={stopVoice} style={{width:"100%",border:"1px solid #ead8dd",borderRadius:12,padding:9,fontFamily:"inherit",fontWeight:900,cursor:"pointer",background:"#fff5f7",color:"#8d2132"}}>■ إنهاء المحادثة</button></div><div className="va-note">تحدث الآن بصورة طبيعية؛ المساعد يستمع ويمكنك مقاطعته أثناء كلامه.</div></>}</aside>}</>;
+
+  if (notebook) return (
+    <main className="gfs" dir="rtl">
+      <style>{CSS}</style>
+      <div className="wrap" style={{maxWidth:720,paddingTop:104,paddingBottom:32}}>
+        <h1 style={{color:T.navy}}>مساعد دفتر اللغة العربية</h1>
+        <p>الصف الثالث عشر · GFS بالعربي أحلى</p>
+        <div style={{display:"grid",gap:12}}>
+          {NOTEBOOK_GUIDE.map(([title, pages, detail]) => (
+            <section className="card" key={title} style={{padding:"12px 16px"}}>
+              <h2 style={{fontSize:20}}>{title} · ص{pages}</h2>
+              <p style={{margin:"4px 0 0"}}>{detail}</p>
+            </section>
+          ))}
+        </div>
+        <p><a href="/">العودة إلى منصة GFS بالعربي أحلى</a></p>
+      </div>
+      <VoiceGuide />
+    </main>
+  );
 
   return (
     <div className="gfs lh-wrap" style={{ "--accent": accent }}><style>{CSS}</style>
@@ -6624,6 +6658,11 @@ function ParentPortal({ report, newsletters = [], onBack, orgEmail = "" }) {
 }
 /* ============================ التطبيق ============================ */
 export default function App() {
+  const notebook = new URLSearchParams(window.location.search).get("notebook") === "y13";
+  return notebook ? <Login notebook /> : <PlatformApp />;
+}
+
+function PlatformApp() {
   const [ready, setReady] = useState(false);
   const [user, setUser] = useState(null);
   const [view, setView] = useState({ n: "home" });
